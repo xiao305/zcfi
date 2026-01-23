@@ -1,51 +1,56 @@
 // js/main.js
 
-// 示例：调用阿里云 FC 后台（未来替换为你的实际 API）
-async function submitContactForm(data) {
-  try {
-    // TODO: 替换为你的阿里云 FC API 地址
-    const response = await fetch('https://your-api-id.cn-hangzhou.fc.aliyuncs.com/2023-03-30/proxy/YOUR_SERVICE/YOUR_FUNCTION/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        // 如果需要认证，可加 Authorization
-      },
-      body: JSON.stringify(data)
-    });
-
-    if (response.ok) {
-      alert('消息发送成功！我会尽快回复你。');
-      document.getElementById('contactForm').reset();
-    } else {
-      alert('发送失败，请稍后再试。');
-    }
-  } catch (error) {
-    console.error('Error:', error);
-    alert('网络错误，请检查连接。');
-  }
-}
-
-// 表单提交处理
+// 导航高亮 & 滚动效果
 document.addEventListener('DOMContentLoaded', function() {
+  // 导航高亮
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  const navLinks = document.querySelectorAll('nav a');
+  navLinks.forEach(link => {
+    if (link.getAttribute('href') === currentPage) {
+      link.classList.add('active');
+    }
+  });
+
+  // 滚动时导航栏变小
+  const header = document.querySelector('header');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 50) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+  });
+
+  // 表单提交（预留后台接口）
   const form = document.getElementById('contactForm');
   if (form) {
-    form.addEventListener('submit', function(e) {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      
       const formData = {
         name: form.name.value,
         email: form.email.value,
         message: form.message.value
       };
-      submitContactForm(formData);
+
+      // TODO: 替换为你的阿里云 FC API
+      try {
+        const response = await fetch('https://your-api.cn-hangzhou.fc.aliyuncs.com/...', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+
+        if (response.ok) {
+          alert('✅ 消息发送成功！我会尽快回复你。');
+          form.reset();
+        } else {
+          throw new Error('发送失败');
+        }
+      } catch (error) {
+        alert('❌ 网络错误，请稍后再试。');
+        console.error(error);
+      }
     });
   }
-
-  // 高亮当前页面导航
-  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-  const navLinks = document.querySelectorAll('nav a');
-  nav Yorkers.forEach(link => {
-    if (link.getAttribute('href') === currentPage) {
-      link.classList.add('active');
-    }
-  });
 });
