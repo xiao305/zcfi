@@ -53,7 +53,17 @@
                             <label for="message">留言内容</label>
                             <textarea id="message" class="form-control" placeholder="请输入您的留言内容" required></textarea>
                         </div>
-                        <button type="submit" class="submit-btn">发送消息</button>
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <button type="submit" class="submit-btn" style="flex: 1; min-width: 200px;">发送消息</button>
+                            <button type="button" id="emailBtn" class="cta-button" style="background: #6c757d; flex: 1; min-width: 200px;">通过邮箱发送</button>
+                        </div>
+                        <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
+                            <p style="color: #856404; font-size: 0.95rem;">
+                                <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                <strong>注意：</strong>当前网站尚未搭载后台系统，表单提交功能暂不可用。
+                                建议使用右侧“通过邮箱发送”按钮，将自动打开您的默认邮件客户端。
+                            </p>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -66,6 +76,12 @@
             <div class="footer-content">
                 <div class="footer-about">
                     <a href="../index.html" class="footer-logo">zcfi<span>.</span>cn</a>
+                    <p>这是我的个人网站，用于展示作品、分享知识和记录成长。</p>
+                    <div class="social-links">
+                        <a href="https://github.com/yourusername" target="_blank"><i class="fab fa-github"></i></a>
+                        <a href="#"><i class="fab fa-weibo"></i></a>
+                        <a href="#"><i class="fab fa-zhihu"></i></a>
+                    </div>
                 </div>
                 <div class="footer-links">
                     <h3 class="footer-heading">快速链接</h3>
@@ -77,14 +93,58 @@
                         <li><a href="../contact.html">联系我</a></li>
                     </ul>
                 </div>
+                <div class="footer-links">
+                    <h3 class="footer-heading">法律声明</h3>
+                    <ul>
+                        <li><a href="../privacy.html">隐私政策</a></li>
+                        <li><a href="../terms.html">使用条款</a></li>
+                        <li><a href="../copyright.html">版权声明</a></li>
+                    </ul>
+                </div>
             </div>
             
             <div class="compliance">
                 <p>© 2026 zcfi.cn 版权所有</p>
+                <p>本网站为个人非商业网站，所有内容均为个人观点和原创作品。</p>
+                <div class="compliance-links">
+                    <a href="../privacy.html">隐私政策</a>
+                    <a href="../terms.html">使用条款</a>
+                    <a href="../copyright.html">版权声明</a>
+                    <a href="https://github.com/yourusername/zcfi" target="_blank">GitHub 仓库</a>
+                </div>
+                <p style="margin-top: 15px; font-size: 0.85rem; color: #aaa;">
+                    本网站源码托管于 GitHub，遵循开源精神，欢迎 Star 和 Fork。
+                </p>
             </div>
         </div>
     </footer>
 
     <script src="../assets/js/main.js"></script>
+    <script>
+        // 邮箱跳转功能
+        document.getElementById('emailBtn').addEventListener('click', function() {
+            const name = document.getElementById('name').value || '访客';
+            const email = document.getElementById('email').value || '';
+            const subject = document.getElementById('subject').value || '网站咨询';
+            const message = document.getElementById('message').value || '';
+            
+            // 构建邮件内容
+            let body = `姓名: ${name}\n\n`;
+            if (email) body += `联系方式: ${email}\n\n`;
+            body += `留言内容:\n${message}`;
+            
+            // URL 编码
+            const mailtoUrl = `mailto:admin@zcfi.cn?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            
+            // 打开邮件客户端
+            window.location.href = mailtoUrl;
+        });
+        
+        // 表单提交提示
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('⚠️ 当前网站尚未搭载后台系统，表单提交功能暂不可用。\n\n建议点击"通过邮箱发送"按钮，将自动打开您的邮件客户端。');
+        });
+    </script>
 </body>
 </html>
