@@ -3,45 +3,47 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>zcfi - 个人博客与作品集</title>
-  <!-- 添加网站描述，帮助微信识别 -->
-  <meta name="description" content="zcfi 的个人技术博客、项目作品展示与学习笔记，分享前端开发、设计思考等内容。">
-  <style>
-    body { font-family: system-ui; max-width: 800px; margin: 40px auto; padding: 0 20px; line-height: 1.6; }
-    footer { margin-top: 50px; color: #777; font-size: 14px; border-top: 1px solid #eee; padding-top: 20px; }
-  </style>
+  <meta name="description" content="zcfi 的个人博客、作品集与技术分享空间。">
+  <title>zcfi - 首页</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <header>
-    <h1>zcfi 的数字空间</h1>
-    <p>记录技术、设计与生活思考。</p>
-  </header>
+  <div class="container">
+    <header>
+      <h1>zcfi</h1>
+      <p>博客 · 作品 · 思考</p>
+      <nav>
+        <a href="index.html">首页</a>
+        <a href="blog.html">博客</a>
+        <a href="portfolio.html">作品集</a>
+        <a href="about.html">关于</a>
+        <a href="contact.html">联系</a>
+      </nav>
+    </header>
 
-  <main>
-    <section>
-      <h2>关于我</h2>
-      <p>我是 zcfi，一名热爱编程与创造的独立开发者。本网站用于分享个人项目、学习笔记与创意实验。</p>
-    </section>
+    <main>
+      <div class="card">
+        <h2>欢迎来到我的数字空间</h2>
+        <p>这里记录我的技术探索、设计思考与生活灵感。所有内容均为原创，欢迎交流。</p>
+      </div>
 
-    <section>
-      <h2>近期文章</h2>
-      <ul>
-        <li><a href="#">如何从零搭建个人网站（2026）</a></li>
-        <li><a href="#">我的作品集设计思路</a></li>
-      </ul>
-    </section>
+      <div class="card">
+        <h2>最新动态</h2>
+        <ul class="posts">
+          <li><a href="blog-post.html">如何从零搭建个人网站（2026）</a></li>
+          <li><a href="#">我的作品集设计思路</a></li>
+          <li><a href="#">前端开发学习路径分享</a></li>
+        </ul>
+        <p><a href="blog.html">查看所有博客 →</a></p>
+      </div>
+    </main>
 
-    <section>
-      <h2>联系我</h2>
-      <p>欢迎通过邮箱交流：contact@zcfi.cn（虚拟邮箱，仅作展示）</p>
-    </section>
-  </main>
+    <footer>
+      <p>© 2026 zcfi.cn | <a href="privacy.html">隐私政策</a></p>
+      <p>本网站托管于 GitHub Pages，内容遵守中国互联网相关法律法规。</p>
+    </footer>
+  </div>
 
-  <!-- 关键：添加“正规”页脚 -->
-  <footer>
-    <p>© 2026 zcfi.cn | 个人非商业网站</p>
-    <p>本页面托管于 GitHub Pages，内容为原创分享，遵守中国互联网相关法律法规。</p>
-    <p><a href="/privacy.html">隐私政策</a> | <a href="/about.html">关于本站</a></p>
-  </footer>
+  <script src="js/main.js"></script>
 </body>
 </html>
