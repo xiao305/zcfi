@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>联系方式管理 | zcfi.cn</title>
+    <title>留言管理 | zcfi.cn</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="../favicon/favicon.svg">
@@ -28,7 +28,7 @@
         }
         
         .container {
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
             background: white;
             border-radius: 15px;
@@ -53,7 +53,7 @@
         }
         
         .logo span {
-            color: #3a5a80;
+            color: #28a745;
         }
         
         .nav-back {
@@ -92,18 +92,18 @@
         }
         
         .form-group {
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
         
         label {
             display: block;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             font-weight: 600;
             color: #333;
-            font-size: 15px;
+            font-size: 14px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
         
         label i {
@@ -112,10 +112,10 @@
         
         input, textarea, select {
             width: 100%;
-            padding: 14px 16px;
+            padding: 12px 15px;
             border: 2px solid #dee2e6;
-            border-radius: 10px;
-            font-size: 15px;
+            border-radius: 8px;
+            font-size: 14px;
             transition: all 0.3s ease;
             background: white;
         }
@@ -123,7 +123,7 @@
         input:focus, textarea:focus, select:focus {
             outline: none;
             border-color: #4a6fa5;
-            box-shadow: 0 0 0 4px rgba(74, 111, 165, 0.15);
+            box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.1);
         }
         
         textarea {
@@ -131,46 +131,24 @@
             resize: vertical;
         }
         
-        .social-group {
-            margin-bottom: 20px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            border: 1px solid #e9ecef;
-        }
-        
-        .social-group h4 {
-            margin-bottom: 15px;
-            color: #4a6fa5;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .social-inputs {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-        }
-        
         .button-group {
             display: flex;
-            gap: 15px;
-            margin-top: 25px;
+            gap: 12px;
+            margin-top: 20px;
             flex-wrap: wrap;
         }
         
         button {
-            padding: 14px 28px;
+            padding: 12px 24px;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
         
         .btn-primary {
@@ -180,7 +158,7 @@
         
         .btn-primary:hover {
             background: #3a5a80;
-            transform: translateY(-3px);
+            transform: translateY(-2px);
         }
         
         .btn-secondary {
@@ -190,18 +168,47 @@
         
         .btn-secondary:hover {
             background: #5a6268;
-            transform: translateY(-3px);
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background: #e0a800;
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
         }
         
         .status-message {
-            padding: 18px;
-            border-radius: 10px;
-            margin: 25px 0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
             font-weight: 500;
             display: flex;
             align-items: center;
-            gap: 12px;
-            font-size: 15px;
+            gap: 10px;
         }
         
         .status-success {
@@ -222,16 +229,102 @@
             border: 1px solid #bee5eb;
         }
         
-        .form-config {
-            margin-top: 20px;
-            padding: 20px;
-            background: #e9ecef;
-            border-radius: 10px;
+        .messages-section {
+            margin-top: 30px;
         }
         
-        .form-config h4 {
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4a6fa5;
+        }
+        
+        .section-header h2 {
+            color: #333;
+            font-size: 20px;
+        }
+        
+        .message-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
             margin-bottom: 15px;
-            color: #495057;
+            transition: all 0.3s ease;
+        }
+        
+        .message-card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-color: #4a6fa5;
+        }
+        
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+        
+        .message-author {
+            font-size: 18px;
+            font-weight: 600;
+            color: #4a6fa5;
+            margin-bottom: 5px;
+        }
+        
+        .message-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 13px;
+            color: #6c757d;
+            flex-wrap: wrap;
+        }
+        
+        .message-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-published {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-draft {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .message-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            font-size: 13px;
+            border-radius: 6px;
+        }
+        
+        .manual-add {
+            background: #e9ecef;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+        
+        .manual-add h3 {
+            color: #4a6fa5;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .footer {
@@ -257,10 +350,6 @@
                 width: 100%;
                 justify-content: center;
             }
-            
-            .social-inputs {
-                grid-template-columns: 1fr;
-            }
         }
     </style>
 </head>
@@ -272,78 +361,69 @@
             </a>
             <a href="https://zcfi.cn" class="logo">zcfi<span>.</span>cn</a>
             <div class="header-title">
-                <h1><i class="fas fa-envelope"></i> 联系方式管理</h1>
-                <p>管理您的联系信息和社交媒体链接</p>
+                <h1><i class="fas fa-comments"></i> 留言管理</h1>
+                <p>管理和查看访客留言记录</p>
             </div>
         </div>
         
         <div class="main-content">
-            <div class="form-section">
+            <div class="manual-add">
+                <h3><i class="fas fa-plus-circle"></i> 添加新留言</h3>
                 <div class="form-group">
-                    <label for="email"><i class="fas fa-envelope"></i> 邮箱地址:</label>
-                    <input type="email" id="email" placeholder="your@email.com">
+                    <label for="messageAuthor"><i class="fas fa-user"></i> 留言者姓名:</label>
+                    <input type="text" id="messageAuthor" placeholder="例如: 张三">
                 </div>
                 
                 <div class="form-group">
-                    <label for="phone"><i class="fas fa-phone"></i> 电话号码:</label>
-                    <input type="tel" id="phone" placeholder="+86 123456789">
+                    <label for="messageEmail"><i class="fas fa-envelope"></i> 邮箱 (可选):</label>
+                    <input type="email" id="messageEmail" placeholder="example@email.com">
                 </div>
                 
-                <div class="social-group">
-                    <h4><i class="fas fa-share-alt"></i> 社交媒体链接</h4>
-                    <div class="social-inputs">
-                        <div class="form-group">
-                            <label for="github"><i class="fab fa-github"></i> GitHub:</label>
-                            <input type="text" id="github" placeholder="用户名或完整链接">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="twitter"><i class="fab fa-twitter"></i> Twitter/X:</label>
-                            <input type="text" id="twitter" placeholder="用户名">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="linkedin"><i class="fab fa-linkedin"></i> LinkedIn:</label>
-                            <input type="text" id="linkedin" placeholder="用户名或完整链接">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="weibo"><i class="fab fa-weibo"></i> 微博:</label>
-                            <input type="text" id="weibo" placeholder="用户名">
-                        </div>
-                    </div>
+                <div class="form-group">
+                    <label for="messageContent"><i class="fas fa-comment"></i> 留言内容:</label>
+                    <textarea id="messageContent" placeholder="请输入留言内容..."></textarea>
                 </div>
                 
-                <div class="form-config">
-                    <h4><i class="fas fa-cog"></i> 联系表单配置</h4>
-                    <div class="form-group">
-                        <label for="formEnabled"><i class="fas fa-toggle-on"></i> 启用联系表单:</label>
-                        <select id="formEnabled">
-                            <option value="true">启用</option>
-                            <option value="false">禁用</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="formMessage"><i class="fas fa-comment"></i> 表单提示信息:</label>
-                        <textarea id="formMessage" placeholder="例如：欢迎通过表单联系我..."></textarea>
-                    </div>
+                <div class="form-group">
+                    <label for="messageStatus"><i class="fas fa-toggle-on"></i> 留言状态:</label>
+                    <select id="messageStatus">
+                        <option value="published">已发布 (公开显示)</option>
+                        <option value="draft">草稿 (隐藏)</option>
+                    </select>
                 </div>
                 
                 <div class="button-group">
-                    <button class="btn-primary" onclick="saveContactInfo()">
-                        <i class="fas fa-save"></i> 保存联系方式
-                    </button>
-                    <button class="btn-secondary" onclick="loadContactData()">
-                        <i class="fas fa-sync-alt"></i> 重新加载
+                    <button class="btn-primary" onclick="addMessage()">
+                        <i class="fas fa-plus"></i> 添加留言
                     </button>
                 </div>
-                
-                <div id="statusMessage"></div>
             </div>
             
+            <div class="messages-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-list"></i> 留言列表</h2>
+                    <span id="messagesCount">加载中...</span>
+                </div>
+                <div id="messagesList">
+                    <div class="message-card">
+                        <p>点击"刷新留言列表"加载现有留言</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button class="btn-secondary" onclick="loadMessages()">
+                    <i class="fas fa-sync-alt"></i> 刷新留言列表
+                </button>
+            </div>
+            
+            <div id="statusMessage"></div>
+            
             <div class="footer">
-                <p>© 2026 zcfi.cn 联系方式管理系统</p>
+                <p>© 2026 zcfi.cn 留言管理系统</p>
+                <p style="margin-top: 10px; font-size: 13px; color: #6c757d;">
+                    所有留言都存储在 GitHub Gist 中，可在前台页面显示。
+                </p>
             </div>
         </div>
     </div>
@@ -357,6 +437,7 @@
         
         const GIST_ID = '73cc78400c25eb9effed665e2c89843d';
         const GIST_URL = `https://api.github.com/gists/${GIST_ID}`;
+        let currentMessagesData = [];
         const token = sessionStorage.getItem('admin_token');
         
         // 页面卸载时清除敏感信息
@@ -366,111 +447,223 @@
         });
         
         document.addEventListener('DOMContentLoaded', function() {
-            loadContactData();
+            loadMessages();
         });
         
-        async function saveContactInfo() {
-            const email = document.getElementById('email').value.trim();
-            const phone = document.getElementById('phone').value.trim();
-            const github = document.getElementById('github').value.trim();
-            const twitter = document.getElementById('twitter').value.trim();
-            const linkedin = document.getElementById('linkedin').value.trim();
-            const weibo = document.getElementById('weibo').value.trim();
-            const formEnabled = document.getElementById('formEnabled').value === 'true';
-            const formMessage = document.getElementById('formMessage').value.trim();
+        async function addMessage() {
+            const author = document.getElementById('messageAuthor').value.trim();
+            const email = document.getElementById('messageEmail').value.trim();
+            const content = document.getElementById('messageContent').value.trim();
+            const status = document.getElementById('messageStatus').value;
+            
+            if (!author || !content) {
+                showStatus('请填写留言者姓名和留言内容', 'error');
+                return;
+            }
             
             try {
                 showStatus('正在获取当前数据...', 'info');
-                const response = await fetch(GIST_URL, {
-                    headers: {
-                        'Authorization': `token ${token}`,
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
-                });
+                const currentData = await fetchCurrentData();
                 
-                if (!response.ok) {
-                    throw new Error(`获取数据失败: ${response.status} ${response.statusText}`);
-                }
-                
-                const gist = await response.json();
-                const fullData = JSON.parse(gist.files['blog.json'].content);
-                
-                // 更新 contact 部分
-                fullData.contact = {
+                const newMessage = {
+                    id: `msg_${Date.now()}`,
+                    author: author,
                     email: email,
-                    phone: phone,
-                    social: {
-                        github: github,
-                        twitter: twitter,
-                        linkedin: linkedin,
-                        weibo: weibo
-                    },
-                    formEnabled: formEnabled,
-                    formMessage: formMessage
+                    content: content,
+                    date: new Date().toLocaleDateString('zh-CN'),
+                    status: status
                 };
                 
-                // 保存回 Gist
-                const updateResponse = await fetch(GIST_URL, {
-                    method: 'PATCH',
-                    headers: {
-                        'Authorization': `token ${token}`,
-                        'Accept': 'application/vnd.github.v3+json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        files: {
-                            'blog.json': {
-                                content: JSON.stringify(fullData, null, 2)
-                            }
-                        }
-                    })
-                });
+                currentData.unshift(newMessage);
+                await updateGistData(currentData);
                 
-                if (!updateResponse.ok) {
-                    throw new Error(`保存失败: ${updateResponse.status} ${updateResponse.statusText}`);
-                }
-                
-                showStatus('✅ 联系方式保存成功！', 'success');
+                showStatus('✅ 留言添加成功！', 'success');
+                clearForm();
+                loadMessages();
                 
             } catch (error) {
-                console.error('保存失败:', error);
-                showStatus(`❌ 保存失败: ${error.message}`, 'error');
+                console.error('添加留言失败:', error);
+                showStatus(`❌ 添加失败: ${error.message}`, 'error');
             }
         }
         
-        async function loadContactData() {
+        async function updateMessageStatus(messageId, newStatus) {
             try {
-                showStatus('正在加载联系方式...', 'info');
-                const response = await fetch(GIST_URL, {
-                    headers: {
-                        'Authorization': `token ${token}`,
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
-                });
+                const currentData = await fetchCurrentData();
+                const messageIndex = currentData.findIndex(msg => msg.id === messageId);
                 
-                if (!response.ok) {
-                    throw new Error(`加载失败: ${response.status} ${response.statusText}`);
+                if (messageIndex === -1) {
+                    throw new Error('未找到指定留言');
                 }
                 
-                const gist = await response.json();
-                const fullData = JSON.parse(gist.files['blog.json'].content);
-                const contactData = fullData.contact || {};
-                const social = contactData.social || {};
+                currentData[messageIndex].status = newStatus;
+                await updateGistData(currentData);
+                return true;
+            } catch (error) {
+                console.error('更新状态失败:', error);
+                throw error;
+            }
+        }
+        
+        async function deleteMessage(messageId) {
+            try {
+                const currentData = await fetchCurrentData();
+                const filteredData = currentData.filter(msg => msg.id !== messageId);
                 
-                document.getElementById('email').value = contactData.email || '';
-                document.getElementById('phone').value = contactData.phone || '';
-                document.getElementById('github').value = social.github || '';
-                document.getElementById('twitter').value = social.twitter || '';
-                document.getElementById('linkedin').value = social.linkedin || '';
-                document.getElementById('weibo').value = social.weibo || '';
-                document.getElementById('formEnabled').value = contactData.formEnabled ? 'true' : 'false';
-                document.getElementById('formMessage').value = contactData.formMessage || '';
+                if (filteredData.length === currentData.length) {
+                    throw new Error('未找到指定留言');
+                }
                 
-                showStatus('✅ 联系方式加载成功！', 'success');
+                await updateGistData(filteredData);
+                return true;
+            } catch (error) {
+                console.error('删除留言失败:', error);
+                throw error;
+            }
+        }
+        
+        async function fetchCurrentData() {
+            const response = await fetch(GIST_URL, {
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`获取数据失败: ${response.status} ${response.statusText}`);
+            }
+            
+            const gist = await response.json();
+            const data = JSON.parse(gist.files['blog.json'].content);
+            
+            // 确保 messages 字段存在
+            return (data.messages || []).map(msg => ({
+                ...msg,
+                status: msg.status || 'published'
+            }));
+        }
+        
+        async function updateGistData(messagesData) {
+            const response = await fetch(GIST_URL, {
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`获取完整数据失败: ${response.status} ${response.statusText}`);
+            }
+            
+            const gist = await response.json();
+            const fullData = JSON.parse(gist.files['blog.json'].content);
+            
+            // 更新 messages 部分
+            fullData.messages = messagesData;
+            
+            const updateResponse = await fetch(GIST_URL, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    files: {
+                        'blog.json': {
+                            content: JSON.stringify(fullData, null, 2)
+                        }
+                    }
+                })
+            });
+            
+            if (!updateResponse.ok) {
+                throw new Error(`更新失败: ${updateResponse.status} ${updateResponse.statusText}`);
+            }
+        }
+        
+        async function loadMessages() {
+            try {
+                showStatus('正在加载留言列表...', 'info');
+                const data = await fetchCurrentData();
+                currentMessagesData = data;
+                
+                displayMessagesList(data);
+                showStatus(`✅ 成功加载 ${data.length} 条留言`, 'success');
                 
             } catch (error) {
-                console.error('加载失败:', error);
+                console.error('加载留言失败:', error);
+                document.getElementById('messagesCount').textContent = '加载失败';
                 showStatus(`❌ 加载失败: ${error.message}`, 'error');
+            }
+        }
+        
+        function displayMessagesList(data) {
+            const container = document.getElementById('messagesList');
+            const countElement = document.getElementById('messagesCount');
+            
+            countElement.textContent = `${data.length} 条留言`;
+            
+            if (data.length === 0) {
+                container.innerHTML = '<div class="message-card"><p>暂无留言</p></div>';
+                return;
+            }
+            
+            container.innerHTML = data.map(msg => `
+                <div class="message-card">
+                    <div class="message-header">
+                        <div>
+                            <div class="message-author">${msg.author}</div>
+                            <div class="message-meta">
+                                <span>${msg.date}</span>
+                                ${msg.email ? `<span>${msg.email}</span>` : ''}
+                            </div>
+                        </div>
+                        <div>
+                            <span class="message-status status-${msg.status}">
+                                ${msg.status === 'published' ? '已发布' : '草稿'}
+                            </span>
+                        </div>
+                    </div>
+                    <p>${msg.content}</p>
+                    <div class="message-actions">
+                        ${msg.status === 'published' ? 
+                            `<button class="btn-warning action-btn" onclick="toggleMessageStatus('${msg.id}', 'draft')">
+                                <i class="fas fa-eye-slash"></i> 隐藏
+                            </button>` : 
+                            `<button class="btn-success action-btn" onclick="toggleMessageStatus('${msg.id}', 'published')">
+                                <i class="fas fa-eye"></i> 显示
+                            </button>`}
+                        <button class="btn-danger action-btn" onclick="deleteMessageConfirm('${msg.id}')">
+                            <i class="fas fa-trash"></i> 删除
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        async function toggleMessageStatus(messageId, newStatus) {
+            try {
+                await updateMessageStatus(messageId, newStatus);
+                showStatus(`✅ 留言状态已更新为 ${newStatus === 'published' ? '已发布' : '草稿'}`, 'success');
+                loadMessages();
+            } catch (error) {
+                showStatus(`❌ 状态更新失败: ${error.message}`, 'error');
+            }
+        }
+        
+        async function deleteMessageConfirm(messageId) {
+            if (!confirm(`确定要删除这条留言吗？此操作不可恢复！`)) {
+                return;
+            }
+            
+            try {
+                await deleteMessage(messageId);
+                showStatus('✅ 留言删除成功！', 'success');
+                loadMessages();
+            } catch (error) {
+                showStatus(`❌ 删除失败: ${error.message}`, 'error');
             }
         }
         
@@ -488,6 +681,13 @@
                     statusDiv.className = '';
                 }, 5000);
             }
+        }
+        
+        function clearForm() {
+            document.getElementById('messageAuthor').value = '';
+            document.getElementById('messageEmail').value = '';
+            document.getElementById('messageContent').value = '';
+            document.getElementById('messageStatus').value = 'published';
         }
     </script>
 </body>
