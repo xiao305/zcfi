@@ -54,10 +54,6 @@
             padding: 30px;
         }
         
-        .form-section {
-            margin-bottom: 30px;
-        }
-        
         .form-group {
             margin-bottom: 20px;
         }
@@ -128,16 +124,6 @@
             transform: translateY(-2px);
         }
         
-        .btn-danger {
-            background: #dc3545;
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            background: #c82333;
-            transform: translateY(-2px);
-        }
-        
         .status-message {
             padding: 15px;
             border-radius: 8px;
@@ -161,35 +147,6 @@
             background: #d1ecf1;
             color: #0c5460;
             border: 1px solid #bee5eb;
-        }
-        
-        .blog-list {
-            margin-top: 30px;
-        }
-        
-        .blog-list h3 {
-            margin-bottom: 15px;
-            color: #333;
-            font-size: 18px;
-        }
-        
-        .blog-item {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            border-left: 4px solid #4a6fa5;
-        }
-        
-        .blog-item h4 {
-            color: #4a6fa5;
-            margin-bottom: 5px;
-        }
-        
-        .blog-item .date {
-            color: #6c757d;
-            font-size: 12px;
-            margin-bottom: 8px;
         }
         
         .security-note {
@@ -222,24 +179,6 @@
             border-top: 1px solid #e9ecef;
             margin-top: 30px;
         }
-        
-        @media (max-width: 768px) {
-            .button-group {
-                flex-direction: column;
-            }
-            
-            button {
-                width: 100%;
-            }
-            
-            .header {
-                padding: 20px;
-            }
-            
-            .header h1 {
-                font-size: 1.8rem;
-            }
-        }
     </style>
 </head>
 <body>
@@ -250,117 +189,56 @@
         </div>
         
         <div class="main-content">
-            <div class="form-section">
-                <div class="form-group">
-                    <label for="token">GitHub Personal Access Token:</label>
-                    <input type="password" id="token" placeholder="输入你的 GitHub Token (ghp_xxx)" value="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">
-                </div>
-                
-                <div class="form-group">
-                    <label for="actionType">操作类型:</label>
-                    <select id="actionType">
-                        <option value="add">添加新文章</option>
-                        <option value="edit">编辑现有文章</option>
-                        <option value="delete">删除文章</option>
-                    </select>
-                </div>
-                
-                <div id="addForm">
-                    <div class="form-group">
-                        <label for="postId">文章 ID (唯一标识符):</label>
-                        <input type="text" id="postId" placeholder="例如: post3, my-first-blog">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="title">文章标题:</label>
-                        <input type="text" id="title" placeholder="请输入文章标题">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="date">发布日期:</label>
-                        <input type="text" id="date" placeholder="例如: 2026年1月25日">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="excerpt">文章摘要:</label>
-                        <textarea id="excerpt" placeholder="请输入文章摘要（简短描述）"></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="content">完整内容 (支持 HTML):</label>
-                        <textarea id="content" placeholder="请输入完整的文章内容，可以包含 HTML 标签如 &lt;p&gt;, &lt;h2&gt;, &lt;img&gt; 等"></textarea>
-                    </div>
-                </div>
-                
-                <div id="editForm" style="display: none;">
-                    <div class="form-group">
-                        <label for="editPostId">选择要编辑的文章 ID:</label>
-                        <select id="editPostId">
-                            <option value="">加载中...</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="editTitle">新标题:</label>
-                        <input type="text" id="editTitle" placeholder="新文章标题">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="editDate">新日期:</label>
-                        <input type="text" id="editDate" placeholder="新发布日期">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="editExcerpt">新摘要:</label>
-                        <textarea id="editExcerpt" placeholder="新文章摘要"></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="editContent">新完整内容:</label>
-                        <textarea id="editContent" placeholder="新完整文章内容"></textarea>
-                    </div>
-                </div>
-                
-                <div id="deleteForm" style="display: none;">
-                    <div class="form-group">
-                        <label for="deletePostId">选择要删除的文章 ID:</label>
-                        <select id="deletePostId">
-                            <option value="">加载中...</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="button-group">
-                    <button class="btn-primary" onclick="executeAction()">执行操作</button>
-                    <button class="btn-secondary" onclick="loadBlogData()">加载当前数据</button>
-                    <button class="btn-danger" onclick="clearToken()">清除 Token</button>
-                </div>
-                
-                <div id="statusMessage"></div>
+            <div class="form-group">
+                <label for="token">GitHub Personal Access Token:</label>
+                <input type="password" id="token" placeholder="请输入你的 GitHub Token (ghp_xxx)">
             </div>
             
-            <div class="blog-list">
-                <h3>当前博客文章列表</h3>
-                <div id="blogItems">
-                    <div class="blog-item">
-                        <p>点击"加载当前数据"查看现有文章</p>
-                    </div>
-                </div>
+            <div class="form-group">
+                <label for="postId">文章 ID:</label>
+                <input type="text" id="postId" placeholder="例如: post3">
             </div>
+            
+            <div class="form-group">
+                <label for="title">标题:</label>
+                <input type="text" id="title" placeholder="文章标题">
+            </div>
+            
+            <div class="form-group">
+                <label for="date">日期:</label>
+                <input type="text" id="date" placeholder="例如: 2026年1月25日">
+            </div>
+            
+            <div class="form-group">
+                <label for="excerpt">摘要:</label>
+                <textarea id="excerpt" placeholder="文章摘要"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="content">完整内容 (HTML):</label>
+                <textarea id="content" placeholder="完整的文章内容，支持 HTML 标签"></textarea>
+            </div>
+            
+            <div class="button-group">
+                <button class="btn-primary" onclick="addBlogPost()">添加新文章</button>
+                <button class="btn-secondary" onclick="loadCurrentData()">加载当前数据</button>
+            </div>
+            
+            <div id="statusMessage"></div>
             
             <div class="security-note">
                 <h3>🔒 安全说明</h3>
                 <ul>
-                    <li><strong>Token 仅在本地使用</strong>：您的 Token 只在浏览器中处理，不会发送到任何服务器</li>
-                    <li><strong>建议定期更换 Token</strong>：使用完成后建议在 GitHub 删除此 Token</li>
-                    <li><strong>不要分享此页面</strong>：包含您的敏感 Token 信息</li>
-                    <li><strong>仅限个人使用</strong>：此后台仅供您个人管理博客内容</li>
+                    <li><strong>Token 不会保存</strong>：关闭页面后 Token 自动清除</li>
+                    <li><strong>仅本地使用</strong>：Token 只在你浏览器中处理，不会上传到任何服务器</li>
+                    <li><strong>使用后请删除</strong>：建议操作完成后立即在 GitHub 删除此 Token</li>
+                    <li><strong>不要分享页面</strong>：此页面包含敏感操作，请勿公开分享</li>
                 </ul>
             </div>
             
             <div class="footer">
-                <p>© 2026 zcfi.cn 博客管理系统 | 基于 GitHub Gist</p>
-                <p>Token 已预填充，使用后请记得清除或删除</p>
+                <p>© 2026 zcfi.cn 博客管理系统</p>
+                <p>基于 GitHub Gist，完全免费</p>
             </div>
         </div>
     </div>
@@ -368,294 +246,121 @@
     <script>
         const GIST_ID = '73cc78400c25eb9effed665e2c89843d';
         const GIST_URL = `https://api.github.com/gists/${GIST_ID}`;
-        let currentBlogData = [];
         
-        // 页面加载时初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            setupEventListeners();
-            // 自动加载数据（可选）
-            // loadBlogData();
-        });
-        
-        function setupEventListeners() {
-            document.getElementById('actionType').addEventListener('change', handleActionChange);
-        }
-        
-        function handleActionChange() {
-            const action = document.getElementById('actionType').value;
-            document.getElementById('addForm').style.display = action === 'add' ? 'block' : 'none';
-            document.getElementById('editForm').style.display = action === 'edit' ? 'block' : 'none';
-            document.getElementById('deleteForm').style.display = action === 'delete' ? 'block' : 'none';
-            
-            if (action === 'edit' || action === 'delete') {
-                loadBlogDataForSelection();
-            }
-        }
-        
-        async function executeAction() {
+        async function addBlogPost() {
             const token = document.getElementById('token').value;
-            const action = document.getElementById('actionType').value;
-            
-            if (!token) {
-                showStatus('请先输入 GitHub Token', 'error');
-                return;
-            }
-            
-            try {
-                switch(action) {
-                    case 'add':
-                        await addBlogPost(token);
-                        break;
-                    case 'edit':
-                        await editBlogPost(token);
-                        break;
-                    case 'delete':
-                        await deleteBlogPost(token);
-                        break;
-                }
-            } catch (error) {
-                console.error('操作失败:', error);
-                showStatus(`❌ 操作失败: ${error.message}`, 'error');
-            }
-        }
-        
-        async function addBlogPost(token) {
             const postId = document.getElementById('postId').value.trim();
             const title = document.getElementById('title').value.trim();
             const date = document.getElementById('date').value.trim();
             const excerpt = document.getElementById('excerpt').value.trim();
             const content = document.getElementById('content').value.trim();
             
-            if (!postId || !title || !date || !excerpt || !content) {
-                showStatus('请填写所有必填字段', 'error');
+            if (!token || !postId || !title || !date || !excerpt || !content) {
+                showStatus('请填写所有字段', 'error');
                 return;
             }
             
-            // 检查 ID 是否重复
-            if (currentBlogData.some(post => post.id === postId)) {
-                showStatus('文章 ID 已存在，请使用不同的 ID', 'error');
-                return;
-            }
-            
-            showStatus('正在添加文章...', 'info');
-            
-            // 获取当前数据
-            const currentData = await fetchCurrentData(token);
-            
-            // 添加新文章到开头
-            const newPost = { id: postId, title, date, excerpt, content };
-            currentData.unshift(newPost);
-            
-            // 更新 Gist
-            await updateGistData(token, currentData);
-            
-            showStatus('✅ 文章添加成功！刷新博客页面查看效果', 'success');
-            clearAddForm();
-            loadBlogData(); // 刷新列表
-        }
-        
-        async function editBlogPost(token) {
-            const postId = document.getElementById('editPostId').value;
-            const title = document.getElementById('editTitle').value.trim();
-            const date = document.getElementById('editDate').value.trim();
-            const excerpt = document.getElementById('editExcerpt').value.trim();
-            const content = document.getElementById('editContent').value.trim();
-            
-            if (!postId) {
-                showStatus('请选择要编辑的文章', 'error');
-                return;
-            }
-            
-            if (!title || !date || !excerpt || !content) {
-                showStatus('请填写所有编辑字段', 'error');
-                return;
-            }
-            
-            showStatus('正在更新文章...', 'info');
-            
-            const currentData = await fetchCurrentData(token);
-            const postIndex = currentData.findIndex(post => post.id === postId);
-            
-            if (postIndex === -1) {
-                throw new Error('未找到指定的文章');
-            }
-            
-            // 更新文章
-            currentData[postIndex] = { id: postId, title, date, excerpt, content };
-            
-            await updateGistData(token, currentData);
-            
-            showStatus('✅ 文章更新成功！', 'success');
-            clearEditForm();
-            loadBlogData();
-        }
-        
-        async function deleteBlogPost(token) {
-            const postId = document.getElementById('deletePostId').value;
-            
-            if (!postId) {
-                showStatus('请选择要删除的文章', 'error');
-                return;
-            }
-            
-            if (!confirm(`确定要删除文章 "${postId}" 吗？此操作不可恢复！`)) {
-                return;
-            }
-            
-            showStatus('正在删除文章...', 'info');
-            
-            const currentData = await fetchCurrentData(token);
-            const filteredData = currentData.filter(post => post.id !== postId);
-            
-            if (filteredData.length === currentData.length) {
-                throw new Error('未找到指定的文章');
-            }
-            
-            await updateGistData(token, filteredData);
-            
-            showStatus('✅ 文章删除成功！', 'success');
-            loadBlogData();
-        }
-        
-        async function fetchCurrentData(token) {
-            const response = await fetch(GIST_URL, {
-                headers: {
-                    'Authorization': `token ${token}`,
-                    'Accept': 'application/vnd.github.v3+json'
-                }
-            });
-            
-            if (!response.ok) {
-                throw new Error(`获取数据失败: ${response.status} ${response.statusText}`);
-            }
-            
-            const gist = await response.json();
-            return JSON.parse(gist.files['blog.json'].content);
-        }
-        
-        async function updateGistData(token, newData) {
-            const updateResponse = await fetch(GIST_URL, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `token ${token}`,
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    files: {
-                        'blog.json': {
-                            content: JSON.stringify(newData, null, 2)
-                        }
+            try {
+                showStatus('正在获取当前数据...', 'info');
+                
+                // 获取当前 Gist 数据
+                const response = await fetch(GIST_URL, {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
                     }
-                })
-            });
-            
-            if (!updateResponse.ok) {
-                throw new Error(`更新失败: ${updateResponse.status} ${updateResponse.statusText}`);
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`获取失败: ${response.status} ${response.statusText}`);
+                }
+                
+                const gist = await response.json();
+                const currentContent = JSON.parse(gist.files['blog.json'].content);
+                
+                // 检查 ID 是否重复
+                if (currentContent.some(post => post.id === postId)) {
+                    showStatus('文章 ID 已存在，请使用不同的 ID', 'error');
+                    return;
+                }
+                
+                // 添加新文章
+                const newPost = { id: postId, title, date, excerpt, content };
+                currentContent.unshift(newPost);
+                
+                // 更新 Gist
+                showStatus('正在更新 Gist...', 'info');
+                const updateResponse = await fetch(GIST_URL, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        files: {
+                            'blog.json': {
+                                content: JSON.stringify(currentContent, null, 2)
+                            }
+                        }
+                    })
+                });
+                
+                if (!updateResponse.ok) {
+                    throw new Error(`更新失败: ${updateResponse.status} ${updateResponse.statusText}`);
+                }
+                
+                showStatus('✅ 文章添加成功！刷新博客页面查看效果', 'success');
+                clearForm();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus(`❌ 操作失败: ${error.message}`, 'error');
             }
         }
         
-        async function loadBlogData() {
+        async function loadCurrentData() {
             const token = document.getElementById('token').value;
             if (!token) {
-                showStatus('请先输入 Token', 'error');
+                showStatus('请输入 Token', 'error');
                 return;
             }
             
             try {
-                showStatus('正在加载博客数据...', 'info');
-                const data = await fetchCurrentData(token);
-                currentBlogData = data;
+                showStatus('正在加载数据...', 'info');
+                const response = await fetch(GIST_URL, {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
                 
-                displayBlogList(data);
-                showStatus(`✅ 成功加载 ${data.length} 篇文章`, 'success');
+                if (!response.ok) {
+                    throw new Error(`加载失败: ${response.status} ${response.statusText}`);
+                }
+                
+                const gist = await response.json();
+                const currentContent = JSON.parse(gist.files['blog.json'].content);
+                console.log('当前博客数据:', currentContent);
+                showStatus(`✅ 成功加载 ${currentContent.length} 篇文章`, 'success');
+                
             } catch (error) {
-                console.error('加载失败:', error);
                 showStatus(`❌ 加载失败: ${error.message}`, 'error');
             }
-        }
-        
-        async function loadBlogDataForSelection() {
-            const token = document.getElementById('token').value;
-            if (!token) return;
-            
-            try {
-                const data = await fetchCurrentData(token);
-                currentBlogData = data;
-                
-                // 更新编辑下拉菜单
-                const editSelect = document.getElementById('editPostId');
-                editSelect.innerHTML = '';
-                data.forEach(post => {
-                    const option = document.createElement('option');
-                    option.value = post.id;
-                    option.textContent = `${post.title} (${post.id})`;
-                    editSelect.appendChild(option);
-                });
-                
-                // 更新删除下拉菜单
-                const deleteSelect = document.getElementById('deletePostId');
-                deleteSelect.innerHTML = '';
-                data.forEach(post => {
-                    const option = document.createElement('option');
-                    option.value = post.id;
-                    option.textContent = `${post.title} (${post.id})`;
-                    deleteSelect.appendChild(option);
-                });
-                
-            } catch (error) {
-                console.error('加载选择数据失败:', error);
-            }
-        }
-        
-        function displayBlogList(data) {
-            const container = document.getElementById('blogItems');
-            if (data.length === 0) {
-                container.innerHTML = '<div class="blog-item"><p>暂无博客文章</p></div>';
-                return;
-            }
-            
-            container.innerHTML = data.map(post => `
-                <div class="blog-item">
-                    <h4>${post.title}</h4>
-                    <div class="date">${post.date} | ID: ${post.id}</div>
-                    <p>${post.excerpt}</p>
-                </div>
-            `).join('');
         }
         
         function showStatus(message, type) {
             const statusDiv = document.getElementById('statusMessage');
             statusDiv.className = `status-message status-${type}`;
             statusDiv.textContent = message;
-            
-            // 自动隐藏成功消息
-            if (type === 'success') {
-                setTimeout(() => {
-                    statusDiv.textContent = '';
-                    statusDiv.className = '';
-                }, 5000);
-            }
         }
         
-        function clearAddForm() {
+        function clearForm() {
             document.getElementById('postId').value = '';
             document.getElementById('title').value = '';
             document.getElementById('date').value = '';
             document.getElementById('excerpt').value = '';
             document.getElementById('content').value = '';
-        }
-        
-        function clearEditForm() {
-            document.getElementById('editTitle').value = '';
-            document.getElementById('editDate').value = '';
-            document.getElementById('editExcerpt').value = '';
-            document.getElementById('editContent').value = '';
-        }
-        
-        function clearToken() {
-            document.getElementById('token').value = '';
-            showStatus('Token 已清除', 'info');
         }
     </script>
 </body>
