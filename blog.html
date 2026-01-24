@@ -4,9 +4,110 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>博客 | zcfi.cn</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="../favicon/favicon.svg">
+    <link rel="icon" type="image/png" sizes="96x96" href="../favicon/favicon-96x96.png">
+    <link rel="icon" type="image/x-icon" href="../favicon/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="../favicon/apple-touch-icon.png">
+    
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="../assets/css/style.css">
+    
+    <style>
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .blog-card {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #eaeaea;
+        }
+        
+        .blog-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+        
+        .blog-date {
+            color: #4a6fa5;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        
+        .blog-content h3 {
+            margin: 0 0 15px 0;
+            font-size: 1.4rem;
+            color: #333;
+            line-height: 1.3;
+        }
+        
+        .blog-content p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .read-more {
+            color: #4a6fa5;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: color 0.3s ease;
+        }
+        
+        .read-more:hover {
+            color: #166088;
+        }
+        
+        .loading-message {
+            text-align: center;
+            color: #777;
+            padding: 40px;
+            font-style: italic;
+        }
+        
+        .error-message {
+            text-align: center;
+            color: #e74c3c;
+            padding: 40px;
+            background: #fdf2f2;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .section-title h2 {
+            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .section-title p {
+            color: #777;
+            font-size: 1.1rem;
+        }
+    </style>
 </head>
 <body>
     <!-- 头部导航 -->
@@ -18,7 +119,7 @@
                     <li><a href="../index.html">首页</a></li>
                     <li><a href="../about.html">关于我</a></li>
                     <li><a href="../portfolio.html">作品集</a></li>
-                    <li><a href="../blog.html">博客</a></li>
+                    <li><a href="../blog.html" class="active">博客</a></li>
                     <li><a href="../contact.html">联系我</a></li>
                 </ul>
                 <div class="mobile-menu-btn">
@@ -35,31 +136,8 @@
                     <h2>最新博客</h2>
                     <p>分享我的思考、学习心得和技术文章</p>
                 </div>
-                <div class="blog-grid">
-                    <div class="blog-card">
-                        <div class="blog-date">2026年1月23日</div>
-                        <div class="blog-content">
-                            <h3>从零搭建个人网站</h3>
-                            <p>完整指南：GitHub Pages + 阿里云 FC + 域名配置，一步到位。</p>
-                            <a href="#" class="read-more">阅读更多 →</a>
-                        </div>
-                    </div>
-                    <div class="blog-card">
-                        <div class="blog-date">2026年1月20日</div>
-                        <div class="blog-content">
-                            <h3>阿里云 FC 实战</h3>
-                            <p>如何用函数计算搭建无服务器后端？详细教程。</p>
-                            <a href="#" class="read-more">阅读更多 →</a>
-                        </div>
-                    </div>
-                    <div class="blog-card">
-                        <div class="blog-date">2026年1月15日</div>
-                        <div class="blog-content">
-                            <h3>前端性能优化技巧</h3>
-                            <p>提升网页加载速度的 10 个实用方法，亲测有效。</p>
-                            <a href="#" class="read-more">阅读更多 →</a>
-                        </div>
-                    </div>
+                <div id="blog-container">
+                    <div class="loading-message">加载博客中...</div>
                 </div>
             </div>
         </section>
@@ -71,6 +149,11 @@
             <div class="footer-content">
                 <div class="footer-about">
                     <a href="../index.html" class="footer-logo">zcfi<span>.</span>cn</a>
+                    <p>这是我的个人网站，用于展示作品、分享知识和记录成长。网站正在持续完善中，感谢您的访问。</p>
+                    <div class="social-links">
+                        <a href="https://github.com/xiao305" target="_blank"><i class="fab fa-github"></i></a>
+                        <!-- 可以添加其他社交媒体链接 -->
+                    </div>
                 </div>
                 <div class="footer-links">
                     <h3 class="footer-heading">快速链接</h3>
@@ -82,14 +165,83 @@
                         <li><a href="../contact.html">联系我</a></li>
                     </ul>
                 </div>
+                <div class="footer-links">
+                    <h3 class="footer-heading">法律声明</h3>
+                    <ul>
+                        <li><a href="../privacy.html">隐私政策</a></li>
+                        <li><a href="../terms.html">使用条款</a></li>
+                        <li><a href="../copyright.html">版权声明</a></li>
+                    </ul>
+                </div>
             </div>
             
             <div class="compliance">
                 <p>© 2026 zcfi.cn 版权所有</p>
+                <p>本网站仅为个人作品展示与知识分享平台，所有内容均为个人观点，不代表任何组织立场。</p>
+                <div class="compliance-links">
+                    <a href="../privacy.html">隐私政策</a>
+                    <a href="../terms.html">使用条款</a>
+                    <a href="../copyright.html">版权声明</a>
+                    <a href="https://github.com/xiao305/zcfi" target="_blank">GitHub 仓库</a>
+                    <a href="#">网站地图</a>
+                </div>
+                <p style="margin-top: 20px; font-size: 0.85rem;">
+                    ICP备案号：京ICP备XXXXXXXX号 | 公安备案号：京公网安备XXXXXXXXXXXX号
+                </p>
+                <p style="margin-top: 10px; font-size: 0.85rem; color: #aaa;">
+                    本网站源码托管于 GitHub，遵循开源精神，欢迎 Star 和 Fork。
+                </p>
             </div>
         </div>
     </footer>
 
-    <script src="../assets/js/main.js"></script>
+    <script>
+        // 博客数据加载
+        document.addEventListener('DOMContentLoaded', function() {
+            const blogContainer = document.getElementById('blog-container');
+            const BLOG_DATA_URL = 'https://gist.githubusercontent.com/xiao305/73cc78400c25eb9effed665e2c89843d/raw/c4153ad5c6dd9eb0ff3fd5fca97d783a1db0506c/blog.json';
+            
+            async function loadBlogs() {
+                try {
+                    const response = await fetch(BLOG_DATA_URL);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const blogs = await response.json();
+                    
+                    if (!Array.isArray(blogs)) {
+                        throw new Error('数据格式错误：返回的不是数组');
+                    }
+                    
+                    if (blogs.length === 0) {
+                        blogContainer.innerHTML = '<div class="loading-message">暂无博客文章</div>';
+                        return;
+                    }
+                    
+                    blogContainer.innerHTML = blogs.map(blog => `
+                        <div class="blog-card">
+                            <div class="blog-date">${blog.date}</div>
+                            <div class="blog-content">
+                                <h3>${blog.title}</h3>
+                                <p>${blog.excerpt}</p>
+                                <a href="blog/${blog.id}.html" class="read-more">阅读更多 →</a>
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                } catch (error) {
+                    console.error('加载博客失败:', error);
+                    blogContainer.innerHTML = `
+                        <div class="error-message">
+                            <p>❌ 博客加载失败：${error.message}</p>
+                            <p>请刷新页面重试，或稍后再访问。</p>
+                        </div>
+                    `;
+                }
+            }
+            
+            loadBlogs();
+        });
+    </script>
 </body>
 </html>
