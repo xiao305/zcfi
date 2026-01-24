@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>联系方式管理 | zcfi.cn</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="../favicon/favicon.svg">
+    <link rel="icon" type="image/png" sizes="96x96" href="../favicon/favicon-96x96.png">
+    <link rel="icon" type="image/x-icon" href="../favicon/favicon.ico">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #4a6fa5 0%, #3a5a80 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-bottom: 1px solid #eaeaea;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #4a6fa5;
+            text-decoration: none;
+        }
+        
+        .logo span {
+            color: #3a5a80;
+        }
+        
+        .nav-back {
+            background: #6c757d;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .nav-back:hover {
+            background: #5a6268;
+        }
+        
+        .header-title {
+            flex: 1;
+        }
+        
+        .header-title h1 {
+            font-size: 22px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .header-title p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .main-content {
+            padding: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #333;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        label i {
+            color: #4a6fa5;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #4a6fa5;
+            box-shadow: 0 0 0 4px rgba(74, 111, 165, 0.15);
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .social-group {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .social-group h4 {
+            margin-bottom: 15px;
+            color: #4a6fa5;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .social-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .btn-primary {
+            background: #4a6fa5;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #3a5a80;
+            transform: translateY(-3px);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-3px);
+        }
+        
+        .status-message {
+            padding: 18px;
+            border-radius: 10px;
+            margin: 25px 0;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 15px;
+        }
+        
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .form-config {
+            margin-top: 20px;
+            padding: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+        }
+        
+        .form-config h4 {
+            margin-bottom: 15px;
+            color: #495057;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+            font-size: 14px;
+            border-top: 1px solid #e9ecef;
+            margin-top: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .social-inputs {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="nav-back">
+                <i class="fas fa-arrow-left"></i> 返回
+            </a>
+            <a href="https://zcfi.cn" class="logo">zcfi<span>.</span>cn</a>
+            <div class="header-title">
+                <h1><i class="fas fa-envelope"></i> 联系方式管理</h1>
+                <p>管理您的联系信息和社交媒体链接</p>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="form-section">
+                <div class="form-group">
+                    <label for="email"><i class="fas fa-envelope"></i> 邮箱地址:</label>
+                    <input type="email" id="email" placeholder="your@email.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone"><i class="fas fa-phone"></i> 电话号码:</label>
+                    <input type="tel" id="phone" placeholder="+86 123456789">
+                </div>
+                
+                <div class="social-group">
+                    <h4><i class="fas fa-share-alt"></i> 社交媒体链接</h4>
+                    <div class="social-inputs">
+                        <div class="form-group">
+                            <label for="github"><i class="fab fa-github"></i> GitHub:</label>
+                            <input type="text" id="github" placeholder="用户名或完整链接">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="twitter"><i class="fab fa-twitter"></i> Twitter/X:</label>
+                            <input type="text" id="twitter" placeholder="用户名">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="linkedin"><i class="fab fa-linkedin"></i> LinkedIn:</label>
+                            <input type="text" id="linkedin" placeholder="用户名或完整链接">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="weibo"><i class="fab fa-weibo"></i> 微博:</label>
+                            <input type="text" id="weibo" placeholder="用户名">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-config">
+                    <h4><i class="fas fa-cog"></i> 联系表单配置</h4>
+                    <div class="form-group">
+                        <label for="formEnabled"><i class="fas fa-toggle-on"></i> 启用联系表单:</label>
+                        <select id="formEnabled">
+                            <option value="true">启用</option>
+                            <option value="false">禁用</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="formMessage"><i class="fas fa-comment"></i> 表单提示信息:</label>
+                        <textarea id="formMessage" placeholder="例如：欢迎通过表单联系我..."></textarea>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn-primary" onclick="saveContactInfo()">
+                        <i class="fas fa-save"></i> 保存联系方式
+                    </button>
+                    <button class="btn-secondary" onclick="loadContactData()">
+                        <i class="fas fa-sync-alt"></i> 重新加载
+                    </button>
+                </div>
+                
+                <div id="statusMessage"></div>
+            </div>
+            
+            <div class="footer">
+                <p>© 2026 zcfi.cn 联系方式管理系统</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 安全验证
+        if (!sessionStorage.getItem('admin_verified') || !sessionStorage.getItem('admin_token')) {
+            alert('❌ 未授权访问！请通过后台首页登录。');
+            window.location.href = 'index.html';
+        }
+        
+        const GIST_ID = '73cc78400c25eb9effed665e2c89843d';
+        const GIST_URL = `https://api.github.com/gists/${GIST_ID}`;
+        const token = sessionStorage.getItem('admin_token');
+        
+        // 页面卸载时清除敏感信息
+        window.addEventListener('beforeunload', () => {
+            sessionStorage.removeItem('admin_token');
+            sessionStorage.removeItem('admin_verified');
+        });
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            loadContactData();
+        });
+        
+        async function saveContactInfo() {
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const github = document.getElementById('github').value.trim();
+            const twitter = document.getElementById('twitter').value.trim();
+            const linkedin = document.getElementById('linkedin').value.trim();
+            const weibo = document.getElementById('weibo').value.trim();
+            const formEnabled = document.getElementById('formEnabled').value === 'true';
+            const formMessage = document.getElementById('formMessage').value.trim();
+            
+            try {
+                showStatus('正在获取当前数据...', 'info');
+                const response = await fetch(GIST_URL, {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`获取数据失败: ${response.status} ${response.statusText}`);
+                }
+                
+                const gist = await response.json();
+                const fullData = JSON.parse(gist.files['blog.json'].content);
+                
+                // 更新 contact 部分
+                fullData.contact = {
+                    email: email,
+                    phone: phone,
+                    social: {
+                        github: github,
+                        twitter: twitter,
+                        linkedin: linkedin,
+                        weibo: weibo
+                    },
+                    formEnabled: formEnabled,
+                    formMessage: formMessage
+                };
+                
+                // 保存回 Gist
+                const updateResponse = await fetch(GIST_URL, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        files: {
+                            'blog.json': {
+                                content: JSON.stringify(fullData, null, 2)
+                            }
+                        }
+                    })
+                });
+                
+                if (!updateResponse.ok) {
+                    throw new Error(`保存失败: ${updateResponse.status} ${updateResponse.statusText}`);
+                }
+                
+                showStatus('✅ 联系方式保存成功！', 'success');
+                
+            } catch (error) {
+                console.error('保存失败:', error);
+                showStatus(`❌ 保存失败: ${error.message}`, 'error');
+            }
+        }
+        
+        async function loadContactData() {
+            try {
+                showStatus('正在加载联系方式...', 'info');
+                const response = await fetch(GIST_URL, {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`加载失败: ${response.status} ${response.statusText}`);
+                }
+                
+                const gist = await response.json();
+                const fullData = JSON.parse(gist.files['blog.json'].content);
+                const contactData = fullData.contact || {};
+                const social = contactData.social || {};
+                
+                document.getElementById('email').value = contactData.email || '';
+                document.getElementById('phone').value = contactData.phone || '';
+                document.getElementById('github').value = social.github || '';
+                document.getElementById('twitter').value = social.twitter || '';
+                document.getElementById('linkedin').value = social.linkedin || '';
+                document.getElementById('weibo').value = social.weibo || '';
+                document.getElementById('formEnabled').value = contactData.formEnabled ? 'true' : 'false';
+                document.getElementById('formMessage').value = contactData.formMessage || '';
+                
+                showStatus('✅ 联系方式加载成功！', 'success');
+                
+            } catch (error) {
+                console.error('加载失败:', error);
+                showStatus(`❌ 加载失败: ${error.message}`, 'error');
+            }
+        }
+        
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.className = `status-message status-${type}`;
+            statusDiv.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                ${message}
+            `;
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusDiv.innerHTML = '';
+                    statusDiv.className = '';
+                }, 5000);
+            }
+        }
+    </script>
+</body>
+</html>
