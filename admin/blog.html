@@ -601,7 +601,6 @@
         
         // 全局状态
         let currentBlogData = [];
-        let previousArticleCount = 0;
         let pendingAction = null;
         let pendingActionData = null;
         
@@ -841,7 +840,7 @@
                 hideLoading();
                 showResult('success', '操作成功', editPostId ? '文章更新成功！' : '文章保存成功！');
                 closeArticleModal();
-                loadBlogData(false, true); // 刷新列表并显示结果
+                loadBlogData(false, false); // 静默刷新，不显示刷新结果
                 
             } catch (error) {
                 hideLoading();
@@ -867,7 +866,7 @@
                 
                 hideLoading();
                 showResult('success', '操作成功', `文章已${actionText}`);
-                loadBlogData(false, true); // 刷新列表并显示结果
+                loadBlogData(false, false); // 静默刷新，不显示刷新结果
                 
             } catch (error) {
                 hideLoading();
@@ -889,7 +888,7 @@
                 
                 hideLoading();
                 showResult('success', '操作成功', '文章删除成功！');
-                loadBlogData(false, true); // 刷新列表并显示结果
+                loadBlogData(false, false); // 静默刷新，不显示刷新结果
                 
             } catch (error) {
                 hideLoading();
@@ -952,11 +951,11 @@
             }
         }
         
-        // 主加载函数 - 已修复刷新功能
+        // 主加载函数
         async function loadBlogData(isInitialLoad = false, showRefreshResult = false) {
             try {
                 // 如果是手动刷新，显示加载弹窗
-                if (!isInitialLoad) {
+                if (!isInitialLoad && showRefreshResult) {
                     showLoading('刷新文章', '正在从服务器获取最新文章列表...');
                 }
                 
@@ -974,22 +973,23 @@
                 const afterCount = data.length;
                 const changeCount = afterCount - beforeCount;
                 
-                // 如果是手动刷新，显示结果
-                if (!isInitialLoad) {
+                // 如果是手动刷新且需要显示结果，显示结果弹窗
+                if (!isInitialLoad && showRefreshResult) {
                     hideLoading();
                     
-                    if (showRefreshResult) {
-                        let message = '';
-                        if (changeCount > 0) {
-                            message = `刷新完成！新增 ${changeCount} 篇文章，现在共有 ${afterCount} 篇文章。`;
-                        } else if (changeCount < 0) {
-                            message = `刷新完成！删除了 ${Math.abs(changeCount)} 篇文章，现在共有 ${afterCount} 篇文章。`;
-                        } else {
-                            message = `刷新完成！文章数量无变化，共有 ${afterCount} 篇文章。`;
-                        }
-                        
-                        showResult('success', '刷新成功', message);
+                    let message = '';
+                    if (changeCount > 0) {
+                        message = `刷新完成！新增 ${changeCount} 篇文章，现在共有 ${afterCount} 篇文章。`;
+                    } else if (changeCount < 0) {
+                        message = `刷新完成！删除了 ${Math.abs(changeCount)} 篇文章，现在共有 ${afterCount} 篇文章。`;
+                    } else {
+                        message = `刷新完成！文章数量无变化，共有 ${afterCount} 篇文章。`;
                     }
+                    
+                    showResult('success', '刷新成功', message);
+                } else if (!isInitialLoad && !showRefreshResult) {
+                    // 静默刷新，只隐藏加载弹窗（如果显示了的话）
+                    hideLoading();
                 }
                 
             } catch (error) {
@@ -998,7 +998,9 @@
                 // 如果是手动刷新，显示错误
                 if (!isInitialLoad) {
                     hideLoading();
-                    showResult('error', '刷新失败', `刷新文章列表失败: ${error.message}`);
+                    if (showRefreshResult) {
+                        showResult('error', '刷新失败', `刷新文章列表失败: ${error.message}`);
+                    }
                 } else {
                     // 页面加载时失败，显示在列表区域
                     document.getElementById('articlesCount').textContent = '加载失败';
