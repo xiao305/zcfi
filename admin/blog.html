@@ -601,20 +601,23 @@
         
         // 全局状态
         let currentBlogData = [];
+        let previousArticleCount = 0;
         let pendingAction = null;
         let pendingActionData = null;
         
         // 页面加载时初始化
         document.addEventListener('DOMContentLoaded', function() {
             initEventListeners();
-            loadBlogData();
+            loadBlogData(true); // 页面加载时不显示刷新提示
         });
         
         // 初始化所有事件监听器
         function initEventListeners() {
             // 主按钮
             document.getElementById('addArticleBtn').addEventListener('click', openAddModal);
-            document.getElementById('refreshBtn').addEventListener('click', loadBlogData);
+            document.getElementById('refreshBtn').addEventListener('click', function() {
+                loadBlogData(false, true); // 手动刷新时显示提示
+            });
             
             // 文章弹窗按钮
             document.getElementById('cancelArticleBtn').addEventListener('click', closeArticleModal);
@@ -716,7 +719,8 @@
         }
         
         // 加载弹窗
-        function showLoading(message = '正在处理中...') {
+        function showLoading(title = '处理中', message = '正在处理您的请求，请稍候...') {
+            document.getElementById('loadingTitle').textContent = title;
             document.getElementById('loadingMessage').textContent = message;
             showModal('loadingModal');
         }
@@ -785,7 +789,7 @@
             }
             
             try {
-                showLoading(editPostId ? '正在更新文章...' : '正在保存文章...');
+                showLoading('保存文章', editPostId ? '正在更新文章...' : '正在保存文章...');
                 
                 // 获取当前数据
                 const currentData = await fetchCurrentData();
@@ -837,7 +841,7 @@
                 hideLoading();
                 showResult('success', '操作成功', editPostId ? '文章更新成功！' : '文章保存成功！');
                 closeArticleModal();
-                loadBlogData();
+                loadBlogData(false, true); // 刷新列表并显示结果
                 
             } catch (error) {
                 hideLoading();
@@ -850,7 +854,7 @@
             const actionText = newStatus === 'published' ? '上架' : '下架';
             
             try {
-                showLoading('正在更新状态...');
+                showLoading('更新状态', '正在更新文章状态...');
                 const currentData = await fetchCurrentData();
                 const postIndex = currentData.findIndex(post => post.id === postId);
                 
@@ -863,7 +867,7 @@
                 
                 hideLoading();
                 showResult('success', '操作成功', `文章已${actionText}`);
-                loadBlogData();
+                loadBlogData(false, true); // 刷新列表并显示结果
                 
             } catch (error) {
                 hideLoading();
@@ -873,7 +877,7 @@
         
         async function deleteArticle(postId) {
             try {
-                showLoading('正在删除文章...');
+                showLoading('删除文章', '正在删除文章...');
                 const currentData = await fetchCurrentData();
                 const filteredData = currentData.filter(post => post.id !== postId);
                 
@@ -885,7 +889,7 @@
                 
                 hideLoading();
                 showResult('success', '操作成功', '文章删除成功！');
-                loadBlogData();
+                loadBlogData(false, true); // 刷新列表并显示结果
                 
             } catch (error) {
                 hideLoading();
@@ -948,21 +952,63 @@
             }
         }
         
-        async function loadBlogData() {
+        // 主加载函数 - 已修复刷新功能
+        async function loadBlogData(isInitialLoad = false, showRefreshResult = false) {
             try {
+                // 如果是手动刷新，显示加载弹窗
+                if (!isInitialLoad) {
+                    showLoading('刷新文章', '正在从服务器获取最新文章列表...');
+                }
+                
+                // 保存刷新前的文章数量
+                const beforeCount = currentBlogData.length;
+                
+                // 获取最新数据
                 const data = await fetchCurrentData();
                 currentBlogData = data;
+                
+                // 显示文章列表
                 displayArticlesList(data);
+                
+                // 计算变化
+                const afterCount = data.length;
+                const changeCount = afterCount - beforeCount;
+                
+                // 如果是手动刷新，显示结果
+                if (!isInitialLoad) {
+                    hideLoading();
+                    
+                    if (showRefreshResult) {
+                        let message = '';
+                        if (changeCount > 0) {
+                            message = `刷新完成！新增 ${changeCount} 篇文章，现在共有 ${afterCount} 篇文章。`;
+                        } else if (changeCount < 0) {
+                            message = `刷新完成！删除了 ${Math.abs(changeCount)} 篇文章，现在共有 ${afterCount} 篇文章。`;
+                        } else {
+                            message = `刷新完成！文章数量无变化，共有 ${afterCount} 篇文章。`;
+                        }
+                        
+                        showResult('success', '刷新成功', message);
+                    }
+                }
                 
             } catch (error) {
                 console.error('加载文章失败:', error);
-                document.getElementById('articlesCount').textContent = '加载失败';
-                document.getElementById('articlesList').innerHTML = `
-                    <div class="article-card">
-                        <p style="color: #dc3545;">❌ 加载失败: ${error.message}</p>
-                        <p>请检查网络连接和Token权限，然后点击刷新按钮重试</p>
-                    </div>
-                `;
+                
+                // 如果是手动刷新，显示错误
+                if (!isInitialLoad) {
+                    hideLoading();
+                    showResult('error', '刷新失败', `刷新文章列表失败: ${error.message}`);
+                } else {
+                    // 页面加载时失败，显示在列表区域
+                    document.getElementById('articlesCount').textContent = '加载失败';
+                    document.getElementById('articlesList').innerHTML = `
+                        <div class="article-card">
+                            <p style="color: #dc3545;">❌ 加载失败: ${error.message}</p>
+                            <p>请检查网络连接和Token权限，然后点击刷新按钮重试</p>
+                        </div>
+                    `;
+                }
             }
         }
         
