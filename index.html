@@ -3,20 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>个人主页 | zcfi.cn</title>
+    <title>zcfi.cn - 个人网站</title>
     
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
-    <link rel="icon" type="image/png" sizes="96x96" href="favicon/favicon-96x96.png">
-    <link rel="icon" type="image/x-icon" href="favicon/favicon.ico">
-    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
-    
-    <!-- Web App Manifest -->
-    <link rel="manifest" href="favicon/site.webmanifest">
-    
-    <!-- Web App Icons -->
-    <link rel="apple-touch-icon" sizes="192x192" href="favicon/web-app-manifest-192x192.png">
-    <link rel="apple-touch-icon" sizes="512x512" href="favicon/web-app-manifest-512x512.png">
+    <link rel="icon" type="image/svg+xml" href="./favicon/favicon.svg">
+    <link rel="icon" type="image/png" sizes="96x96" href="./favicon/favicon-96x96.png">
+    <link rel="icon" type="image/x-icon" href="./favicon/favicon.ico">
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -24,21 +16,417 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
     
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans SC', 'Poppins', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #ffffff;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* 头部导航 */
+        header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #4a6fa5;
+            text-decoration: none;
+        }
+        
+        .logo span {
+            color: #28a745;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #4a6fa5;
+        }
+        
+        .mobile-menu-btn {
+            display: none;
+            cursor: pointer;
+        }
+        
+        /* 英雄区域 */
+        .hero {
+            padding: 160px 0 100px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            text-align: center;
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto 30px;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: #4a6fa5;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .cta-button:hover {
+            background: #3a5a80;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 111, 165, 0.3);
+        }
+        
+        /* 最新博客 */
+        .latest-blog {
+            padding: 80px 0;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .section-title h2 {
+            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .section-title p {
+            color: #777;
+            font-size: 1.1rem;
+        }
+        
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .blog-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #eaeaea;
+        }
+        
+        .blog-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .blog-date {
+            color: #4a6fa5;
+            font-size: 0.9rem;
+            margin: 20px 20px 10px;
+            font-weight: 500;
+        }
+        
+        .blog-content {
+            padding: 0 20px 25px;
+        }
+        
+        .blog-content h3 {
+            margin: 0 0 15px 0;
+            font-size: 1.4rem;
+            color: #333;
+            line-height: 1.3;
+        }
+        
+        .blog-content p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .read-more {
+            color: #4a6fa5;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: color 0.3s ease;
+        }
+        
+        .read-more:hover {
+            color: #166088;
+        }
+        
+        /* 精选作品 */
+        .featured-portfolio {
+            padding: 80px 0;
+            background: #f8f9fa;
+        }
+        
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .portfolio-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #eaeaea;
+        }
+        
+        .portfolio-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .portfolio-image {
+            height: 200px;
+            background: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        
+        .portfolio-content {
+            padding: 20px;
+        }
+        
+        .portfolio-content h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.3rem;
+            color: #333;
+        }
+        
+        .portfolio-tech {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .tech-tag {
+            background: #e9ecef;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            color: #495057;
+        }
+        
+        .portfolio-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .portfolio-btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-demo {
+            background: #4a6fa5;
+            color: white;
+        }
+        
+        .btn-demo:hover {
+            background: #3a5a80;
+        }
+        
+        .btn-github {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-github:hover {
+            background: #5a6268;
+        }
+        
+        /* 加载状态 */
+        .loading-message {
+            text-align: center;
+            color: #777;
+            padding: 40px;
+            font-style: italic;
+        }
+        
+        .error-message {
+            text-align: center;
+            color: #e74c3c;
+            padding: 40px;
+            background: #fdf2f2;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        
+        /* 页脚 */
+        footer {
+            background: #333;
+            color: white;
+            padding: 60px 0 30px;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .footer-about .footer-logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+        
+        .footer-about .footer-logo span {
+            color: #28a745;
+        }
+        
+        .footer-about p {
+            color: #bbb;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .footer-links h3 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: white;
+        }
+        
+        .footer-links ul {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-links a {
+            color: #bbb;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            color: #4a6fa5;
+        }
+        
+        .compliance {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid #444;
+            color: #bbb;
+            font-size: 14px;
+        }
+        
+        .compliance-links {
+            margin: 10px 0;
+        }
+        
+        .compliance-links a {
+            color: #bbb;
+            text-decoration: none;
+            margin: 0 10px;
+            transition: color 0.3s ease;
+        }
+        
+        .compliance-links a:hover {
+            color: #4a6fa5;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .section-title h2 {
+                font-size: 2rem;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- 头部导航 -->
     <header>
         <div class="container">
             <nav class="navbar">
-                <a href="index.html" class="logo">zcfi<span>.</span>cn</a>
+                <a href="./index.html" class="logo">zcfi<span>.</span>cn</a>
                 <ul class="nav-links">
-                    <li><a href="index.html">首页</a></li>
-                    <li><a href="about.html">关于我</a></li>
-                    <li><a href="portfolio.html">作品集</a></li>
-                    <li><a href="blog.html">博客</a></li>
-                    <li><a href="contact.html">联系我</a></li>
+                    <li><a href="./index.html" class="active">首页</a></li>
+                    <li><a href="./about.html">关于我</a></li>
+                    <li><a href="./portfolio.html">作品集</a></li>
+                    <li><a href="./blog.html">博客</a></li>
+                    <li><a href="./contact.html">联系我</a></li>
                 </ul>
                 <div class="mobile-menu-btn">
                     <i class="fas fa-bars"></i>
@@ -47,148 +435,197 @@
         </div>
     </header>
 
-    <!-- 主内容 -->
-    <main>
-        <!-- 英雄区域 -->
-        <section class="hero" style="padding: 150px 0 100px; background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%); text-align: center; position: relative; overflow: hidden;">
-            <div class="container">
-                <h1>你好，我是<span style="color: var(--primary-color);">网站所有者</span></h1>
-                <p>欢迎来到我的个人空间。这里将展示我的作品、分享我的思考，记录我的学习与成长历程。</p>
-                <a href="contact.html" class="cta-button">联系我</a>
-            </div>
-        </section>
+    <!-- 英雄区域 -->
+    <section class="hero">
+        <div class="container">
+            <h1>欢迎来到我的世界</h1>
+            <p>这里是记录我学习、思考和创作的地方，分享技术心得与生活感悟。</p>
+            <a href="./portfolio.html" class="cta-button">查看我的作品</a>
+        </div>
+    </section>
 
-        <!-- 作品预览 -->
-        <section style="background-color: #f9fafc; padding: 80px 0;">
-            <div class="container">
-                <div class="section-title">
-                    <h2>精选作品</h2>
-                    <p>我的网页设计、开发项目和其他创作</p>
-                </div>
-                <div class="portfolio-grid">
-                    <div class="portfolio-item">
-                        <div class="portfolio-img">
-                            <i class="fas fa-laptop-code"></i>
-                        </div>
-                        <div class="portfolio-content">
-                            <h3>项目一</h3>
-                            <p>这里将展示第一个项目介绍，包括项目目标、技术栈和实现的功能。</p>
-                        </div>
-                    </div>
-                    <div class="portfolio-item">
-                        <div class="portfolio-img">
-                            <i class="fas fa-mobile-alt"></i>
-                        </div>
-                        <div class="portfolio-content">
-                            <h3>项目二</h3>
-                            <p>这里将展示第二个项目介绍，包括项目目标、技术栈和实现的功能。</p>
-                        </div>
-                    </div>
-                    <div class="portfolio-item">
-                        <div class="portfolio-img">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                        <div class="portfolio-content">
-                            <h3>项目三</h3>
-                            <p>这里将展示第三个项目介绍，包括项目目标、技术栈和实现的功能。</p>
-                        </div>
-                    </div>
-                </div>
-                <div style="text-align: center; margin-top: 40px;">
-                    <a href="portfolio.html" class="cta-button">查看更多作品</a>
-                </div>
+    <!-- 最新博客 -->
+    <section class="latest-blog">
+        <div class="container">
+            <div class="section-title">
+                <h2>最新博客</h2>
+                <p>分享我的思考、学习心得和技术文章</p>
             </div>
-        </section>
-
-        <!-- 博客预览 -->
-        <section style="padding: 80px 0;">
-            <div class="container">
-                <div class="section-title">
-                    <h2>最新博客</h2>
-                    <p>分享我的思考、学习心得和技术文章</p>
-                </div>
-                <div class="blog-grid">
-                    <div class="blog-card">
-                        <div class="blog-date">2026年1月23日</div>
-                        <div class="blog-content">
-                            <h3>从零搭建个人网站</h3>
-                            <p>完整指南：GitHub Pages + 阿里云 FC + 域名配置，一步到位。</p>
-                            <a href="#" class="read-more">阅读更多 →</a>
-                        </div>
-                    </div>
-                    <div class="blog-card">
-                        <div class="blog-date">2026年1月20日</div>
-                        <div class="blog-content">
-                            <h3>阿里云 FC 实战</h3>
-                            <p>如何用函数计算搭建无服务器后端？详细教程。</p>
-                            <a href="#" class="read-more">阅读更多 →</a>
-                        </div>
-                    </div>
-                </div>
-                <div style="text-align: center; margin-top: 40px;">
-                    <a href="blog.html" class="cta-button">查看更多文章</a>
-                </div>
+            <div id="latest-blog-container">
+                <div class="loading-message">加载最新博客中...</div>
             </div>
-        </section>
-    </main>
+        </div>
+    </section>
 
-    <!-- 页脚（完整合规版本） -->
+    <!-- 精选作品 -->
+    <section class="featured-portfolio">
+        <div class="container">
+            <div class="section-title">
+                <h2>精选作品</h2>
+                <p>展示我的最佳项目和创作成果</p>
+            </div>
+            <div id="featured-portfolio-container">
+                <div class="loading-message">加载精选作品中...</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
     <footer>
         <div class="container">
             <div class="footer-content">
                 <div class="footer-about">
-                    <a href="index.html" class="footer-logo">zcfi<span>.</span>cn</a>
+                    <a href="./index.html" class="footer-logo">zcfi<span>.</span>cn</a>
                     <p>这是我的个人网站，用于展示作品、分享知识和记录成长。网站正在持续完善中，感谢您的访问。</p>
-                    <div class="social-links">
-                        <a href="https://github.com/yourusername" target="_blank"><i class="fab fa-github"></i></a>
-                        <a href="#"><i class="fab fa-weibo"></i></a>
-                        <a href="#"><i class="fab fa-zhihu"></i></a>
-                        <a href="#"><i class="fab fa-linkedin"></i></a>
-                    </div>
                 </div>
                 <div class="footer-links">
-                    <h3 class="footer-heading">快速链接</h3>
+                    <h3>快速链接</h3>
                     <ul>
-                        <li><a href="index.html">首页</a></li>
-                        <li><a href="about.html">关于我</a></li>
-                        <li><a href="portfolio.html">作品集</a></li>
-                        <li><a href="blog.html">博客</a></li>
-                        <li><a href="contact.html">联系我</a></li>
+                        <li><a href="./index.html">首页</a></li>
+                        <li><a href="./about.html">关于我</a></li>
+                        <li><a href="./portfolio.html">作品集</a></li>
+                        <li><a href="./blog.html">博客</a></li>
+                        <li><a href="./contact.html">联系我</a></li>
                     </ul>
                 </div>
                 <div class="footer-links">
-                    <h3 class="footer-heading">法律声明</h3>
+                    <h3>法律声明</h3>
                     <ul>
-                        <li><a href="privacy.html">隐私政策</a></li>
-                        <li><a href="terms.html">使用条款</a></li>
-                        <li><a href="copyright.html">版权声明</a></li>
-                        <li><a href="https://github.com/yourusername/zcfi" target="_blank">GitHub 仓库</a></li>
+                        <li><a href="./privacy.html">隐私政策</a></li>
+                        <li><a href="./terms.html">使用条款</a></li>
+                        <li><a href="./copyright.html">版权声明</a></li>
                     </ul>
                 </div>
             </div>
             
-            <!-- 合规声明区域 -->
             <div class="compliance">
                 <p>© 2026 zcfi.cn 版权所有</p>
-                <p>本网站仅为个人作品展示与知识分享平台，所有内容均为个人观点，不代表任何组织立场。</p>
                 <div class="compliance-links">
-                    <a href="privacy.html">隐私政策</a>
-                    <a href="terms.html">使用条款</a>
-                    <a href="copyright.html">版权声明</a>
-                    <a href="https://github.com/yourusername/zcfi" target="_blank">GitHub 仓库</a>
-                    <a href="#">网站地图</a>
+                    <a href="./privacy.html">隐私政策</a>
+                    <a href="./terms.html">使用条款</a>
+                    <a href="./copyright.html">版权声明</a>
+                    <a href="https://github.com/xiao305/zcfi" target="_blank">GitHub 仓库</a>
                 </div>
-                <p style="margin-top: 20px; font-size: 0.85rem;">
-                    ICP备案号：京ICP备XXXXXXXX号 | 公安备案号：京公网安备XXXXXXXXXXXX号
-                </p>
-                <p style="margin-top: 10px; font-size: 0.85rem; color: #aaa;">
-                    本网站源码托管于 GitHub，遵循开源精神，欢迎 Star 和 Fork。
-                </p>
             </div>
         </div>
     </footer>
 
-    <!-- JavaScript -->
-    <script src="assets/js/main.js"></script>
+    <script>
+        // 数据加载配置
+        const GIST_URL = 'https://gist.githubusercontent.com/xiao305/73cc78400c25eb9effed665e2c89843d/raw/blog.json';
+        const MAX_BLOG_POSTS = 3; // 首页显示的博客数量
+        const MAX_PORTFOLIO_ITEMS = 3; // 首页显示的作品数量
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            loadHomepageContent();
+        });
+        
+        async function loadHomepageContent() {
+            try {
+                // 添加时间戳防止缓存
+                const timestamp = new Date().getTime();
+                const response = await fetch(`${GIST_URL}?${timestamp}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                // 加载最新博客
+                loadLatestBlog(data.blog || []);
+                
+                // 加载精选作品
+                loadFeaturedPortfolio(data.portfolio || []);
+                
+            } catch (error) {
+                console.error('加载主页内容失败:', error);
+                
+                // 博客加载失败
+                document.getElementById('latest-blog-container').innerHTML = `
+                    <div class="error-message">
+                        <p>❌ 博客加载失败：${error.message}</p>
+                        <p>请稍后重试或访问 <a href="./blog.html">博客页面</a></p>
+                    </div>
+                `;
+                
+                // 作品集加载失败
+                document.getElementById('featured-portfolio-container').innerHTML = `
+                    <div class="error-message">
+                        <p>❌ 作品集加载失败：${error.message}</p>
+                        <p>请稍后重试或访问 <a href="./portfolio.html">作品集页面</a></p>
+                    </div>
+                `;
+            }
+        }
+        
+        function loadLatestBlog(blogPosts) {
+            const container = document.getElementById('latest-blog-container');
+            
+            // 过滤已发布的文章并按时间排序（最新在前）
+            const publishedPosts = blogPosts
+                .filter(post => post.status === 'published')
+                .slice(0, MAX_BLOG_POSTS);
+            
+            if (publishedPosts.length === 0) {
+                container.innerHTML = '<div class="loading-message">暂无博客文章</div>';
+                return;
+            }
+            
+            container.innerHTML = publishedPosts.map(post => `
+                <div class="blog-card">
+                    <div class="blog-date">${post.date}</div>
+                    <div class="blog-content">
+                        <h3>${post.title}</h3>
+                        <p>${post.excerpt}</p>
+                        <a href="${post.customUrl || `./blog/${post.id}.html`}" class="read-more">阅读更多 →</a>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function loadFeaturedPortfolio(portfolioItems) {
+            const container = document.getElementById('featured-portfolio-container');
+            
+            // 过滤已发布的项目，并优先显示标记为 featured 的项目
+            let publishedItems = portfolioItems.filter(item => item.status === 'published');
+            
+            // 按 featured 标记排序（有标记的在前）
+            publishedItems.sort((a, b) => {
+                const aFeatured = a.featured || false;
+                const bFeatured = b.featured || false;
+                return bFeatured - aFeatured; // true 在前
+            });
+            
+            // 取前 N 个项目
+            const featuredItems = publishedItems.slice(0, MAX_PORTFOLIO_ITEMS);
+            
+            if (featuredItems.length === 0) {
+                container.innerHTML = '<div class="loading-message">暂无作品展示</div>';
+                return;
+            }
+            
+            container.innerHTML = featuredItems.map(item => `
+                <div class="portfolio-card">
+                    ${item.image ? 
+                        `<img src="${item.image}" alt="${item.title}" class="portfolio-image" style="height: 200px; object-fit: cover;">` :
+                        `<div class="portfolio-image">暂无图片</div>`
+                    }
+                    <div class="portfolio-content">
+                        <h3>${item.title}</h3>
+                        ${item.tech && item.tech.length > 0 ? `
+                        <div class="portfolio-tech">
+                            ${item.tech.map(tech => `<span class="tech-tag">${tech}</span>`).join('')}
+                        </div>` : ''}
+                        <p>${item.description}</p>
+                        <div class="portfolio-actions">
+                            ${item.demoUrl ? `<a href="${item.demoUrl}" target="_blank" class="portfolio-btn btn-demo">演示</a>` : ''}
+                            ${item.githubUrl ? `<a href="${item.githubUrl}" target="_blank" class="portfolio-btn btn-github">GitHub</a>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+    </script>
 </body>
 </html>
