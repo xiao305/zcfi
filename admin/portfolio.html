@@ -16,8 +16,8 @@
     <!-- 排序库 -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
     
-    <!-- 后台公共CSS -->
-    <link rel="stylesheet" href="../assets/css/admin-common.css">
+    <!-- 修正的CSS路径 -->
+    <link rel="stylesheet" href="assets/css/admin-common.css">
     
     <!-- 作品集管理特定样式 -->
     <style>
@@ -28,6 +28,20 @@
             font-size: 13px;
             color: #6c757d;
             flex-wrap: wrap;
+        }
+        
+        .admin-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+        
+        .admin-card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #4a6fa5;
+            margin-bottom: 5px;
         }
         
         /* 首页展示管理特定样式 */
@@ -227,6 +241,11 @@
             .featured-remove {
                 align-self: flex-end;
                 margin-top: -30px;
+            }
+            
+            .admin-card-header {
+                flex-direction: column;
+                gap: 10px;
             }
         }
     </style>
