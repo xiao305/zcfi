@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>后台管理 - zcfi.cn</title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .form-group { margin: 15px 0; }
+        input, textarea { width: 100%; padding: 8px; margin: 5px 0; }
+        button { background: #4a6fa5; color: white; padding: 10px 20px; border: none; cursor: pointer; }
+        .instructions { background: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <h1>博客内容管理</h1>
+    
+    <div class="instructions">
+        <h3>操作说明：</h3>
+        <ol>
+            <li>访问 <a href="https://gist.github.com/xiao305/73cc78400c25eb9effed665e2c89843d" target="_blank">你的 Gist 页面</a></li>
+            <li>点击 "Edit" 按钮</li>
+            <li>修改 JSON 内容</li>
+            <li>点击 "Update secret gist"</li>
+            <li>刷新博客页面即可看到更新</li>
+        </ol>
+    </div>
+    
+    <h3>当前博客数据格式：</h3>
+    <pre>{
+  "id": "唯一标识符",
+  "title": "文章标题", 
+  "date": "日期",
+  "excerpt": "摘要",
+  "content": "完整内容"
+}</pre>
+    
+    <button onclick="window.open('https://gist.github.com/xiao305/73cc78400c25eb9effed665e2c89843d', '_blank')">
+        编辑博客内容
+    </button>
+</body>
+</html>
