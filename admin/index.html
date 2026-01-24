@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>管理后台登录 | zcfi.cn</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="../favicon/favicon.svg">
+    <link rel="icon" type="image/png" sizes="96x96" href="../favicon/favicon-96x96.png">
+    <link rel="icon" type="image/x-icon" href="../favicon/favicon.ico">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #4a6fa5 0%, #3a5a80 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .login-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+            text-align: center;
+        }
+        .logo {
+            font-size: 32px;
+            font-weight: 700;
+            color: #4a6fa5;
+            margin-bottom: 20px;
+            text-decoration: none;
+        }
+        .logo span {
+            color: #3a5a80;
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 24px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4a6fa5;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #4a6fa5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #3a5a80;
+        }
+        .history-section {
+            margin-top: 20px;
+            text-align: left;
+        }
+        .history-item {
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #e9ecef;
+        }
+        .history-item:hover {
+            background: #e9ecef;
+        }
+        .history-title {
+            font-weight: 500;
+            color: #4a6fa5;
+        }
+        .clear-history {
+            color: #dc3545;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .footer-note {
+            margin-top: 25px;
+            font-size: 12px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <a href="https://zcfi.cn" class="logo">zcfi<span>.</span>cn</a>
+        <h2><i class="fas fa-lock"></i> 管理后台登录</h2>
+        
+        <div class="form-group">
+            <label for="token"><i class="fas fa-key"></i> GitHub Personal Access Token</label>
+            <input type="password" id="token" placeholder="ghp_xxx..." autocomplete="off">
+        </div>
+        
+        <div class="form-group">
+            <label for="module"><i class="fas fa-layer-group"></i> 选择管理分区</label>
+            <select id="module">
+                <option value="blog">博客管理</option>
+                <option value="portfolio">作品集管理</option>
+                <option value="about">关于我</option>
+                <option value="contact">联系方式</option>
+            </select>
+        </div>
+        
+        <button onclick="login()">
+            <i class="fas fa-sign-in-alt"></i> 进入管理
+        </button>
+        
+        <div class="history-section" id="historySection" style="display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <strong>历史记录</strong>
+                <span class="clear-history" onclick="clearHistory()">清空</span>
+            </div>
+            <div id="historyList"></div>
+        </div>
+        
+        <div class="footer-note">
+            <p>🔒 Token 仅在本次会话中使用，关闭页面后自动清除</p>
+            <p>建议设置 Token 过期时间为 7 天以内</p>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载时读取历史记录
+        document.addEventListener('DOMContentLoaded', loadHistory);
+        
+        function login() {
+            const token = document.getElementById('token').value.trim();
+            const module = document.getElementById('module').value;
+            
+            if (!token) {
+                alert('请输入 GitHub Token');
+                return;
+            }
+            
+            if (!token.startsWith('ghp_')) {
+                alert('Token 应以 "ghp_" 开头');
+                return;
+            }
+            
+            // 生成安全的历史记录标识（不存完整 Token）
+            const now = new Date().toISOString();
+            const historyItem = {
+                id: btoa(token.substring(0, 12) + now), // 只取前12位编码
+                time: now,
+                display: `${token.substring(0, 12)}...`
+            };
+            
+            // 保存到 sessionStorage（临时会话）
+            sessionStorage.setItem('admin_token', token);
+            sessionStorage.setItem('admin_verified', 'true');
+            
+            // 保存历史记录到 localStorage（持久化但安全）
+            saveHistory(historyItem);
+            
+            // 跳转
+            window.location.href = `${module}.html`;
+        }
+        
+        function saveHistory(item) {
+            let history = JSON.parse(localStorage.getItem('admin_token_history') || '[]');
+            // 去重
+            history = history.filter(h => h.id !== item.id);
+            // 保留最近5条
+            history.unshift(item);
+            history = history.slice(0, 5);
+            localStorage.setItem('admin_token_history', JSON.stringify(history));
+            loadHistory(); // 刷新显示
+        }
+        
+        function loadHistory() {
+            const history = JSON.parse(localStorage.getItem('admin_token_history') || '[]');
+            const section = document.getElementById('historySection');
+            const list = document.getElementById('historyList');
+            
+            if (history.length > 0) {
+                section.style.display = 'block';
+                list.innerHTML = history.map(item => `
+                    <div class="history-item" onclick="useHistory('${item.id}')">
+                        <span class="history-title">${item.display}</span>
+                        <span>${new Date(item.time).toLocaleString()}</span>
+                    </div>
+                `).join('');
+            } else {
+                section.style.display = 'none';
+            }
+        }
+        
+        function useHistory(historyId) {
+            const history = JSON.parse(localStorage.getItem('admin_token_history') || '[]');
+            const item = history.find(h => h.id === historyId);
+            if (item) {
+                // 注意：这里不能还原完整 Token！
+                // 所以历史记录仅作提示，仍需用户手动输入完整 Token
+                alert('出于安全考虑，历史记录仅用于提示。\n请手动输入完整 Token 后点击“进入管理”。');
+                document.getElementById('token').value = '';
+            }
+        }
+        
+        function clearHistory() {
+            if (confirm('确定清空所有历史记录？')) {
+                localStorage.removeItem('admin_token_history');
+                loadHistory();
+            }
+        }
+    </script>
+</body>
+</html>
