@@ -13,200 +13,11 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- 后台公共CSS -->
+    <link rel="stylesheet" href="assets/css/admin-common.css">
+    
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #4a6fa5 0%, #3a5a80 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-        
-        .header {
-            background: white;
-            padding: 20px 30px;
-            border-bottom: 1px solid #eaeaea;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-        
-        .logo {
-            font-size: 24px;
-            font-weight: 700;
-            color: #4a6fa5;
-            text-decoration: none;
-        }
-        
-        .logo span {
-            color: #3a5a80;
-        }
-        
-        .nav-back {
-            background: #6c757d;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .nav-back:hover {
-            background: #5a6268;
-        }
-        
-        .header-title {
-            flex: 1;
-        }
-        
-        .header-title h1 {
-            font-size: 22px;
-            color: #333;
-            margin-bottom: 5px;
-        }
-        
-        .header-title p {
-            color: #666;
-            font-size: 14px;
-        }
-        
-        .main-content {
-            padding: 30px;
-        }
-        
-        .button-group {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-        
-        button {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 15px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .btn-primary {
-            background: #4a6fa5;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: #3a5a80;
-            transform: translateY(-2px);
-        }
-        
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-        
-        .btn-secondary:hover {
-            background: #5a6268;
-            transform: translateY(-2px);
-        }
-        
-        .btn-success {
-            background: #28a745;
-            color: white;
-        }
-        
-        .btn-success:hover {
-            background: #218838;
-            transform: translateY(-2px);
-        }
-        
-        .btn-warning {
-            background: #ffc107;
-            color: #212529;
-        }
-        
-        .btn-warning:hover {
-            background: #e0a800;
-            transform: translateY(-2px);
-        }
-        
-        .btn-danger {
-            background: #dc3545;
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            background: #c82333;
-            transform: translateY(-2px);
-        }
-        
-        .articles-section {
-            margin-top: 0;
-        }
-        
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #4a6fa5;
-        }
-        
-        .section-header h2 {
-            color: #333;
-            font-size: 20px;
-        }
-        
-        .article-card {
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 15px;
-            transition: all 0.3s ease;
-        }
-        
-        .article-card:hover {
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            border-color: #4a6fa5;
-        }
-        
-        .article-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 15px;
-        }
-        
-        .article-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #4a6fa5;
-            margin-bottom: 5px;
-        }
-        
+        /* 博客管理特定样式 */
         .article-meta {
             display: flex;
             gap: 15px;
@@ -215,150 +26,8 @@
             flex-wrap: wrap;
         }
         
-        .article-status {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        
-        .status-published {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .status-draft {
-            background: #fff3cd;
-            color: #856404;
-        }
-        
-        .article-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            flex-wrap: wrap;
-        }
-        
-        .action-btn {
-            padding: 6px 12px;
-            font-size: 13px;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #6c757d;
-        }
-        
-        .empty-state i {
-            font-size: 48px;
-            margin-bottom: 15px;
-            color: #dee2e6;
-        }
-        
-        .footer {
-            text-align: center;
-            padding: 20px;
-            color: #6c757d;
-            font-size: 14px;
-            border-top: 1px solid #e9ecef;
-            margin-top: 30px;
-        }
-        
-        /* 弹窗样式 - 统一使用代码4的风格 */
-        .custom-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-        
-        .custom-modal.show {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            max-width: 600px;
-            width: 90%;
-            text-align: center;
-            transform: scale(0.9);
-            transition: transform 0.3s ease;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        
-        .custom-modal.show .modal-content {
-            transform: scale(1);
-        }
-        
-        .modal-header {
-            margin-bottom: 20px;
-        }
-        
-        .modal-header i {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-        
-        .modal-success .modal-header i {
-            color: #28a745;
-        }
-        
-        .modal-error .modal-header i {
-            color: #dc3545;
-        }
-        
-        .modal-info .modal-header i {
-            color: #4a6fa5;
-        }
-        
-        .modal-title {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: #333;
-        }
-        
-        .modal-message {
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 25px;
-        }
-        
-        .modal-buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-        }
-        
-        .modal-btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-        }
-        
         /* 文章编辑弹窗特定样式 */
-        .modal-content.form-modal {
+        .form-modal .modal-content {
             max-width: 700px;
             text-align: left;
         }
@@ -367,128 +36,51 @@
             text-align: center;
         }
         
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        label i {
-            color: #4a6fa5;
-        }
-        
-        input, textarea, select {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #dee2e6;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            background: white;
-        }
-        
-        input:focus, textarea:focus, select:focus {
-            outline: none;
-            border-color: #4a6fa5;
-            box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.1);
-        }
-        
-        textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-        
-        .loading-spinner {
-            animation: spin 1s linear infinite;
-            font-size: 24px;
-            margin-bottom: 15px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
+        /* 移动端优化 */
         @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                text-align: center;
-                gap: 15px;
-            }
-            
-            .button-group,
-            .modal-buttons,
-            .article-actions {
-                flex-direction: column;
-            }
-            
-            .modal-buttons button,
-            .article-actions button {
-                width: 100%;
-                justify-content: center;
-            }
-            
-            .button-group button {
-                width: 100%;
-                justify-content: center;
-            }
-            
-            .article-header {
+            .admin-card-header {
                 flex-direction: column;
                 gap: 10px;
-            }
-            
-            .modal-content {
-                padding: 20px;
             }
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
+<body class="admin-body">
+    <div class="admin-container">
+        <div class="admin-header">
             <a href="index.html" class="nav-back">
                 <i class="fas fa-arrow-left"></i> 返回
             </a>
-            <a href="https://zcfi.cn" class="logo">zcfi<span>.</span>cn</a>
+            <a href="https://zcfi.cn" class="admin-logo">zcfi<span>.</span>cn</a>
             <div class="header-title">
                 <h1><i class="fas fa-blog"></i> 博客内容管理</h1>
                 <p>管理和维护您的博客文章</p>
             </div>
         </div>
         
-        <div class="main-content">
-            <div class="button-group">
-                <button class="btn-primary" id="addArticleBtn">
+        <div class="admin-main-content">
+            <div class="admin-button-group">
+                <button class="admin-btn btn-primary" id="addArticleBtn">
                     <i class="fas fa-plus"></i> 添加新文章
                 </button>
-                <button class="btn-secondary" id="refreshBtn">
+                <button class="admin-btn btn-secondary" id="refreshBtn">
                     <i class="fas fa-sync-alt"></i> 刷新文章列表
                 </button>
             </div>
             
-            <div class="articles-section">
+            <div class="admin-section">
                 <div class="section-header">
                     <h2><i class="fas fa-list"></i> 文章列表</h2>
                     <span id="articlesCount">加载中...</span>
                 </div>
                 <div id="articlesList">
-                    <div class="article-card">
+                    <div class="admin-card">
                         <p>正在加载文章列表...</p>
                     </div>
                 </div>
             </div>
             
-            <div class="footer">
+            <div class="admin-footer">
                 <p>© 2026 zcfi.cn 博客管理系统</p>
             </div>
         </div>
@@ -1005,7 +597,7 @@
                     // 页面加载时失败，显示在列表区域
                     document.getElementById('articlesCount').textContent = '加载失败';
                     document.getElementById('articlesList').innerHTML = `
-                        <div class="article-card">
+                        <div class="admin-card">
                             <p style="color: #dc3545;">❌ 加载失败: ${error.message}</p>
                             <p>请检查网络连接和Token权限，然后点击刷新按钮重试</p>
                         </div>
@@ -1022,7 +614,7 @@
             
             let maxNum = 0;
             data.forEach(post => {
-                if (post.id.startsWith('post')) {
+                if (post.id && post.id.startsWith('post')) {
                     const num = parseInt(post.id.replace('post', ''));
                     if (!isNaN(num) && num > maxNum) {
                         maxNum = num;
@@ -1051,10 +643,10 @@
             }
             
             container.innerHTML = data.map(post => `
-                <div class="article-card" data-post-id="${post.id}">
-                    <div class="article-header">
+                <div class="admin-card" data-post-id="${post.id}">
+                    <div class="admin-card-header">
                         <div>
-                            <div class="article-title">${escapeHtml(post.title)}</div>
+                            <div class="admin-card-title">${escapeHtml(post.title)}</div>
                             <div class="article-meta">
                                 <span><i class="fas fa-hashtag"></i> ID: ${escapeHtml(post.id)}</span>
                                 <span><i class="fas fa-calendar"></i> ${escapeHtml(post.date)}</span>
@@ -1068,18 +660,18 @@
                         </div>
                     </div>
                     <p>${escapeHtml(post.excerpt.substring(0, 150))}${post.excerpt.length > 150 ? '...' : ''}</p>
-                    <div class="article-actions">
-                        <button class="btn-primary action-btn edit-btn" data-post-id="${post.id}">
+                    <div class="action-buttons">
+                        <button class="admin-btn btn-primary action-btn edit-btn" data-post-id="${post.id}">
                             <i class="fas fa-edit"></i> 编辑
                         </button>
                         ${post.status === 'published' ? 
-                            `<button class="btn-warning action-btn toggle-status-btn" data-post-id="${post.id}" data-current-status="${post.status}">
+                            `<button class="admin-btn btn-warning action-btn toggle-status-btn" data-post-id="${post.id}" data-current-status="${post.status}">
                                 <i class="fas fa-eye-slash"></i> 下架
                             </button>` : 
-                            `<button class="btn-success action-btn toggle-status-btn" data-post-id="${post.id}" data-current-status="${post.status}">
+                            `<button class="admin-btn btn-success action-btn toggle-status-btn" data-post-id="${post.id}" data-current-status="${post.status}">
                                 <i class="fas fa-eye"></i> 上架
                             </button>`}
-                        <button class="btn-danger action-btn delete-btn" data-post-id="${post.id}">
+                        <button class="admin-btn btn-danger action-btn delete-btn" data-post-id="${post.id}">
                             <i class="fas fa-trash"></i> 删除
                         </button>
                     </div>
