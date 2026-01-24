@@ -28,7 +28,7 @@
         }
         
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
             background: white;
             border-radius: 15px;
@@ -131,6 +131,36 @@
             transform: translateY(-2px);
         }
         
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background: #e0a800;
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+        
         .articles-section {
             margin-top: 0;
         }
@@ -182,13 +212,15 @@
             gap: 15px;
             font-size: 13px;
             color: #6c757d;
+            flex-wrap: wrap;
         }
         
         .article-status {
-            padding: 4px 8px;
-            border-radius: 12px;
+            padding: 4px 12px;
+            border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
+            text-transform: uppercase;
         }
         
         .status-published {
@@ -205,12 +237,28 @@
             display: flex;
             gap: 10px;
             margin-top: 15px;
+            flex-wrap: wrap;
         }
         
         .action-btn {
             padding: 6px 12px;
             font-size: 13px;
             border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #dee2e6;
         }
         
         .footer {
@@ -222,8 +270,8 @@
             margin-top: 30px;
         }
         
-        /* 弹窗样式 */
-        .modal {
+        /* 弹窗样式 - 统一使用代码4的风格 */
+        .custom-modal {
             position: fixed;
             top: 0;
             left: 0;
@@ -239,55 +287,84 @@
             transition: all 0.3s ease;
         }
         
-        .modal.show {
+        .custom-modal.show {
             opacity: 1;
             visibility: visible;
         }
         
         .modal-content {
             background: white;
+            padding: 30px;
             border-radius: 15px;
             max-width: 600px;
             width: 90%;
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
             max-height: 90vh;
             overflow-y: auto;
-            position: relative;
+        }
+        
+        .custom-modal.show .modal-content {
+            transform: scale(1);
         }
         
         .modal-header {
-            padding: 20px 20px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #eaeaea;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header i {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .modal-success .modal-header i {
+            color: #28a745;
+        }
+        
+        .modal-error .modal-header i {
+            color: #dc3545;
+        }
+        
+        .modal-info .modal-header i {
+            color: #4a6fa5;
         }
         
         .modal-title {
             font-size: 20px;
             font-weight: 600;
+            margin-bottom: 15px;
             color: #333;
         }
         
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #6c757d;
-            padding: 0;
-            width: 30px;
-            height: 30px;
+        .modal-message {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+        
+        .modal-buttons {
             display: flex;
-            align-items: center;
+            gap: 15px;
             justify-content: center;
         }
         
-        .modal-close:hover {
-            color: #dc3545;
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
         }
         
-        .modal-body {
-            padding: 20px;
+        /* 文章编辑弹窗特定样式 */
+        .modal-content.form-modal {
+            max-width: 700px;
+            text-align: left;
+        }
+        
+        .form-modal .modal-header {
+            text-align: center;
         }
         
         .form-group {
@@ -330,39 +407,48 @@
             resize: vertical;
         }
         
-        .modal-footer {
-            padding: 0 20px 20px;
-            display: flex;
-            gap: 12px;
-            justify-content: flex-end;
-        }
-        
-        .loading-modal {
-            text-align: center;
-            padding: 30px;
-        }
-        
         .loading-spinner {
+            animation: spin 1s linear infinite;
             font-size: 24px;
             margin-bottom: 15px;
-            color: #4a6fa5;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         
         @media (max-width: 768px) {
             .header {
                 flex-direction: column;
                 text-align: center;
+                gap: 15px;
             }
             
             .button-group,
-            .modal-footer {
+            .modal-buttons,
+            .article-actions {
                 flex-direction: column;
             }
             
-            button,
-            .modal-footer button {
+            .modal-buttons button,
+            .article-actions button {
                 width: 100%;
                 justify-content: center;
+            }
+            
+            .button-group button {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .article-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .modal-content {
+                padding: 20px;
             }
         }
     </style>
@@ -382,22 +468,22 @@
         
         <div class="main-content">
             <div class="button-group">
-                <button class="btn-primary" onclick="openAddModal()">
+                <button class="btn-primary" id="addArticleBtn">
                     <i class="fas fa-plus"></i> 添加新文章
                 </button>
-                <button class="btn-secondary" onclick="loadBlogData()">
+                <button class="btn-secondary" id="refreshBtn">
                     <i class="fas fa-sync-alt"></i> 刷新文章列表
                 </button>
             </div>
             
             <div class="articles-section">
                 <div class="section-header">
-                    <h2><i class="fas fa-list"></i> 已发布文章列表</h2>
+                    <h2><i class="fas fa-list"></i> 文章列表</h2>
                     <span id="articlesCount">加载中...</span>
                 </div>
                 <div id="articlesList">
                     <div class="article-card">
-                        <p>点击"刷新文章列表"加载现有文章</p>
+                        <p>正在加载文章列表...</p>
                     </div>
                 </div>
             </div>
@@ -409,11 +495,10 @@
     </div>
 
     <!-- 添加/编辑文章弹窗 -->
-    <div class="modal" id="articleModal">
-        <div class="modal-content">
+    <div class="custom-modal" id="articleModal">
+        <div class="modal-content form-modal">
             <div class="modal-header">
                 <div class="modal-title" id="modalTitle">添加新文章</div>
-                <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
             <div class="modal-body">
                 <input type="hidden" id="editPostId">
@@ -455,77 +540,109 @@
                     <textarea id="content" placeholder="请输入完整的文章内容，可以包含 HTML 标签"></textarea>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn-secondary" onclick="closeModal()">取消</button>
-                <button class="btn-primary" id="saveArticleBtn" onclick="saveArticle()">保存文章</button>
+            <div class="modal-buttons">
+                <button class="modal-btn btn-secondary" id="cancelArticleBtn">取消</button>
+                <button class="modal-btn btn-primary" id="saveArticleBtn">保存文章</button>
             </div>
         </div>
     </div>
 
-    <!-- 操作确认弹窗 -->
-    <div class="modal" id="confirmModal">
+    <!-- 确认弹窗 -->
+    <div class="custom-modal" id="confirmModal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title" id="confirmTitle">确认操作</div>
-                <button class="modal-close" onclick="closeConfirmModal()">&times;</button>
+                <i class="fas fa-question-circle"></i>
             </div>
-            <div class="modal-body">
-                <p id="confirmMessage">您确定要执行此操作吗？</p>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-secondary" onclick="closeConfirmModal()">取消</button>
-                <button class="btn-primary" id="confirmActionBtn" onclick="executeConfirmedAction()">确认</button>
+            <div class="modal-title" id="confirmTitle">确认操作</div>
+            <div class="modal-message" id="confirmMessage">您确定要执行此操作吗？</div>
+            <div class="modal-buttons">
+                <button class="modal-btn btn-secondary" id="cancelConfirmBtn">取消</button>
+                <button class="modal-btn btn-primary" id="confirmActionBtn">确认</button>
             </div>
         </div>
     </div>
 
     <!-- 加载弹窗 -->
-    <div class="modal" id="loadingModal">
+    <div class="custom-modal" id="loadingModal">
         <div class="modal-content">
-            <div class="loading-modal">
-                <div class="loading-spinner">
-                    <i class="fas fa-spinner fa-spin"></i>
-                </div>
-                <p id="loadingMessage">正在处理中...</p>
+            <div class="modal-header">
+                <i class="fas fa-spinner loading-spinner"></i>
             </div>
+            <div class="modal-title" id="loadingTitle">处理中</div>
+            <div class="modal-message" id="loadingMessage">正在处理您的请求，请稍候...</div>
         </div>
     </div>
 
-    <!-- 操作结果弹窗 -->
-    <div class="modal" id="resultModal">
+    <!-- 结果弹窗 -->
+    <div class="custom-modal" id="resultModal">
         <div class="modal-content">
-            <div class="modal-body" style="text-align: center; padding: 40px 20px;">
-                <div id="resultIcon" style="font-size: 48px; margin-bottom: 20px;"></div>
-                <h3 id="resultTitle" style="margin-bottom: 15px; color: #333;"></h3>
-                <p id="resultMessage" style="color: #666; margin-bottom: 25px;"></p>
-                <button class="btn-primary" onclick="closeResultModal()" style="width: 120px;">好的</button>
+            <div class="modal-header">
+                <i class="fas fa-info-circle" id="resultIcon"></i>
+            </div>
+            <div class="modal-title" id="resultTitle">操作结果</div>
+            <div class="modal-message" id="resultMessage">操作已完成</div>
+            <div class="modal-buttons">
+                <button class="modal-btn btn-primary" id="closeResultBtn">确定</button>
             </div>
         </div>
     </div>
 
     <script>
-        // 全局变量
-        let currentBlogData = [];
-        let pendingAction = null;
-        
         // 安全验证
         if (!sessionStorage.getItem('admin_verified') || !sessionStorage.getItem('admin_token')) {
             alert('❌ 未授权访问！请通过后台首页登录。');
             window.location.href = 'index.html';
         }
         
+        // 全局配置
         const GIST_ID = '73cc78400c25eb9effed665e2c89843d';
         const GIST_URL = `https://api.github.com/gists/${GIST_ID}`;
         const token = sessionStorage.getItem('admin_token');
         
-        window.addEventListener('beforeunload', () => {
-            sessionStorage.removeItem('admin_token');
-            sessionStorage.removeItem('admin_verified');
-        });
+        // 全局状态
+        let currentBlogData = [];
+        let pendingAction = null;
+        let pendingActionData = null;
         
+        // 页面加载时初始化
         document.addEventListener('DOMContentLoaded', function() {
+            initEventListeners();
             loadBlogData();
         });
+        
+        // 初始化所有事件监听器
+        function initEventListeners() {
+            // 主按钮
+            document.getElementById('addArticleBtn').addEventListener('click', openAddModal);
+            document.getElementById('refreshBtn').addEventListener('click', loadBlogData);
+            
+            // 文章弹窗按钮
+            document.getElementById('cancelArticleBtn').addEventListener('click', closeArticleModal);
+            document.getElementById('saveArticleBtn').addEventListener('click', saveArticle);
+            
+            // 确认弹窗按钮
+            document.getElementById('cancelConfirmBtn').addEventListener('click', closeConfirmModal);
+            document.getElementById('confirmActionBtn').addEventListener('click', executeConfirmedAction);
+            
+            // 结果弹窗按钮
+            document.getElementById('closeResultBtn').addEventListener('click', closeResultModal);
+            
+            // 监听ESC键关闭弹窗
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeAllModals();
+                }
+            });
+            
+            // 点击背景关闭弹窗
+            document.querySelectorAll('.custom-modal').forEach(modal => {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeAllModals();
+                    }
+                });
+            });
+        }
         
         // 弹窗控制函数
         function openAddModal() {
@@ -542,17 +659,18 @@
             document.getElementById('content').value = '';
             document.getElementById('status').value = 'published';
             
-            // 建议下一个 ID
+            // 建议下一个ID
             suggestNextPostId(currentBlogData);
             
-            document.getElementById('articleModal').classList.add('show');
+            // 显示弹窗
+            showModal('articleModal');
         }
         
         function openEditModal(postId) {
             // 找到对应的文章数据
             const post = currentBlogData.find(p => p.id === postId);
             if (!post) {
-                showResultModal(false, '错误', '未找到指定文章');
+                showResult('error', '错误', '未找到指定文章');
                 return;
             }
             
@@ -568,65 +686,88 @@
             document.getElementById('content').value = post.content;
             document.getElementById('status').value = post.status || 'published';
             
-            document.getElementById('articleModal').classList.add('show');
+            showModal('articleModal');
         }
         
-        function closeModal() {
-            document.getElementById('articleModal').classList.remove('show');
+        function closeArticleModal() {
+            hideModal('articleModal');
         }
         
-        // 操作确认弹窗
-        function showConfirmModal(title, message, action) {
+        // 确认弹窗
+        function showConfirm(title, message, action, data = null) {
             pendingAction = action;
+            pendingActionData = data;
             document.getElementById('confirmTitle').textContent = title;
             document.getElementById('confirmMessage').textContent = message;
-            document.getElementById('confirmModal').classList.add('show');
+            showModal('confirmModal');
         }
         
         function closeConfirmModal() {
-            document.getElementById('confirmModal').classList.remove('show');
+            hideModal('confirmModal');
             pendingAction = null;
+            pendingActionData = null;
         }
         
         function executeConfirmedAction() {
             if (pendingAction) {
-                pendingAction();
+                pendingAction(pendingActionData);
                 closeConfirmModal();
             }
         }
         
         // 加载弹窗
-        function showLoadingModal(message) {
-            document.getElementById('loadingMessage').textContent = message || '正在处理中...';
-            document.getElementById('loadingModal').classList.add('show');
+        function showLoading(message = '正在处理中...') {
+            document.getElementById('loadingMessage').textContent = message;
+            showModal('loadingModal');
         }
         
-        function hideLoadingModal() {
-            document.getElementById('loadingModal').classList.remove('show');
+        function hideLoading() {
+            hideModal('loadingModal');
         }
         
         // 结果弹窗
-        function showResultModal(success, title, message) {
+        function showResult(type, title, message) {
             const icon = document.getElementById('resultIcon');
-            const titleEl = document.getElementById('resultTitle');
-            const messageEl = document.getElementById('resultMessage');
             
-            if (success) {
-                icon.innerHTML = '<i class="fas fa-check-circle" style="color: #28a745;"></i>';
+            // 设置图标和样式
+            if (type === 'success') {
+                icon.className = 'fas fa-check-circle';
+                icon.style.color = '#28a745';
+            } else if (type === 'error') {
+                icon.className = 'fas fa-exclamation-circle';
+                icon.style.color = '#dc3545';
             } else {
-                icon.innerHTML = '<i class="fas fa-exclamation-circle" style="color: #dc3545;"></i>';
+                icon.className = 'fas fa-info-circle';
+                icon.style.color = '#4a6fa5';
             }
             
-            titleEl.textContent = title;
-            messageEl.textContent = message;
-            document.getElementById('resultModal').classList.add('show');
+            document.getElementById('resultTitle').textContent = title;
+            document.getElementById('resultMessage').textContent = message;
+            showModal('resultModal');
         }
         
         function closeResultModal() {
-            document.getElementById('resultModal').classList.remove('show');
+            hideModal('resultModal');
         }
         
-        // 数据操作函数
+        // 通用弹窗控制
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('show');
+        }
+        
+        function hideModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+        
+        function closeAllModals() {
+            document.querySelectorAll('.custom-modal.show').forEach(modal => {
+                modal.classList.remove('show');
+            });
+            pendingAction = null;
+            pendingActionData = null;
+        }
+        
+        // 文章操作函数
         async function saveArticle() {
             const editPostId = document.getElementById('editPostId').value;
             const postId = document.getElementById('postId').value.trim();
@@ -637,14 +778,16 @@
             const excerpt = document.getElementById('excerpt').value.trim();
             const content = document.getElementById('content').value.trim();
             
+            // 验证必填字段
             if (!postId || !title || !date || !excerpt || !content) {
-                showResultModal(false, '输入错误', '请填写所有必填字段');
+                showResult('error', '输入错误', '请填写所有必填字段');
                 return;
             }
             
             try {
-                showLoadingModal(editPostId ? '正在更新文章...' : '正在保存文章...');
+                showLoading(editPostId ? '正在更新文章...' : '正在保存文章...');
                 
+                // 获取当前数据
                 const currentData = await fetchCurrentData();
                 
                 if (!editPostId) {
@@ -671,7 +814,7 @@
                         throw new Error('未找到指定文章');
                     }
                     
-                    // 检查 ID 是否被其他文章使用
+                    // 检查ID是否被其他文章使用
                     const otherPost = currentData.find(post => post.id === postId && post.id !== editPostId);
                     if (otherPost) {
                         throw new Error('文章 ID 已被其他文章使用');
@@ -688,21 +831,26 @@
                     };
                 }
                 
+                // 更新Gist
                 await updateGistData(currentData);
-                hideLoadingModal();
-                showResultModal(true, '操作成功', editPostId ? '文章更新成功！' : '文章保存成功！');
-                closeModal();
+                
+                hideLoading();
+                showResult('success', '操作成功', editPostId ? '文章更新成功！' : '文章保存成功！');
+                closeArticleModal();
                 loadBlogData();
                 
             } catch (error) {
-                hideLoadingModal();
-                showResultModal(false, '操作失败', error.message);
+                hideLoading();
+                showResult('error', '操作失败', error.message);
             }
         }
         
-        async function toggleArticleStatus(postId, newStatus) {
+        async function toggleArticleStatus(postId, currentStatus) {
+            const newStatus = currentStatus === 'published' ? 'draft' : 'published';
+            const actionText = newStatus === 'published' ? '上架' : '下架';
+            
             try {
-                showLoadingModal('正在更新状态...');
+                showLoading('正在更新状态...');
                 const currentData = await fetchCurrentData();
                 const postIndex = currentData.findIndex(post => post.id === postId);
                 
@@ -712,19 +860,20 @@
                 
                 currentData[postIndex].status = newStatus;
                 await updateGistData(currentData);
-                hideLoadingModal();
-                showResultModal(true, '操作成功', `文章状态已更新为 ${newStatus === 'published' ? '已发布' : '草稿'}`);
+                
+                hideLoading();
+                showResult('success', '操作成功', `文章已${actionText}`);
                 loadBlogData();
                 
             } catch (error) {
-                hideLoadingModal();
-                showResultModal(false, '操作失败', error.message);
+                hideLoading();
+                showResult('error', '操作失败', error.message);
             }
         }
         
         async function deleteArticle(postId) {
             try {
-                showLoadingModal('正在删除文章...');
+                showLoading('正在删除文章...');
                 const currentData = await fetchCurrentData();
                 const filteredData = currentData.filter(post => post.id !== postId);
                 
@@ -733,17 +882,18 @@
                 }
                 
                 await updateGistData(filteredData);
-                hideLoadingModal();
-                showResultModal(true, '操作成功', '文章删除成功！');
+                
+                hideLoading();
+                showResult('success', '操作成功', '文章删除成功！');
                 loadBlogData();
                 
             } catch (error) {
-                hideLoadingModal();
-                showResultModal(false, '操作失败', error.message);
+                hideLoading();
+                showResult('error', '操作失败', error.message);
             }
         }
         
-        // 数据获取和更新
+        // 数据操作函数
         async function fetchCurrentData() {
             const response = await fetch(GIST_URL, {
                 headers: {
@@ -759,6 +909,7 @@
             const gist = await response.json();
             const data = JSON.parse(gist.files['blog.json'].content);
             
+            // 兼容两种数据格式
             let blogData;
             if (Array.isArray(data)) {
                 blogData = data;
@@ -809,6 +960,7 @@
                 document.getElementById('articlesList').innerHTML = `
                     <div class="article-card">
                         <p style="color: #dc3545;">❌ 加载失败: ${error.message}</p>
+                        <p>请检查网络连接和Token权限，然后点击刷新按钮重试</p>
                     </div>
                 `;
             }
@@ -840,20 +992,25 @@
             countElement.textContent = `${data.length} 篇文章`;
             
             if (data.length === 0) {
-                container.innerHTML = '<div class="article-card"><p>暂无文章</p></div>';
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-file-alt"></i>
+                        <h3>暂无文章</h3>
+                        <p>点击"添加新文章"按钮开始创建第一篇博客文章</p>
+                    </div>
+                `;
                 return;
             }
             
-            // 使用 dataset 存储 postId，避免 JSON.stringify 问题
             container.innerHTML = data.map(post => `
-                <div class="article-card">
+                <div class="article-card" data-post-id="${post.id}">
                     <div class="article-header">
                         <div>
-                            <div class="article-title">${post.title}</div>
+                            <div class="article-title">${escapeHtml(post.title)}</div>
                             <div class="article-meta">
-                                <span>ID: ${post.id}</span>
-                                <span>${post.date}</span>
-                                ${post.customUrl ? `<span>自定义URL: ${post.customUrl}</span>` : ''}
+                                <span><i class="fas fa-hashtag"></i> ID: ${escapeHtml(post.id)}</span>
+                                <span><i class="fas fa-calendar"></i> ${escapeHtml(post.date)}</span>
+                                ${post.customUrl ? `<span><i class="fas fa-link"></i> ${escapeHtml(post.customUrl)}</span>` : ''}
                             </div>
                         </div>
                         <div>
@@ -862,25 +1019,79 @@
                             </span>
                         </div>
                     </div>
-                    <p>${post.excerpt}</p>
+                    <p>${escapeHtml(post.excerpt.substring(0, 150))}${post.excerpt.length > 150 ? '...' : ''}</p>
                     <div class="article-actions">
-                        <button class="btn-primary action-btn" onclick="openEditModal('${post.id}')">
-                            <i class="fas fa-edit"></i> 修改
+                        <button class="btn-primary action-btn edit-btn" data-post-id="${post.id}">
+                            <i class="fas fa-edit"></i> 编辑
                         </button>
                         ${post.status === 'published' ? 
-                            `<button class="btn-warning action-btn" onclick="showConfirmModal('下架文章', '确定要将文章 "${post.title}" 下架吗？', () => toggleArticleStatus('${post.id}', 'draft'))">
+                            `<button class="btn-warning action-btn toggle-status-btn" data-post-id="${post.id}" data-current-status="${post.status}">
                                 <i class="fas fa-eye-slash"></i> 下架
                             </button>` : 
-                            `<button class="btn-success action-btn" onclick="showConfirmModal('上架文章', '确定要将文章 "${post.title}" 上架吗？', () => toggleArticleStatus('${post.id}', 'published'))">
+                            `<button class="btn-success action-btn toggle-status-btn" data-post-id="${post.id}" data-current-status="${post.status}">
                                 <i class="fas fa-eye"></i> 上架
                             </button>`}
-                        <button class="btn-danger action-btn" onclick="showConfirmModal('删除文章', '确定要删除文章 "${post.title}" 吗？此操作不可恢复！', () => deleteArticle('${post.id}'))">
+                        <button class="btn-danger action-btn delete-btn" data-post-id="${post.id}">
                             <i class="fas fa-trash"></i> 删除
                         </button>
                     </div>
                 </div>
             `).join('');
+            
+            // 为动态生成的按钮添加事件监听器
+            attachArticleEventListeners();
         }
+        
+        function attachArticleEventListeners() {
+            // 编辑按钮
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const postId = this.getAttribute('data-post-id');
+                    openEditModal(postId);
+                });
+            });
+            
+            // 状态切换按钮
+            document.querySelectorAll('.toggle-status-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const postId = this.getAttribute('data-post-id');
+                    const currentStatus = this.getAttribute('data-current-status');
+                    const actionText = currentStatus === 'published' ? '下架' : '上架';
+                    
+                    showConfirm(
+                        `${actionText}文章`,
+                        `确定要将文章 ${postId} ${actionText}吗？`,
+                        () => toggleArticleStatus(postId, currentStatus)
+                    );
+                });
+            });
+            
+            // 删除按钮
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const postId = this.getAttribute('data-post-id');
+                    
+                    showConfirm(
+                        '删除文章',
+                        `确定要删除文章 ${postId} 吗？此操作不可恢复！`,
+                        () => deleteArticle(postId)
+                    );
+                });
+            });
+        }
+        
+        // 辅助函数
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // 页面卸载时清除敏感信息
+        window.addEventListener('beforeunload', () => {
+            sessionStorage.removeItem('admin_token');
+            sessionStorage.removeItem('admin_verified');
+        });
     </script>
 </body>
 </html>
