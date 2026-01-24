@@ -476,12 +476,11 @@
             try {
                 showStatus('正在获取当前数据...', 'info');
                 
-                // 获取当前完整数据
-                const fullData = await fetchCurrentFullData();
-                const currentBlogData = fullData.blog || [];
+                // 获取当前数据（兼容数组格式）
+                const currentData = await fetchCurrentData();
                 
                 // 检查 ID 是否重复
-                if (currentBlogData.some(post => post.id === postId)) {
+                if (currentData.some(post => post.id === postId)) {
                     showStatus('文章 ID 已存在，请使用不同的 ID', 'error');
                     return;
                 }
@@ -497,11 +496,10 @@
                     content: content
                 };
                 
-                currentBlogData.unshift(newPost);
-                fullData.blog = currentBlogData;
+                currentData.unshift(newPost);
                 
-                // 更新 Gist
-                await updateGistData(fullData);
+                // 更新 Gist（保持数组格式）
+                await updateGistData(currentData);
                 
                 showStatus('✅ 文章添加成功！', 'success');
                 clearForm();
@@ -515,17 +513,15 @@
         
         async function updateArticleStatus(postId, newStatus) {
             try {
-                const fullData = await fetchCurrentFullData();
-                const blogData = fullData.blog || [];
-                const postIndex = blogData.findIndex(post => post.id === postId);
+                const currentData = await fetchCurrentData();
+                const postIndex = currentData.findIndex(post => post.id === postId);
                 
                 if (postIndex === -1) {
                     throw new Error('未找到指定文章');
                 }
                 
-                blogData[postIndex].status = newStatus;
-                fullData.blog = blogData;
-                await updateGistData(fullData);
+                currentData[postIndex].status = newStatus;
+                await updateGistData(currentData);
                 return true;
             } catch (error) {
                 console.error('更新状态失败:', error);
@@ -535,16 +531,14 @@
         
         async function deleteArticle(postId) {
             try {
-                const fullData = await fetchCurrentFullData();
-                const blogData = fullData.blog || [];
-                const filteredData = blogData.filter(post => post.id !== postId);
+                const currentData = await fetchCurrentData();
+                const filteredData = currentData.filter(post => post.id !== postId);
                 
-                if (filteredData.length === blogData.length) {
+                if (filteredData.length === currentData.length) {
                     throw new Error('未找到指定文章');
                 }
                 
-                fullData.blog = filteredData;
-                await updateGistData(fullData);
+                await updateGistData(filteredData);
                 return true;
             } catch (error) {
                 console.error('删除文章失败:', error);
@@ -552,7 +546,7 @@
             }
         }
         
-        async function fetchCurrentFullData() {
+        async function fetchCurrentData() {
             const response = await fetch(GIST_URL, {
                 headers: {
                     'Authorization': `token ${token}`,
@@ -567,35 +561,29 @@
             const gist = await response.json();
             const data = JSON.parse(gist.files['blog.json'].content);
             
-            // 确保数据格式正确
+            // 兼容两种格式：数组格式和对象格式
+            let blogData;
             if (Array.isArray(data)) {
-                // 旧格式，转换为新格式
-                return {
-                    blog: data.map(post => ({
-                        ...post,
-                        status: post.status || 'published',
-                        customUrl: post.customUrl || ''
-                    })),
-                    portfolio: [],
-                    about: {},
-                    messages: []
-                };
+                // 旧格式：直接是博客数组
+                blogData = data;
+            } else if (data && typeof data === 'object' && Array.isArray(data.blog)) {
+                // 新格式：包含 blog 字段的对象
+                blogData = data.blog;
             } else {
-                // 新格式，确保字段存在
-                return {
-                    blog: (data.blog || []).map(post => ({
-                        ...post,
-                        status: post.status || 'published',
-                        customUrl: post.customUrl || ''
-                    })),
-                    portfolio: data.portfolio || [],
-                    about: data.about || {},
-                    messages: data.messages || []
-                };
+                // 无效格式
+                throw new Error('数据格式无效');
             }
+            
+            // 确保每篇文章都有 status 字段
+            return blogData.map(post => ({
+                ...post,
+                status: post.status || 'published',
+                customUrl: post.customUrl || ''
+            }));
         }
         
-        async function updateGistData(fullData) {
+        async function updateGistData(newData) {
+            // 保持原有的数组格式（因为你的 Gist 是数组格式）
             const updateResponse = await fetch(GIST_URL, {
                 method: 'PATCH',
                 headers: {
@@ -606,7 +594,7 @@
                 body: JSON.stringify({
                     files: {
                         'blog.json': {
-                            content: JSON.stringify(fullData, null, 2)
+                            content: JSON.stringify(newData, null, 2)
                         }
                     }
                 })
@@ -620,12 +608,12 @@
         async function loadBlogData() {
             try {
                 showStatus('正在加载文章列表...', 'info');
-                const fullData = await fetchCurrentFullData();
-                currentBlogData = fullData.blog || [];
+                const data = await fetchCurrentData();
+                currentBlogData = data;
                 
-                displayArticlesList(currentBlogData);
-                suggestNextPostId(currentBlogData);
-                showStatus(`✅ 成功加载 ${currentBlogData.length} 篇文章`, 'success');
+                displayArticlesList(data);
+                suggestNextPostId(data);
+                showStatus(`✅ 成功加载 ${data.length} 篇文章`, 'success');
                 
             } catch (error) {
                 console.error('加载文章失败:', error);
