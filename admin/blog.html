@@ -429,444 +429,6 @@
                 
                 <div class="form-group">
                     <label for="date"><i class="fas fa-calendar"></i> 发布日期:</label>
-                    <input type="text" id="非常好的优化建议！我来为你创建一个**现代化弹窗式后台管理界面**。
-
----
-
-## ✅ 优化后的 `admin/blog.html`
-
-```html
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>博客管理 | zcfi.cn</title>
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="../favicon/favicon.svg">
-    <link rel="icon" type="image/png" sizes="96x96" href="../favicon/favicon-96x96.png">
-    <link rel="icon" type="image/x-icon" href="../favicon/favicon.ico">
-    
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #4a6fa5 0%, #3a5a80 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-        
-        .header {
-            background: white;
-            padding: 20px 30px;
-            border-bottom: 1px solid #eaeaea;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-        
-        .logo {
-            font-size: 24px;
-            font-weight: 700;
-            color: #4a6fa5;
-            text-decoration: none;
-        }
-        
-        .logo span {
-            color: #3a5a80;
-        }
-        
-        .nav-back {
-            background: #6c757d;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .nav-back:hover {
-            background: #5a6268;
-        }
-        
-        .header-title {
-            flex: 1;
-        }
-        
-        .header-title h1 {
-            font-size: 22px;
-            color: #333;
-            margin-bottom: 5px;
-        }
-        
-        .header-title p {
-            color: #666;
-            font-size: 14px;
-        }
-        
-        .main-content {
-            padding: 30px;
-        }
-        
-        .button-group {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-        
-        button {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 15px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .btn-primary {
-            background: #4a6fa5;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: #3a5a80;
-            transform: translateY(-2px);
-        }
-        
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-        
-        .btn-secondary:hover {
-            background: #5a6268;
-            transform: translateY(-2px);
-        }
-        
-        .articles-section {
-            margin-top: 0;
-        }
-        
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #4a6fa5;
-        }
-        
-        .section-header h2 {
-            color: #333;
-            font-size: 20px;
-        }
-        
-        .article-card {
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 15px;
-            transition: all 0.3s ease;
-        }
-        
-        .article-card:hover {
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            border-color: #4a6fa5;
-        }
-        
-        .article-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 15px;
-        }
-        
-        .article-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #4a6fa5;
-            margin-bottom: 5px;
-        }
-        
-        .article-meta {
-            display: flex;
-            gap: 15px;
-            font-size: 13px;
-            color: #6c757d;
-        }
-        
-        .article-status {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        
-        .status-published {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .status-draft {
-            background: #fff3cd;
-            color: #856404;
-        }
-        
-        .article-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        .action-btn {
-            padding: 6px 12px;
-            font-size: 13px;
-            border-radius: 6px;
-        }
-        
-        .footer {
-            text-align: center;
-            padding: 20px;
-            color: #6c757d;
-            font-size: 14px;
-            border-top: 1px solid #e9ecef;
-            margin-top: 30px;
-        }
-        
-        /* 弹窗样式 */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-        
-        .modal.show {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        .modal-content {
-            background: white;
-            border-radius: 15px;
-            max-width: 600px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-            position: relative;
-        }
-        
-        .modal-header {
-            padding: 20px 20px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #eaeaea;
-        }
-        
-        .modal-title {
-            font-size: 20px;
-            font-weight: 600;
-            color: #333;
-        }
-        
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #6c757d;
-            padding: 0;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .modal-close:hover {
-            color: #dc3545;
-        }
-        
-        .modal-body {
-            padding: 20px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        label i {
-            color: #4a6fa5;
-        }
-        
-        input, textarea, select {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #dee2e6;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            background: white;
-        }
-        
-        input:focus, textarea:focus, select:focus {
-            outline: none;
-            border-color: #4a6fa5;
-            box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.1);
-        }
-        
-        textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-        
-        .modal-footer {
-            padding: 0 20px 20px;
-            display: flex;
-            gap: 12px;
-            justify-content: flex-end;
-        }
-        
-        .loading-modal {
-            text-align: center;
-            padding: 30px;
-        }
-        
-        .loading-spinner {
-            font-size: 24px;
-            margin-bottom: 15px;
-            color: #4a6fa5;
-        }
-        
-        @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                text-align: center;
-            }
-            
-            .button-group,
-            .modal-footer {
-                flex-direction: column;
-            }
-            
-            button,
-            .modal-footer button {
-                width: 100%;
-                justify-content: center;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <a href="index.html" class="nav-back">
-                <i class="fas fa-arrow-left"></i> 返回
-            </a>
-            <a href="https://zcfi.cn" class="logo">zcfi<span>.</span>cn</a>
-            <div class="header-title">
-                <h1><i class="fas fa-blog"></i> 博客内容管理</h1>
-                <p>管理和维护您的博客文章</p>
-            </div>
-        </div>
-        
-        <div class="main-content">
-            <div class="button-group">
-                <button class="btn-primary" onclick="openAddModal()">
-                    <i class="fas fa-plus"></i> 添加新文章
-                </button>
-                <button class="btn-secondary" onclick="loadBlogData()">
-                    <i class="fas fa-sync-alt"></i> 刷新文章列表
-                </button>
-            </div>
-            
-            <div class="articles-section">
-                <div class="section-header">
-                    <h2><i class="fas fa-list"></i> 已发布文章列表</h2>
-                    <span id="articlesCount">加载中...</span>
-                </div>
-                <div id="articlesList">
-                    <div class="article-card">
-                        <p>点击"刷新文章列表"加载现有文章</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="footer">
-                <p>© 2026 zcfi.cn 博客管理系统</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- 添加/编辑文章弹窗 -->
-    <div class="modal" id="articleModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title" id="modalTitle">添加新文章</div>
-                <button class="modal-close" onclick="closeModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="editPostId">
-                <div class="form-group">
-                    <label for="postId"><i class="fas fa-hashtag"></i> 文章 ID:</label>
-                    <input type="text" id="postId" placeholder="例如: post3" readonly>
-                </div>
-                
-                <div class="form-group">
-                    <label for="title"><i class="fas fa-heading"></i> 文章标题:</label>
-                    <input type="text" id="title" placeholder="请输入文章标题">
-                </div>
-                
-                <div class="form-group">
-                    <label for="date"><i class="fas fa-calendar"></i> 发布日期:</label>
                     <input type="text" id="date" placeholder="例如: 2026年1月25日">
                 </div>
                 
@@ -942,6 +504,10 @@
     </div>
 
     <script>
+        // 全局变量
+        let currentBlogData = [];
+        let pendingAction = null;
+        
         // 安全验证
         if (!sessionStorage.getItem('admin_verified') || !sessionStorage.getItem('admin_token')) {
             alert('❌ 未授权访问！请通过后台首页登录。');
@@ -950,7 +516,6 @@
         
         const GIST_ID = '73cc78400c25eb9effed665e2c89843d';
         const GIST_URL = `https://api.github.com/gists/${GIST_ID}`;
-        let currentBlogData = [];
         const token = sessionStorage.getItem('admin_token');
         
         window.addEventListener('beforeunload', () => {
@@ -967,7 +532,6 @@
             document.getElementById('modalTitle').textContent = '添加新文章';
             document.getElementById('editPostId').value = '';
             document.getElementById('saveArticleBtn').textContent = '保存文章';
-            document.getElementById('saveArticleBtn').onclick = saveArticle;
             
             // 清空表单
             document.getElementById('postId').value = '';
@@ -984,11 +548,17 @@
             document.getElementById('articleModal').classList.add('show');
         }
         
-        function openEditModal(post) {
+        function openEditModal(postId) {
+            // 找到对应的文章数据
+            const post = currentBlogData.find(p => p.id === postId);
+            if (!post) {
+                showResultModal(false, '错误', '未找到指定文章');
+                return;
+            }
+            
             document.getElementById('modalTitle').textContent = '编辑文章';
             document.getElementById('editPostId').value = post.id;
             document.getElementById('saveArticleBtn').textContent = '保存修改';
-            document.getElementById('saveArticleBtn').onclick = saveArticle;
             
             document.getElementById('postId').value = post.id;
             document.getElementById('title').value = post.title;
@@ -1006,8 +576,8 @@
         }
         
         // 操作确认弹窗
-        function showConfirmModal(title, message, actionCallback) {
-            window.currentAction = actionCallback;
+        function showConfirmModal(title, message, action) {
+            pendingAction = action;
             document.getElementById('confirmTitle').textContent = title;
             document.getElementById('confirmMessage').textContent = message;
             document.getElementById('confirmModal').classList.add('show');
@@ -1015,12 +585,12 @@
         
         function closeConfirmModal() {
             document.getElementById('confirmModal').classList.remove('show');
-            window.currentAction = null;
+            pendingAction = null;
         }
         
         function executeConfirmedAction() {
-            if (window.currentAction) {
-                window.currentAction();
+            if (pendingAction) {
+                pendingAction();
                 closeConfirmModal();
             }
         }
@@ -1274,6 +844,7 @@
                 return;
             }
             
+            // 使用 dataset 存储 postId，避免 JSON.stringify 问题
             container.innerHTML = data.map(post => `
                 <div class="article-card">
                     <div class="article-header">
@@ -1293,7 +864,7 @@
                     </div>
                     <p>${post.excerpt}</p>
                     <div class="article-actions">
-                        <button class="btn-primary action-btn" onclick="openEditModal(${JSON.stringify(post)})">
+                        <button class="btn-primary action-btn" onclick="openEditModal('${post.id}')">
                             <i class="fas fa-edit"></i> 修改
                         </button>
                         ${post.status === 'published' ? 
