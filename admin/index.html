@@ -13,22 +13,11 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- 后台公共CSS -->
+    <link rel="stylesheet" href="assets/css/admin-common.css">
+    
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #4a6fa5 0%, #3a5a80 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        
+        /* 登录页面特定样式 */
         .login-container {
             background: white;
             border-radius: 20px;
@@ -39,7 +28,7 @@
             text-align: center;
         }
         
-        .logo {
+        .login-logo {
             font-size: 36px;
             font-weight: 700;
             color: #4a6fa5;
@@ -48,11 +37,11 @@
             display: inline-block;
         }
         
-        .logo span {
-            color: #28a745; /* 绿色点 */
+        .login-logo span {
+            color: #28a745;
         }
         
-        h2 {
+        .login-title {
             color: #333;
             margin-bottom: 25px;
             font-size: 24px;
@@ -125,7 +114,7 @@
             font-size: 16px;
         }
         
-        .enter-btn {
+        .login-btn {
             width: 100%;
             padding: 16px;
             background: #4a6fa5;
@@ -139,108 +128,15 @@
             margin-top: 25px;
         }
         
-        .enter-btn:hover {
+        .login-btn:hover {
             background: #3a5a80;
             transform: translateY(-2px);
         }
         
-        .enter-btn:disabled {
+        .login-btn:disabled {
             background: #6c757d;
             cursor: not-allowed;
             transform: none;
-        }
-        
-        .custom-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-        
-        .custom-modal.show {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            max-width: 500px;
-            width: 90%;
-            text-align: center;
-            transform: scale(0.9);
-            transition: transform 0.3s ease;
-        }
-        
-        .custom-modal.show .modal-content {
-            transform: scale(1);
-        }
-        
-        .modal-header {
-            margin-bottom: 20px;
-        }
-        
-        .modal-header i {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-        
-        .modal-success .modal-header i {
-            color: #28a745;
-        }
-        
-        .modal-error .modal-header i {
-            color: #dc3545;
-        }
-        
-        .modal-info .modal-header i {
-            color: #17a2b8;
-        }
-        
-        .modal-title {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 15px;
-        }
-        
-        .modal-message {
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 25px;
-        }
-        
-        .modal-buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-        }
-        
-        .modal-btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-        }
-        
-        .btn-primary {
-            background: #4a6fa5;
-            color: white;
-        }
-        
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
         }
         
         .history-section {
@@ -281,56 +177,58 @@
         }
     </style>
 </head>
-<body>
-    <div class="login-container">
-        <a href="https://zcfi.cn" class="logo">zcfi<span>.</span>cn</a>
-        <h2><i class="fas fa-lock"></i> 管理后台登录</h2>
-        
-        <div class="token-input">
-            <input type="password" id="token" placeholder="请输入 GitHub Personal Access Token (ghp_xxx...)" autocomplete="off">
-        </div>
-        
-        <div class="modules-grid">
-            <div class="module-card" data-module="blog">
-                <div class="module-icon">
-                    <i class="fas fa-blog"></i>
+<body class="admin-body">
+    <div class="admin-container" style="max-width: 600px;">
+        <div class="login-container">
+            <a href="https://zcfi.cn" class="login-logo">zcfi<span>.</span>cn</a>
+            <h2 class="login-title"><i class="fas fa-lock"></i> 管理后台登录</h2>
+            
+            <div class="token-input">
+                <input type="password" id="token" placeholder="请输入 GitHub Personal Access Token (ghp_xxx...)" autocomplete="off">
+            </div>
+            
+            <div class="modules-grid">
+                <div class="module-card" data-module="blog">
+                    <div class="module-icon">
+                        <i class="fas fa-blog"></i>
+                    </div>
+                    <div class="module-title">博客管理</div>
                 </div>
-                <div class="module-title">博客管理</div>
-            </div>
-            <div class="module-card" data-module="portfolio">
-                <div class="module-icon">
-                    <i class="fas fa-briefcase"></i>
+                <div class="module-card" data-module="portfolio">
+                    <div class="module-icon">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    <div class="module-title">作品集管理</div>
                 </div>
-                <div class="module-title">作品集管理</div>
-            </div>
-            <div class="module-card" data-module="about">
-                <div class="module-icon">
-                    <i class="fas fa-user"></i>
+                <div class="module-card" data-module="about">
+                    <div class="module-icon">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="module-title">关于我</div>
                 </div>
-                <div class="module-title">关于我</div>
-            </div>
-            <div class="module-card" data-module="contact">
-                <div class="module-icon">
-                    <i class="fas fa-envelope"></i>
+                <div class="module-card" data-module="contact">
+                    <div class="module-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="module-title">联系方式</div>
                 </div>
-                <div class="module-title">联系方式</div>
             </div>
-        </div>
-        
-        <button class="enter-btn" id="enterBtn" disabled>
-            <i class="fas fa-sign-in-alt"></i> 进入管理
-        </button>
-        
-        <div class="history-section" id="historySection" style="display:none;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <strong>历史记录</strong>
-                <span class="clear-history" onclick="clearHistory()">清空</span>
+            
+            <button class="login-btn" id="enterBtn" disabled>
+                <i class="fas fa-sign-in-alt"></i> 进入管理
+            </button>
+            
+            <div class="history-section" id="historySection" style="display:none;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <strong>历史记录</strong>
+                    <span class="clear-history" onclick="clearHistory()">清空</span>
+                </div>
+                <div id="historyList"></div>
             </div>
-            <div id="historyList"></div>
         </div>
     </div>
-    
-    <!-- 自定义弹窗 -->
+
+    <!-- 使用公共弹窗样式 -->
     <div class="custom-modal" id="customModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -347,8 +245,8 @@
 
     <script>
         let selectedModule = null;
-        const GIST_ID = '73cc78400c25eb9effed665e2c89843d';
-        const GIST_URL = `https://api.github.com/gists/${GIST_ID}`;
+        const BLOG_GIST_ID = '73cc78400c25eb9effed665e2c89843d';
+        const GIST_URL = `https://api.github.com/gists/${BLOG_GIST_ID}`;
         
         // 页面加载
         document.addEventListener('DOMContentLoaded', () => {
@@ -492,7 +390,7 @@
         }
         
         function closeModal() {
-            document.getElementById('customModal').className = 'custom-modal';
+            document.getElementById('customModal').classList.remove('show');
         }
         
         // 历史记录功能
