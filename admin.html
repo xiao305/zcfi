@@ -10,6 +10,9 @@
     <link rel="icon" type="image/png" sizes="96x96" href="./favicon/favicon-96x96.png">
     <link rel="icon" type="image/x-icon" href="./favicon/favicon.ico">
     
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         * {
             margin: 0;
@@ -19,39 +22,65 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4a6fa5 0%, #3a5a80 100%);
             min-height: 100vh;
             padding: 20px;
         }
         
         .container {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
             background: white;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
             overflow: hidden;
         }
         
         .header {
-            background: #4a6fa5;
-            color: white;
-            padding: 30px;
-            text-align: center;
+            background: white;
+            padding: 25px 30px;
+            border-bottom: 1px solid #eaeaea;
+            display: flex;
+            align-items: center;
+            gap: 20px;
         }
         
-        .header h1 {
-            font-size: 2.2rem;
-            margin-bottom: 10px;
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: #4a6fa5;
+            text-decoration: none;
         }
         
-        .header p {
-            opacity: 0.9;
-            font-size: 1.1rem;
+        .logo span {
+            color: #3a5a80;
+        }
+        
+        .header-title {
+            flex: 1;
+        }
+        
+        .header-title h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .header-title p {
+            color: #666;
+            font-size: 14px;
         }
         
         .main-content {
             padding: 30px;
+        }
+        
+        .token-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border: 1px solid #e9ecef;
         }
         
         .form-group {
@@ -64,30 +93,39 @@
             font-weight: 600;
             color: #333;
             font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        label i {
+            color: #4a6fa5;
         }
         
         input, textarea, select {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #e1e5e9;
+            padding: 12px 15px;
+            border: 2px solid #dee2e6;
             border-radius: 8px;
             font-size: 14px;
-            transition: border-color 0.3s ease;
+            transition: all 0.3s ease;
+            background: white;
         }
         
         input:focus, textarea:focus, select:focus {
             outline: none;
             border-color: #4a6fa5;
+            box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.1);
         }
         
         textarea {
-            min-height: 120px;
+            min-height: 100px;
             resize: vertical;
         }
         
         .button-group {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             margin-top: 20px;
             flex-wrap: wrap;
         }
@@ -97,11 +135,12 @@
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
             transition: all 0.3s ease;
-            flex: 1;
-            min-width: 120px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .btn-primary {
@@ -124,11 +163,44 @@
             transform: translateY(-2px);
         }
         
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background: #e0a800;
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+        
         .status-message {
             padding: 15px;
             border-radius: 8px;
             margin: 20px 0;
             font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .status-success {
@@ -149,26 +221,112 @@
             border: 1px solid #bee5eb;
         }
         
-        .security-note {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            padding: 20px;
-            border-radius: 8px;
+        .articles-section {
             margin-top: 30px;
         }
         
-        .security-note h3 {
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4a6fa5;
+        }
+        
+        .section-header h2 {
+            color: #333;
+            font-size: 20px;
+        }
+        
+        .article-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .article-card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-color: #4a6fa5;
+        }
+        
+        .article-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+        
+        .article-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #4a6fa5;
+            margin-bottom: 5px;
+        }
+        
+        .article-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 13px;
+            color: #6c757d;
+        }
+        
+        .article-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-published {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-draft {
+            background: #fff3cd;
             color: #856404;
+        }
+        
+        .article-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            font-size: 13px;
+            border-radius: 6px;
+        }
+        
+        .security-note {
+            background: #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+            font-size: 14px;
+        }
+        
+        .security-note h3 {
+            color: #495057;
             margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .security-note ul {
             padding-left: 20px;
+            margin-top: 10px;
         }
         
         .security-note li {
             margin-bottom: 8px;
-            color: #856404;
+            line-height: 1.5;
         }
         
         .footer {
@@ -179,66 +337,127 @@
             border-top: 1px solid #e9ecef;
             margin-top: 30px;
         }
+        
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .article-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .article-actions {
+                flex-wrap: wrap;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>📝 博客内容管理后台</h1>
-            <p>zcfi.cn - 个人网站博客管理系统</p>
+            <a href="https://zcfi.cn" class="logo">zcfi<span>.</span>cn</a>
+            <div class="header-title">
+                <h1><i class="fas fa-blog"></i> 博客内容管理后台</h1>
+                <p>管理和维护您的个人网站博客内容</p>
+            </div>
         </div>
         
         <div class="main-content">
-            <div class="form-group">
-                <label for="token">GitHub Personal Access Token:</label>
-                <input type="password" id="token" placeholder="请输入你的 GitHub Token (ghp_xxx)">
+            <div class="token-section">
+                <div class="form-group">
+                    <label for="token"><i class="fas fa-key"></i> GitHub Personal Access Token:</label>
+                    <input type="password" id="token" placeholder="请输入您的 GitHub Token (ghp_xxx)">
+                </div>
             </div>
             
-            <div class="form-group">
-                <label for="postId">文章 ID:</label>
-                <input type="text" id="postId" placeholder="例如: post3">
+            <div class="form-section">
+                <div class="form-group">
+                    <label for="postId"><i class="fas fa-hashtag"></i> 文章 ID (自动建议):</label>
+                    <input type="text" id="postId" placeholder="例如: post3" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label for="title"><i class="fas fa-heading"></i> 文章标题:</label>
+                    <input type="text" id="title" placeholder="请输入文章标题">
+                </div>
+                
+                <div class="form-group">
+                    <label for="date"><i class="fas fa-calendar"></i> 发布日期:</label>
+                    <input type="text" id="date" placeholder="例如: 2026年1月25日">
+                </div>
+                
+                <div class="form-group">
+                    <label for="customUrl"><i class="fas fa-link"></i> 自定义网址 (可选):</label>
+                    <input type="text" id="customUrl" placeholder="例如: /blog/my-article.html (留空使用默认)">
+                </div>
+                
+                <div class="form-group">
+                    <label for="status"><i class="fas fa-toggle-on"></i> 文章状态:</label>
+                    <select id="status">
+                        <option value="published">已发布 (展示中)</option>
+                        <option value="draft">草稿 (隐藏)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="excerpt"><i class="fas fa-align-left"></i> 文章摘要:</label>
+                    <textarea id="excerpt" placeholder="请输入文章摘要（简短描述）"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="content"><i class="fas fa-file-alt"></i> 完整内容 (支持 HTML):</label>
+                    <textarea id="content" placeholder="请输入完整的文章内容，可以包含 HTML 标签"></textarea>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn-primary" onclick="addBlogPost()">
+                        <i class="fas fa-plus"></i> 添加新文章
+                    </button>
+                    <button class="btn-secondary" onclick="loadBlogData()">
+                        <i class="fas fa-sync-alt"></i> 刷新文章列表
+                    </button>
+                </div>
+                
+                <div id="statusMessage"></div>
             </div>
             
-            <div class="form-group">
-                <label for="title">标题:</label>
-                <input type="text" id="title" placeholder="文章标题">
+            <div class="articles-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-list"></i> 已发布文章列表</h2>
+                    <span id="articlesCount">加载中...</span>
+                </div>
+                <div id="articlesList">
+                    <div class="article-card">
+                        <p>点击"刷新文章列表"加载现有文章</p>
+                    </div>
+                </div>
             </div>
-            
-            <div class="form-group">
-                <label for="date">日期:</label>
-                <input type="text" id="date" placeholder="例如: 2026年1月25日">
-            </div>
-            
-            <div class="form-group">
-                <label for="excerpt">摘要:</label>
-                <textarea id="excerpt" placeholder="文章摘要"></textarea>
-            </div>
-            
-            <div class="form-group">
-                <label for="content">完整内容 (HTML):</label>
-                <textarea id="content" placeholder="完整的文章内容，支持 HTML 标签"></textarea>
-            </div>
-            
-            <div class="button-group">
-                <button class="btn-primary" onclick="addBlogPost()">添加新文章</button>
-                <button class="btn-secondary" onclick="loadCurrentData()">加载当前数据</button>
-            </div>
-            
-            <div id="statusMessage"></div>
             
             <div class="security-note">
-                <h3>🔒 安全说明</h3>
+                <h3><i class="fas fa-shield-alt"></i> 安全使用说明</h3>
                 <ul>
-                    <li><strong>Token 不会保存</strong>：关闭页面后 Token 自动清除</li>
-                    <li><strong>仅本地使用</strong>：Token 只在你浏览器中处理，不会上传到任何服务器</li>
-                    <li><strong>使用后请删除</strong>：建议操作完成后立即在 GitHub 删除此 Token</li>
-                    <li><strong>不要分享页面</strong>：此页面包含敏感操作，请勿公开分享</li>
+                    <li><strong>Token 仅本地使用</strong>：您的 Token 只在浏览器中处理，不会发送到任何服务器</li>
+                    <li><strong>使用后请删除</strong>：操作完成后建议立即在 GitHub 删除此 Token</li>
+                    <li><strong>设置过期时间</strong>：创建 Token 时建议设置 7-30 天过期时间</li>
+                    <li><strong>不要分享此页面</strong>：此管理页面包含敏感操作，请勿公开访问</li>
                 </ul>
             </div>
             
             <div class="footer">
-                <p>© 2026 zcfi.cn 博客管理系统</p>
-                <p>基于 GitHub Gist，完全免费</p>
+                <p>© 2026 zcfi.cn 博客管理系统 | 基于 GitHub Gist</p>
+                <p>所有操作均在本地完成，确保数据安全</p>
             </div>
         </div>
     </div>
@@ -246,121 +465,295 @@
     <script>
         const GIST_ID = '73cc78400c25eb9effed665e2c89843d';
         const GIST_URL = `https://api.github.com/gists/${GIST_ID}`;
+        let currentBlogData = [];
+        
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBlogData();
+        });
         
         async function addBlogPost() {
             const token = document.getElementById('token').value;
             const postId = document.getElementById('postId').value.trim();
             const title = document.getElementById('title').value.trim();
             const date = document.getElementById('date').value.trim();
+            const customUrl = document.getElementById('customUrl').value.trim();
+            const status = document.getElementById('status').value;
             const excerpt = document.getElementById('excerpt').value.trim();
             const content = document.getElementById('content').value.trim();
             
             if (!token || !postId || !title || !date || !excerpt || !content) {
-                showStatus('请填写所有字段', 'error');
+                showStatus('请填写所有必填字段', 'error');
                 return;
             }
             
             try {
                 showStatus('正在获取当前数据...', 'info');
                 
-                // 获取当前 Gist 数据
-                const response = await fetch(GIST_URL, {
-                    headers: {
-                        'Authorization': `token ${token}`,
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`获取失败: ${response.status} ${response.statusText}`);
-                }
-                
-                const gist = await response.json();
-                const currentContent = JSON.parse(gist.files['blog.json'].content);
+                // 获取当前数据
+                const currentData = await fetchCurrentData(token);
                 
                 // 检查 ID 是否重复
-                if (currentContent.some(post => post.id === postId)) {
+                if (currentData.some(post => post.id === postId)) {
                     showStatus('文章 ID 已存在，请使用不同的 ID', 'error');
                     return;
                 }
                 
-                // 添加新文章
-                const newPost = { id: postId, title, date, excerpt, content };
-                currentContent.unshift(newPost);
+                // 创建新文章
+                const newPost = {
+                    id: postId,
+                    title: title,
+                    date: date,
+                    customUrl: customUrl || '', // 空字符串表示使用默认
+                    status: status,
+                    excerpt: excerpt,
+                    content: content
+                };
+                
+                currentData.unshift(newPost);
                 
                 // 更新 Gist
-                showStatus('正在更新 Gist...', 'info');
-                const updateResponse = await fetch(GIST_URL, {
-                    method: 'PATCH',
-                    headers: {
-                        'Authorization': `token ${token}`,
-                        'Accept': 'application/vnd.github.v3+json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        files: {
-                            'blog.json': {
-                                content: JSON.stringify(currentContent, null, 2)
-                            }
-                        }
-                    })
-                });
+                await updateGistData(token, currentData);
                 
-                if (!updateResponse.ok) {
-                    throw new Error(`更新失败: ${updateResponse.status} ${updateResponse.statusText}`);
-                }
-                
-                showStatus('✅ 文章添加成功！刷新博客页面查看效果', 'success');
+                showStatus('✅ 文章添加成功！', 'success');
                 clearForm();
+                loadBlogData(); // 刷新列表
                 
             } catch (error) {
-                console.error('Error:', error);
-                showStatus(`❌ 操作失败: ${error.message}`, 'error');
+                console.error('添加文章失败:', error);
+                showStatus(`❌ 添加失败: ${error.message}`, 'error');
             }
         }
         
-        async function loadCurrentData() {
+        async function updateArticleStatus(token, postId, newStatus) {
+            try {
+                const currentData = await fetchCurrentData(token);
+                const postIndex = currentData.findIndex(post => post.id === postId);
+                
+                if (postIndex === -1) {
+                    throw new Error('未找到指定文章');
+                }
+                
+                currentData[postIndex].status = newStatus;
+                await updateGistData(token, currentData);
+                
+                return true;
+            } catch (error) {
+                console.error('更新状态失败:', error);
+                throw error;
+            }
+        }
+        
+        async function deleteArticle(token, postId) {
+            try {
+                const currentData = await fetchCurrentData(token);
+                const filteredData = currentData.filter(post => post.id !== postId);
+                
+                if (filteredData.length === currentData.length) {
+                    throw new Error('未找到指定文章');
+                }
+                
+                await updateGistData(token, filteredData);
+                return true;
+            } catch (error) {
+                console.error('删除文章失败:', error);
+                throw error;
+            }
+        }
+        
+        async function fetchCurrentData(token) {
+            const response = await fetch(GIST_URL, {
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`获取数据失败: ${response.status} ${response.statusText}`);
+            }
+            
+            const gist = await response.json();
+            const data = JSON.parse(gist.files['blog.json'].content);
+            
+            // 确保每篇文章都有 status 字段（向后兼容）
+            return data.map(post => ({
+                ...post,
+                status: post.status || 'published',
+                customUrl: post.customUrl || ''
+            }));
+        }
+        
+        async function updateGistData(token, newData) {
+            const updateResponse = await fetch(GIST_URL, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    files: {
+                        'blog.json': {
+                            content: JSON.stringify(newData, null, 2)
+                        }
+                    }
+                })
+            });
+            
+            if (!updateResponse.ok) {
+                throw new Error(`更新失败: ${updateResponse.status} ${updateResponse.statusText}`);
+            }
+        }
+        
+        async function loadBlogData() {
             const token = document.getElementById('token').value;
             if (!token) {
-                showStatus('请输入 Token', 'error');
+                // 如果没有 token，至少显示提示
+                document.getElementById('articlesCount').textContent = '请先输入 Token';
                 return;
             }
             
             try {
-                showStatus('正在加载数据...', 'info');
-                const response = await fetch(GIST_URL, {
-                    headers: {
-                        'Authorization': `token ${token}`,
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
-                });
+                showStatus('正在加载文章列表...', 'info');
+                const data = await fetchCurrentData(token);
+                currentBlogData = data;
                 
-                if (!response.ok) {
-                    throw new Error(`加载失败: ${response.status} ${response.statusText}`);
-                }
-                
-                const gist = await response.json();
-                const currentContent = JSON.parse(gist.files['blog.json'].content);
-                console.log('当前博客数据:', currentContent);
-                showStatus(`✅ 成功加载 ${currentContent.length} 篇文章`, 'success');
+                displayArticlesList(data);
+                suggestNextPostId(data);
+                showStatus(`✅ 成功加载 ${data.length} 篇文章`, 'success');
                 
             } catch (error) {
+                console.error('加载文章失败:', error);
+                document.getElementById('articlesCount').textContent = '加载失败';
                 showStatus(`❌ 加载失败: ${error.message}`, 'error');
+            }
+        }
+        
+        function suggestNextPostId(data) {
+            if (data.length === 0) {
+                document.getElementById('postId').value = 'post1';
+                return;
+            }
+            
+            // 找出最大的 post 数字
+            let maxNum = 0;
+            data.forEach(post => {
+                if (post.id.startsWith('post')) {
+                    const num = parseInt(post.id.replace('post', ''));
+                    if (!isNaN(num) && num > maxNum) {
+                        maxNum = num;
+                    }
+                }
+            });
+            
+            document.getElementById('postId').value = `post${maxNum + 1}`;
+        }
+        
+        function displayArticlesList(data) {
+            const container = document.getElementById('articlesList');
+            const countElement = document.getElementById('articlesCount');
+            
+            countElement.textContent = `${data.length} 篇文章`;
+            
+            if (data.length === 0) {
+                container.innerHTML = '<div class="article-card"><p>暂无文章</p></div>';
+                return;
+            }
+            
+            container.innerHTML = data.map(post => `
+                <div class="article-card">
+                    <div class="article-header">
+                        <div>
+                            <div class="article-title">${post.title}</div>
+                            <div class="article-meta">
+                                <span>ID: ${post.id}</span>
+                                <span>${post.date}</span>
+                                ${post.customUrl ? `<span>自定义URL: ${post.customUrl}</span>` : ''}
+                            </div>
+                        </div>
+                        <div>
+                            <span class="article-status status-${post.status}">
+                                ${post.status === 'published' ? '已发布' : '草稿'}
+                            </span>
+                        </div>
+                    </div>
+                    <p>${post.excerpt}</p>
+                    <div class="article-actions">
+                        ${post.status === 'published' ? 
+                            `<button class="btn-warning action-btn" onclick="toggleArticleStatus('${post.id}', 'draft')">
+                                <i class="fas fa-eye-slash"></i> 下架
+                            </button>` : 
+                            `<button class="btn-success action-btn" onclick="toggleArticleStatus('${post.id}', 'published')">
+                                <i class="fas fa-eye"></i> 上架
+                            </button>`}
+                        <button class="btn-danger action-btn" onclick="deleteArticleConfirm('${post.id}')">
+                            <i class="fas fa-trash"></i> 删除
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        async function toggleArticleStatus(postId, newStatus) {
+            const token = document.getElementById('token').value;
+            if (!token) {
+                showStatus('请先输入 Token', 'error');
+                return;
+            }
+            
+            try {
+                await updateArticleStatus(token, postId, newStatus);
+                showStatus(`✅ 文章状态已更新为 ${newStatus === 'published' ? '已发布' : '草稿'}`, 'success');
+                loadBlogData();
+            } catch (error) {
+                showStatus(`❌ 状态更新失败: ${error.message}`, 'error');
+            }
+        }
+        
+        async function deleteArticleConfirm(postId) {
+            if (!confirm(`确定要删除文章 "${postId}" 吗？此操作不可恢复！`)) {
+                return;
+            }
+            
+            const token = document.getElementById('token').value;
+            if (!token) {
+                showStatus('请先输入 Token', 'error');
+                return;
+            }
+            
+            try {
+                await deleteArticle(token, postId);
+                showStatus('✅ 文章删除成功！', 'success');
+                loadBlogData();
+            } catch (error) {
+                showStatus(`❌ 删除失败: ${error.message}`, 'error');
             }
         }
         
         function showStatus(message, type) {
             const statusDiv = document.getElementById('statusMessage');
             statusDiv.className = `status-message status-${type}`;
-            statusDiv.textContent = message;
+            statusDiv.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                ${message}
+            `;
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusDiv.innerHTML = '';
+                    statusDiv.className = '';
+                }, 5000);
+            }
         }
         
         function clearForm() {
-            document.getElementById('postId').value = '';
             document.getElementById('title').value = '';
             document.getElementById('date').value = '';
+            document.getElementById('customUrl').value = '';
             document.getElementById('excerpt').value = '';
             document.getElementById('content').value = '';
+            document.getElementById('status').value = 'published';
         }
     </script>
 </body>
