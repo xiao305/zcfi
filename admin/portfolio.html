@@ -393,12 +393,17 @@
             border-radius: 10px;
             padding: 20px;
             margin-bottom: 25px;
+            position: relative;
         }
         
         .featured-list-empty {
             text-align: center;
             color: #999;
             padding: 60px 20px;
+        }
+        
+        .featured-list {
+            min-height: 50px;
         }
         
         .featured-item {
@@ -702,6 +707,7 @@
                         <i class="fas fa-inbox"></i>
                         <p>暂无选中的项目<br>从下方列表中选择项目添加到首页展示</p>
                     </div>
+                    <div class="featured-list" id="featuredList"></div>
                 </div>
                 
                 <div class="available-projects-container" id="availableProjectsContainer">
@@ -903,10 +909,6 @@
                 renderFeaturedModal(data);
                 showModal('featuredModal');
                 
-                // 初始化拖拽排序
-                setTimeout(() => {
-                    initSortable();
-                }, 100);
             }).catch(error => {
                 console.error('打开首页展示管理失败:', error);
                 showResult('error', '错误', '无法加载项目数据');
@@ -914,7 +916,7 @@
         }
         
         function renderFeaturedModal(data) {
-            const projects = Array.isArray(data) ? data : (data.projects || []);
+            const projects = Array.isArray(data) ? data : [];
             const container = document.getElementById('availableProjectsList');
             
             // 过滤已发布的项目
@@ -961,11 +963,11 @@
         function renderFeaturedList() {
             const container = document.getElementById('featuredListContainer');
             const emptyDiv = document.getElementById('featuredListEmpty');
+            const listDiv = document.getElementById('featuredList');
             
             if (featuredProjects.length === 0) {
                 emptyDiv.style.display = 'block';
-                container.innerHTML = '';
-                container.appendChild(emptyDiv);
+                listDiv.innerHTML = '';
                 return;
             }
             
@@ -973,13 +975,13 @@
             
             // 获取所有项目数据，用于显示项目名称
             fetchCurrentData().then(data => {
-                const projects = Array.isArray(data) ? data : (data.projects || []);
+                const projects = Array.isArray(data) ? data : [];
                 const projectMap = {};
                 projects.forEach(project => {
                     projectMap[project.id] = project;
                 });
                 
-                container.innerHTML = featuredProjects.map((projectId, index) => {
+                listDiv.innerHTML = featuredProjects.map((projectId, index) => {
                     const project = projectMap[projectId];
                     const title = project ? project.title : `项目 ${projectId}`;
                     
@@ -998,12 +1000,15 @@
                 }).join('');
                 
                 // 为移除按钮添加事件监听器
-                document.querySelectorAll('.featured-remove').forEach(btn => {
+                listDiv.querySelectorAll('.featured-remove').forEach(btn => {
                     btn.addEventListener('click', function() {
                         const projectId = this.getAttribute('data-project-id');
                         removeProjectFromFeatured(projectId);
                     });
                 });
+                
+                // 初始化拖拽排序
+                initSortable();
             });
         }
         
@@ -1039,7 +1044,7 @@
         
         // 初始化拖拽排序
         function initSortable() {
-            const container = document.getElementById('featuredListContainer');
+            const container = document.getElementById('featuredList');
             
             // 如果已经有Sortable实例，先销毁
             if (sortableInstance) {
@@ -1047,29 +1052,31 @@
             }
             
             // 创建新的Sortable实例
-            sortableInstance = Sortable.create(container, {
-                animation: 150,
-                ghostClass: 'sortable-ghost',
-                chosenClass: 'sortable-chosen',
-                onEnd: function(evt) {
-                    // 更新featuredProjects数组以反映新的顺序
-                    const newOrder = [];
-                    const items = container.querySelectorAll('.featured-item');
-                    items.forEach(item => {
-                        const projectId = item.getAttribute('data-project-id');
-                        newOrder.push(projectId);
-                    });
-                    featuredProjects = newOrder;
-                    
-                    // 更新序号
-                    items.forEach((item, index) => {
-                        const orderDiv = item.querySelector('.featured-order');
-                        if (orderDiv) {
-                            orderDiv.textContent = index + 1;
-                        }
-                    });
-                }
-            });
+            if (container && container.children.length > 0) {
+                sortableInstance = Sortable.create(container, {
+                    animation: 150,
+                    ghostClass: 'sortable-ghost',
+                    chosenClass: 'sortable-chosen',
+                    onEnd: function(evt) {
+                        // 更新featuredProjects数组以反映新的顺序
+                        const newOrder = [];
+                        const items = container.querySelectorAll('.featured-item');
+                        items.forEach(item => {
+                            const projectId = item.getAttribute('data-project-id');
+                            newOrder.push(projectId);
+                        });
+                        featuredProjects = newOrder;
+                        
+                        // 更新序号
+                        items.forEach((item, index) => {
+                            const orderDiv = item.querySelector('.featured-order');
+                            if (orderDiv) {
+                                orderDiv.textContent = index + 1;
+                            }
+                        });
+                    }
+                });
+            }
         }
         
         function closeFeaturedModal() {
@@ -1088,19 +1095,14 @@
                 
                 // 获取当前完整数据
                 const currentData = await fetchCurrentData();
-                let projects = [];
-                let isArrayData = false;
                 
-                // 处理数据格式
+                // 确保是数组格式
+                let projects = [];
                 if (Array.isArray(currentData)) {
-                    // 数据是数组格式
-                    projects = currentData;
-                    isArrayData = true;
-                } else if (currentData && Array.isArray(currentData.projects)) {
-                    // 数据是对象格式，包含projects字段
-                    projects = currentData.projects;
+                    projects = [...currentData];
                 } else {
-                    throw new Error('数据格式无效');
+                    // 如果是对象格式，尝试提取projects字段
+                    projects = currentData.projects || [];
                 }
                 
                 // 更新每个项目的featured状态和顺序
@@ -1117,17 +1119,17 @@
                     }
                 });
                 
-                // 准备要保存的数据
+                // 准备要保存的数据 - 保持原来的格式
                 let dataToSave;
-                if (isArrayData) {
+                if (Array.isArray(currentData)) {
                     // 保存为数组格式
                     dataToSave = projects;
                 } else {
-                    // 保存为对象格式，包含projects和featured字段
+                    // 保存为对象格式，保留其他字段
                     dataToSave = {
                         ...currentData,
                         projects: projects,
-                        featured: featuredProjects // 同时保存独立的featured数组
+                        featured: featuredProjects // 同时保存独立的featured数组，方便前端使用
                     };
                 }
                 
@@ -1485,7 +1487,7 @@
                 
                 // 获取最新数据
                 const data = await fetchCurrentData();
-                currentPortfolioData = Array.isArray(data) ? data : (data.projects || []);
+                currentPortfolioData = Array.isArray(data) ? data : [];
                 
                 // 显示项目列表
                 displayProjectsList(currentPortfolioData);
