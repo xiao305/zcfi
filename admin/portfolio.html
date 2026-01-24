@@ -13,6 +13,9 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- 排序库 -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+    
     <style>
         * {
             margin: 0;
@@ -161,6 +164,16 @@
             transform: translateY(-2px);
         }
         
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .btn-info:hover {
+            background: #138496;
+            transform: translateY(-2px);
+        }
+        
         .portfolio-section {
             margin-top: 0;
         }
@@ -213,16 +226,6 @@
             font-size: 13px;
             color: #6c757d;
             flex-wrap: wrap;
-        }
-        
-        .tech-tag {
-            background: #e9ecef;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 11px;
-            margin-right: 5px;
-            display: inline-block;
-            margin-bottom: 3px;
         }
         
         .portfolio-status {
@@ -306,7 +309,7 @@
             background: white;
             padding: 30px;
             border-radius: 15px;
-            max-width: 600px;
+            max-width: 800px;
             width: 90%;
             text-align: center;
             transform: scale(0.9);
@@ -321,22 +324,12 @@
         
         .modal-header {
             margin-bottom: 20px;
+            text-align: center;
         }
         
         .modal-header i {
             font-size: 24px;
             margin-bottom: 10px;
-        }
-        
-        .modal-success .modal-header i {
-            color: #28a745;
-        }
-        
-        .modal-error .modal-header i {
-            color: #dc3545;
-        }
-        
-        .modal-info .modal-header i {
             color: #4a6fa5;
         }
         
@@ -347,10 +340,17 @@
             color: #333;
         }
         
+        .modal-subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 25px;
+        }
+        
         .modal-message {
             color: #666;
             line-height: 1.6;
             margin-bottom: 25px;
+            text-align: left;
         }
         
         .modal-buttons {
@@ -367,65 +367,169 @@
             font-weight: 500;
         }
         
-        /* 表单弹窗特定样式 */
-        .modal-content.form-modal {
-            max-width: 700px;
+        /* 首页展示管理弹窗特定样式 */
+        .featured-manager {
             text-align: left;
         }
         
-        .form-modal .modal-header {
+        .featured-info {
+            background: #e9f7fe;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+        
+        .featured-info i {
+            color: #17a2b8;
+            margin-right: 8px;
+        }
+        
+        .featured-list-container {
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .featured-list-empty {
             text-align: center;
+            color: #999;
+            padding: 60px 20px;
         }
         
-        .form-group {
-            margin-bottom: 20px;
+        .featured-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            cursor: move;
+            transition: all 0.3s ease;
         }
         
-        label {
-            display: block;
-            margin-bottom: 8px;
+        .featured-item:hover {
+            background: #e9ecef;
+            border-color: #4a6fa5;
+        }
+        
+        .featured-item.sortable-chosen {
+            background: #e9ecef;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .featured-order {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            background: #4a6fa5;
+            color: white;
+            border-radius: 50%;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .featured-item-content {
+            flex-grow: 1;
+        }
+        
+        .featured-item-title {
             font-weight: 600;
             color: #333;
-            font-size: 14px;
+            margin-bottom: 3px;
+        }
+        
+        .featured-item-id {
+            font-size: 12px;
+            color: #6c757d;
+        }
+        
+        .featured-remove {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            padding: 5px;
+            margin-left: 10px;
+        }
+        
+        .available-projects-container {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 15px;
+        }
+        
+        .available-projects-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
             display: flex;
             align-items: center;
             gap: 8px;
         }
         
-        label i {
-            color: #4a6fa5;
-        }
-        
-        input, textarea, select {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #dee2e6;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: all 0.3s ease;
+        .available-project-item {
             background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
         }
         
-        input:focus, textarea:focus, select:focus {
-            outline: none;
+        .available-project-item:hover {
             border-color: #4a6fa5;
-            box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.1);
         }
         
-        textarea {
-            min-height: 100px;
-            resize: vertical;
+        .available-project-content {
+            flex-grow: 1;
         }
         
-        .loading-spinner {
-            animation: spin 1s linear infinite;
-            font-size: 24px;
-            margin-bottom: 15px;
+        .available-project-title {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 3px;
         }
         
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .available-project-id {
+            font-size: 12px;
+            color: #6c757d;
+        }
+        
+        .add-to-featured-btn {
+            background: #4a6fa5;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .add-to-featured-btn:hover {
+            background: #3a5a80;
+        }
+        
+        .add-to-featured-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
         }
         
         @media (max-width: 768px) {
@@ -442,11 +546,7 @@
             }
             
             .modal-buttons button,
-            .portfolio-actions button {
-                width: 100%;
-                justify-content: center;
-            }
-            
+            .portfolio-actions button,
             .button-group button {
                 width: 100%;
                 justify-content: center;
@@ -459,6 +559,23 @@
             
             .modal-content {
                 padding: 20px;
+            }
+            
+            .featured-item,
+            .available-project-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .add-to-featured-btn {
+                margin-top: 10px;
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .featured-remove {
+                align-self: flex-end;
+                margin-top: -30px;
             }
         }
     </style>
@@ -483,6 +600,9 @@
                 </button>
                 <button class="btn-secondary" id="refreshBtn">
                     <i class="fas fa-sync-alt"></i> 刷新项目列表
+                </button>
+                <button class="btn-info" id="featuredManagerBtn">
+                    <i class="fas fa-home"></i> 首页展示管理
                 </button>
             </div>
             
@@ -562,6 +682,45 @@
         </div>
     </div>
 
+    <!-- 首页展示管理弹窗 -->
+    <div class="custom-modal" id="featuredModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <i class="fas fa-home"></i>
+            </div>
+            <div class="modal-title">首页展示管理</div>
+            <div class="modal-subtitle">选择最多4个项目在首页展示，并可以拖拽调整顺序</div>
+            
+            <div class="featured-manager">
+                <div class="featured-info">
+                    <i class="fas fa-info-circle"></i>
+                    <span>首页将按照此顺序展示选中的项目（最多4个）</span>
+                </div>
+                
+                <div class="featured-list-container" id="featuredListContainer">
+                    <div class="featured-list-empty" id="featuredListEmpty">
+                        <i class="fas fa-inbox"></i>
+                        <p>暂无选中的项目<br>从下方列表中选择项目添加到首页展示</p>
+                    </div>
+                </div>
+                
+                <div class="available-projects-container" id="availableProjectsContainer">
+                    <div class="available-projects-title">
+                        <i class="fas fa-list"></i> 可用项目列表
+                    </div>
+                    <div id="availableProjectsList">
+                        <p>正在加载项目...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="modal-btn btn-secondary" id="cancelFeaturedBtn">取消</button>
+                <button class="modal-btn btn-primary" id="saveFeaturedBtn">保存设置</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 确认弹窗 -->
     <div class="custom-modal" id="confirmModal">
         <div class="modal-content">
@@ -609,15 +768,17 @@
             window.location.href = 'index.html';
         }
         
-        // 使用您提供的Gist ID
-        const GIST_ID = '311b9a0a483aafc4314d17f577e859bb'; // 您的Gist ID
+        // 全局配置
+        const GIST_ID = '311b9a0a483aafc4314d17f577e859bb';
         const GIST_URL = `https://api.github.com/gists/${GIST_ID}`;
         const token = sessionStorage.getItem('admin_token');
         
         // 全局状态
         let currentPortfolioData = [];
+        let featuredProjects = []; // 首页展示的项目数组 [id1, id2, id3, id4]
         let pendingAction = null;
         let pendingActionData = null;
+        let sortableInstance = null; // Sortable实例
         
         // 页面加载时初始化
         document.addEventListener('DOMContentLoaded', function() {
@@ -632,10 +793,15 @@
             document.getElementById('refreshBtn').addEventListener('click', function() {
                 loadPortfolioData(false, true); // 手动刷新时显示提示
             });
+            document.getElementById('featuredManagerBtn').addEventListener('click', openFeaturedModal);
             
             // 项目弹窗按钮
             document.getElementById('cancelProjectBtn').addEventListener('click', closeProjectModal);
             document.getElementById('saveProjectBtn').addEventListener('click', saveProject);
+            
+            // 首页展示管理弹窗按钮
+            document.getElementById('cancelFeaturedBtn').addEventListener('click', closeFeaturedModal);
+            document.getElementById('saveFeaturedBtn').addEventListener('click', saveFeaturedSettings);
             
             // 确认弹窗按钮
             document.getElementById('cancelConfirmBtn').addEventListener('click', closeConfirmModal);
@@ -710,6 +876,272 @@
         
         function closeProjectModal() {
             hideModal('projectModal');
+        }
+        
+        // 打开首页展示管理弹窗
+        function openFeaturedModal() {
+            // 先获取当前数据
+            fetchCurrentData().then(data => {
+                // 从数据中提取首页展示的项目ID
+                featuredProjects = [];
+                
+                // 首先检查是否有独立的featured字段
+                if (data.featured && Array.isArray(data.featured)) {
+                    featuredProjects = [...data.featured];
+                } else {
+                    // 如果没有独立的featured字段，检查每个项目的featured属性
+                    const projects = Array.isArray(data) ? data : [];
+                    const featuredItems = projects
+                        .filter(project => project.featured === true)
+                        .sort((a, b) => (a.featuredOrder || 0) - (b.featuredOrder || 0))
+                        .slice(0, 4);
+                    
+                    featuredProjects = featuredItems.map(project => project.id);
+                }
+                
+                // 渲染弹窗内容
+                renderFeaturedModal(data);
+                showModal('featuredModal');
+                
+                // 初始化拖拽排序
+                setTimeout(() => {
+                    initSortable();
+                }, 100);
+            }).catch(error => {
+                console.error('打开首页展示管理失败:', error);
+                showResult('error', '错误', '无法加载项目数据');
+            });
+        }
+        
+        function renderFeaturedModal(data) {
+            const projects = Array.isArray(data) ? data : (data.projects || []);
+            const container = document.getElementById('availableProjectsList');
+            
+            // 过滤已发布的项目
+            const publishedProjects = projects.filter(project => 
+                project.status === 'published' || !project.status
+            );
+            
+            if (publishedProjects.length === 0) {
+                container.innerHTML = '<p>暂无可用项目</p>';
+                return;
+            }
+            
+            // 渲染可用项目列表
+            container.innerHTML = publishedProjects.map(project => {
+                const isFeatured = featuredProjects.includes(project.id);
+                const isDisabled = isFeatured || featuredProjects.length >= 4;
+                
+                return `
+                    <div class="available-project-item" data-project-id="${project.id}">
+                        <div class="available-project-content">
+                            <div class="available-project-title">${escapeHtml(project.title)}</div>
+                            <div class="available-project-id">ID: ${escapeHtml(project.id)}</div>
+                        </div>
+                        <button class="add-to-featured-btn" data-project-id="${project.id}" 
+                                ${isDisabled ? 'disabled' : ''}>
+                            <i class="fas fa-plus"></i> 添加到首页
+                        </button>
+                    </div>
+                `;
+            }).join('');
+            
+            // 为"添加到首页"按钮添加事件监听器
+            document.querySelectorAll('.add-to-featured-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const projectId = this.getAttribute('data-project-id');
+                    addProjectToFeatured(projectId);
+                });
+            });
+            
+            // 渲染已选项目列表
+            renderFeaturedList();
+        }
+        
+        function renderFeaturedList() {
+            const container = document.getElementById('featuredListContainer');
+            const emptyDiv = document.getElementById('featuredListEmpty');
+            
+            if (featuredProjects.length === 0) {
+                emptyDiv.style.display = 'block';
+                container.innerHTML = '';
+                container.appendChild(emptyDiv);
+                return;
+            }
+            
+            emptyDiv.style.display = 'none';
+            
+            // 获取所有项目数据，用于显示项目名称
+            fetchCurrentData().then(data => {
+                const projects = Array.isArray(data) ? data : (data.projects || []);
+                const projectMap = {};
+                projects.forEach(project => {
+                    projectMap[project.id] = project;
+                });
+                
+                container.innerHTML = featuredProjects.map((projectId, index) => {
+                    const project = projectMap[projectId];
+                    const title = project ? project.title : `项目 ${projectId}`;
+                    
+                    return `
+                        <div class="featured-item" data-project-id="${projectId}">
+                            <div class="featured-order">${index + 1}</div>
+                            <div class="featured-item-content">
+                                <div class="featured-item-title">${escapeHtml(title)}</div>
+                                <div class="featured-item-id">ID: ${escapeHtml(projectId)}</div>
+                            </div>
+                            <button class="featured-remove" data-project-id="${projectId}">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+                
+                // 为移除按钮添加事件监听器
+                document.querySelectorAll('.featured-remove').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const projectId = this.getAttribute('data-project-id');
+                        removeProjectFromFeatured(projectId);
+                    });
+                });
+            });
+        }
+        
+        function addProjectToFeatured(projectId) {
+            if (featuredProjects.length >= 4) {
+                showResult('error', '已达上限', '首页最多展示4个项目');
+                return;
+            }
+            
+            if (featuredProjects.includes(projectId)) {
+                return; // 已经在列表中
+            }
+            
+            featuredProjects.push(projectId);
+            renderFeaturedList();
+            renderFeaturedModalFromCurrentData(); // 重新渲染可用项目列表
+        }
+        
+        function removeProjectFromFeatured(projectId) {
+            const index = featuredProjects.indexOf(projectId);
+            if (index > -1) {
+                featuredProjects.splice(index, 1);
+                renderFeaturedList();
+                renderFeaturedModalFromCurrentData(); // 重新渲染可用项目列表
+            }
+        }
+        
+        function renderFeaturedModalFromCurrentData() {
+            fetchCurrentData().then(data => {
+                renderFeaturedModal(data);
+            });
+        }
+        
+        // 初始化拖拽排序
+        function initSortable() {
+            const container = document.getElementById('featuredListContainer');
+            
+            // 如果已经有Sortable实例，先销毁
+            if (sortableInstance) {
+                sortableInstance.destroy();
+            }
+            
+            // 创建新的Sortable实例
+            sortableInstance = Sortable.create(container, {
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                onEnd: function(evt) {
+                    // 更新featuredProjects数组以反映新的顺序
+                    const newOrder = [];
+                    const items = container.querySelectorAll('.featured-item');
+                    items.forEach(item => {
+                        const projectId = item.getAttribute('data-project-id');
+                        newOrder.push(projectId);
+                    });
+                    featuredProjects = newOrder;
+                    
+                    // 更新序号
+                    items.forEach((item, index) => {
+                        const orderDiv = item.querySelector('.featured-order');
+                        if (orderDiv) {
+                            orderDiv.textContent = index + 1;
+                        }
+                    });
+                }
+            });
+        }
+        
+        function closeFeaturedModal() {
+            hideModal('featuredModal');
+            // 销毁Sortable实例
+            if (sortableInstance) {
+                sortableInstance.destroy();
+                sortableInstance = null;
+            }
+        }
+        
+        // 保存首页展示设置
+        async function saveFeaturedSettings() {
+            try {
+                showLoading('保存设置', '正在保存首页展示设置...');
+                
+                // 获取当前完整数据
+                const currentData = await fetchCurrentData();
+                let projects = [];
+                let isArrayData = false;
+                
+                // 处理数据格式
+                if (Array.isArray(currentData)) {
+                    // 数据是数组格式
+                    projects = currentData;
+                    isArrayData = true;
+                } else if (currentData && Array.isArray(currentData.projects)) {
+                    // 数据是对象格式，包含projects字段
+                    projects = currentData.projects;
+                } else {
+                    throw new Error('数据格式无效');
+                }
+                
+                // 更新每个项目的featured状态和顺序
+                projects.forEach(project => {
+                    const index = featuredProjects.indexOf(project.id);
+                    if (index > -1) {
+                        // 项目在首页展示列表中
+                        project.featured = true;
+                        project.featuredOrder = index + 1;
+                    } else {
+                        // 项目不在首页展示列表中
+                        project.featured = false;
+                        project.featuredOrder = 0;
+                    }
+                });
+                
+                // 准备要保存的数据
+                let dataToSave;
+                if (isArrayData) {
+                    // 保存为数组格式
+                    dataToSave = projects;
+                } else {
+                    // 保存为对象格式，包含projects和featured字段
+                    dataToSave = {
+                        ...currentData,
+                        projects: projects,
+                        featured: featuredProjects // 同时保存独立的featured数组
+                    };
+                }
+                
+                // 更新Gist
+                await updateGistData(dataToSave);
+                
+                hideLoading();
+                showResult('success', '保存成功', '首页展示设置已保存');
+                closeFeaturedModal();
+                
+            } catch (error) {
+                hideLoading();
+                showResult('error', '保存失败', error.message);
+            }
         }
         
         // 确认弹窗
@@ -829,6 +1261,8 @@
                         demoUrl: demoUrl,
                         githubUrl: githubUrl,
                         status: status,
+                        featured: false, // 默认不在首页展示
+                        featuredOrder: 0,
                         createdAt: new Date().toISOString()
                     };
                     
@@ -846,8 +1280,10 @@
                         throw new Error('项目 ID 已被其他项目使用');
                     }
                     
+                    // 保留原有的featured和featuredOrder属性
+                    const existingProject = currentData[projectIndex];
                     currentData[projectIndex] = {
-                        ...currentData[projectIndex],
+                        ...existingProject,
                         id: projectId,
                         title: title,
                         tech: techArray,
@@ -923,7 +1359,7 @@
             }
         }
         
-        // 数据操作函数 - 直接从Gist获取数据
+        // 数据操作函数
         async function fetchCurrentData() {
             try {
                 // 首先尝试通过Gist API获取
@@ -943,31 +1379,19 @@
                 const gist = await response.json();
                 const files = gist.files;
                 
-                // 查找 portfolio.json 文件
-                const fileName = Object.keys(files).find(name => name.includes('portfolio'));
+                // 查找 portfolio.json 文件或其他相关文件
+                const fileName = Object.keys(files).find(name => name.includes('portfolio') || name.includes('.json'));
                 if (!fileName) {
-                    // 如果没有找到portfolio文件，检查是否有任何文件
-                    const firstFileName = Object.keys(files)[0];
-                    if (!firstFileName) {
-                        return [];
-                    }
-                    
-                    const content = files[firstFileName].content;
-                    try {
-                        const data = JSON.parse(content);
-                        return Array.isArray(data) ? data : [];
-                    } catch (e) {
-                        console.error('解析Gist文件失败:', e);
-                        return [];
-                    }
+                    // 如果没有找到文件，返回空数组
+                    return [];
                 }
                 
                 const content = files[fileName].content;
                 try {
                     const data = JSON.parse(content);
-                    return Array.isArray(data) ? data : [];
+                    return Array.isArray(data) ? data : data;
                 } catch (e) {
-                    console.error('解析portfolio.json失败:', e);
+                    console.error('解析Gist文件失败:', e);
                     return [];
                 }
                 
@@ -982,14 +1406,14 @@
         async function fetchRawData() {
             try {
                 // 直接从raw链接获取数据
-                const rawResponse = await fetch('https://gist.githubusercontent.com/xiao305/311b9a0a483aafc4314d17f577e859bb/raw/3f4107df061ef486771bc1d792917ff9ff5c4508/portfolio.json');
+                const rawResponse = await fetch(`https://gist.githubusercontent.com/xiao305/${GIST_ID}/raw/portfolio.json`);
                 
                 if (!rawResponse.ok) {
                     throw new Error(`获取raw数据失败: ${rawResponse.status} ${rawResponse.statusText}`);
                 }
                 
                 const data = await rawResponse.json();
-                return Array.isArray(data) ? data : [];
+                return data;
                 
             } catch (error) {
                 console.error('获取raw数据失败:', error);
@@ -1059,34 +1483,20 @@
                     showLoading('刷新项目', '正在从服务器获取最新项目列表...');
                 }
                 
-                // 保存刷新前的项目数量
-                const beforeCount = currentPortfolioData.length;
-                
                 // 获取最新数据
                 const data = await fetchCurrentData();
-                currentPortfolioData = data;
+                currentPortfolioData = Array.isArray(data) ? data : (data.projects || []);
                 
                 // 显示项目列表
-                displayProjectsList(data);
+                displayProjectsList(currentPortfolioData);
                 
                 // 计算变化
-                const afterCount = data.length;
-                const changeCount = afterCount - beforeCount;
+                const afterCount = currentPortfolioData.length;
                 
                 // 如果是手动刷新且需要显示结果，显示结果弹窗
                 if (!isInitialLoad && showRefreshResult) {
                     hideLoading();
-                    
-                    let message = '';
-                    if (changeCount > 0) {
-                        message = `刷新完成！新增 ${changeCount} 个项目，现在共有 ${afterCount} 个项目。`;
-                    } else if (changeCount < 0) {
-                        message = `刷新完成！删除了 ${Math.abs(changeCount)} 个项目，现在共有 ${afterCount} 个项目。`;
-                    } else {
-                        message = `刷新完成！项目数量无变化，共有 ${afterCount} 个项目。`;
-                    }
-                    
-                    showResult('success', '刷新成功', message);
+                    showResult('success', '刷新成功', `刷新完成！共有 ${afterCount} 个项目。`);
                 } else if (!isInitialLoad && !showRefreshResult) {
                     // 静默刷新，只隐藏加载弹窗（如果显示了的话）
                     hideLoading();
@@ -1157,9 +1567,7 @@
                             <div class="portfolio-title">${escapeHtml(project.title)}</div>
                             <div class="portfolio-meta">
                                 <span><i class="fas fa-hashtag"></i> ID: ${escapeHtml(project.id)}</span>
-                                ${project.tech && project.tech.length > 0 ? 
-                                    `<span><i class="fas fa-code"></i> ${project.tech.map(tech => `<span class="tech-tag">${escapeHtml(tech)}</span>`).join('')}</span>` : 
-                                    ''}
+                                ${project.featured ? `<span style="color: #17a2b8;"><i class="fas fa-star"></i> 首页展示 #${project.featuredOrder || 1}</span>` : ''}
                             </div>
                         </div>
                         <div>
@@ -1169,12 +1577,6 @@
                         </div>
                     </div>
                     <p>${escapeHtml(project.description ? project.description.substring(0, 150) : '')}${project.description && project.description.length > 150 ? '...' : ''}</p>
-                    ${project.image || project.demoUrl || project.githubUrl ? `
-                    <div style="margin-top: 10px; display: flex; gap: 15px; flex-wrap: wrap;">
-                        ${project.image ? `<a href="${escapeHtml(project.image)}" target="_blank" style="color: #4a6fa5;"><i class="fas fa-image"></i> 图片</a>` : ''}
-                        ${project.demoUrl ? `<a href="${escapeHtml(project.demoUrl)}" target="_blank" style="color: #4a6fa5;"><i class="fas fa-external-link-alt"></i> 演示</a>` : ''}
-                        ${project.githubUrl ? `<a href="${escapeHtml(project.githubUrl)}" target="_blank" style="color: #4a6fa5;"><i class="fab fa-github"></i> GitHub</a>` : ''}
-                    </div>` : ''}
                     <div class="portfolio-actions">
                         <button class="btn-primary action-btn edit-btn" data-project-id="${project.id}">
                             <i class="fas fa-edit"></i> 编辑
