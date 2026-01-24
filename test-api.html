@@ -17,20 +17,34 @@
             'Content-Type': 'application/json'
           }
         })
-        .then(response => response.json())
-        .then(data => {
-          const container = document.getElementById('blogs');
-          if (data.error) {
-            container.innerHTML = `<p style="color:red;">错误: ${data.error}</p>`;
-          } else {
-            container.innerHTML = `
-              <p>成功加载 ${data.length} 篇文章：</p>
-              <ul>
-                ${data.map(item => 
-                  `<li><strong>${item.title}</strong> (${item.date})<br>${item.excerpt}</li>`
-                ).join('')}
-              </ul>
-            `;
+        .then(response => {
+          console.log('Response status:', response.status);
+          return response.text();
+        })
+        .then(text => {
+          console.log('Raw response:', text);
+          try {
+            const data = JSON.parse(text);
+            console.log('Parsed ', data);
+            
+            const container = document.getElementById('blogs');
+            if (Array.isArray(data)) {
+              container.innerHTML = `
+                <p>成功加载 ${data.length} 篇文章：</p>
+                <ul>
+                  ${data.map(item => 
+                    `<li><strong>${item.title}</strong> (${item.date})<br>${item.excerpt}</li>`
+                  ).join('')}
+                </ul>
+              `;
+            } else {
+              container.innerHTML = `<p style="color:red;">数据格式错误：返回的不是数组</p>
+                <pre>${JSON.stringify(data, null, 2)}</pre>`;
+            }
+          } catch (parseError) {
+            document.getElementById('blogs').innerHTML = 
+              `<p style="color:red;">JSON 解析失败：</p>
+               <pre>${text}</pre>`;
           }
         })
         .catch(error => {
