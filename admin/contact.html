@@ -91,44 +91,31 @@
             padding: 30px;
         }
         
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
-            font-size: 14px;
+        .filters-section {
             display: flex;
-            align-items: center;
-            gap: 8px;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
         }
         
-        label i {
-            color: #4a6fa5;
-        }
-        
-        input, textarea, select {
-            width: 100%;
-            padding: 12px 15px;
+        .filter-btn {
+            padding: 10px 20px;
             border: 2px solid #dee2e6;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: all 0.3s ease;
             background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
         }
         
-        input:focus, textarea:focus, select:focus {
-            outline: none;
+        .filter-btn.active {
+            background: #4a6fa5;
+            color: white;
             border-color: #4a6fa5;
-            box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.1);
         }
         
-        textarea {
-            min-height: 100px;
-            resize: vertical;
+        .filter-btn:hover:not(.active) {
+            border-color: #4a6fa5;
         }
         
         .button-group {
@@ -290,20 +277,41 @@
             font-weight: 600;
         }
         
-        .status-published {
+        .status-unprocessed {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-read {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .status-replied {
             background: #d4edda;
             color: #155724;
         }
         
-        .status-draft {
-            background: #fff3cd;
-            color: #856404;
+        .message-tags {
+            display: flex;
+            gap: 8px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+        
+        .tag {
+            background: #e9ecef;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            color: #495057;
         }
         
         .message-actions {
             display: flex;
             gap: 10px;
             margin-top: 15px;
+            flex-wrap: wrap;
         }
         
         .action-btn {
@@ -312,19 +320,25 @@
             border-radius: 6px;
         }
         
-        .manual-add {
-            background: #e9ecef;
-            padding: 25px;
-            border-radius: 12px;
-            margin-bottom: 30px;
+        .bulk-actions {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
         }
         
-        .manual-add h3 {
-            color: #4a6fa5;
-            margin-bottom: 20px;
+        .bulk-actions h4 {
+            margin-bottom: 15px;
+            color: #495057;
+        }
+        
+        .bulk-select {
             display: flex;
+            gap: 15px;
             align-items: center;
-            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
         }
         
         .footer {
@@ -342,11 +356,15 @@
                 text-align: center;
             }
             
-            .button-group {
+            .button-group,
+            .filters-section,
+            .bulk-select {
                 flex-direction: column;
+                align-items: stretch;
             }
             
-            button {
+            button,
+            .filter-btn {
                 width: 100%;
                 justify-content: center;
             }
@@ -362,46 +380,47 @@
             <a href="https://zcfi.cn" class="logo">zcfi<span>.</span>cn</a>
             <div class="header-title">
                 <h1><i class="fas fa-comments"></i> 留言管理</h1>
-                <p>管理和查看访客留言记录</p>
+                <p>查看和处理访客留言</p>
             </div>
         </div>
         
         <div class="main-content">
-            <div class="manual-add">
-                <h3><i class="fas fa-plus-circle"></i> 添加新留言</h3>
-                <div class="form-group">
-                    <label for="messageAuthor"><i class="fas fa-user"></i> 留言者姓名:</label>
-                    <input type="text" id="messageAuthor" placeholder="例如: 张三">
-                </div>
-                
-                <div class="form-group">
-                    <label for="messageEmail"><i class="fas fa-envelope"></i> 邮箱 (可选):</label>
-                    <input type="email" id="messageEmail" placeholder="example@email.com">
-                </div>
-                
-                <div class="form-group">
-                    <label for="messageContent"><i class="fas fa-comment"></i> 留言内容:</label>
-                    <textarea id="messageContent" placeholder="请输入留言内容..."></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="messageStatus"><i class="fas fa-toggle-on"></i> 留言状态:</label>
-                    <select id="messageStatus">
-                        <option value="published">已发布 (公开显示)</option>
-                        <option value="draft">草稿 (隐藏)</option>
+            <div class="filters-section">
+                <button class="filter-btn active" data-filter="all">
+                    <i class="fas fa-list"></i> 全部留言
+                </button>
+                <button class="filter-btn" data-filter="unprocessed">
+                    <i class="fas fa-exclamation-circle"></i> 未处理
+                </button>
+                <button class="filter-btn" data-filter="read">
+                    <i class="fas fa-eye"></i> 已读
+                </button>
+                <button class="filter-btn" data-filter="replied">
+                    <i class="fas fa-reply"></i> 已回复
+                </button>
+            </div>
+            
+            <div class="bulk-actions">
+                <h4><i class="fas fa-layer-group"></i> 批量操作</h4>
+                <div class="bulk-select">
+                    <select id="bulkStatus">
+                        <option value="">选择状态</option>
+                        <option value="unprocessed">标记为未处理</option>
+                        <option value="read">标记为已读</option>
+                        <option value="replied">标记为已回复</option>
                     </select>
-                </div>
-                
-                <div class="button-group">
-                    <button class="btn-primary" onclick="addMessage()">
-                        <i class="fas fa-plus"></i> 添加留言
+                    <button class="btn-primary" onclick="bulkUpdateStatus()" style="width: auto;">
+                        <i class="fas fa-check"></i> 应用批量操作
                     </button>
+                </div>
+                <div style="margin-top: 10px; font-size: 13px; color: #666;">
+                    提示：在留言前勾选复选框以选择要批量操作的留言
                 </div>
             </div>
             
             <div class="messages-section">
                 <div class="section-header">
-                    <h2><i class="fas fa-list"></i> 留言列表</h2>
+                    <h2><i class="fas fa-inbox"></i> 留言列表</h2>
                     <span id="messagesCount">加载中...</span>
                 </div>
                 <div id="messagesList">
@@ -422,7 +441,7 @@
             <div class="footer">
                 <p>© 2026 zcfi.cn 留言管理系统</p>
                 <p style="margin-top: 10px; font-size: 13px; color: #6c757d;">
-                    所有留言都存储在 GitHub Gist 中，可在前台页面显示。
+                    留言通过邮件、社交媒体等渠道收集后，在此进行统一管理和状态标记。
                 </p>
             </div>
         </div>
@@ -439,6 +458,7 @@
         const GIST_URL = `https://api.github.com/gists/${GIST_ID}`;
         let currentMessagesData = [];
         const token = sessionStorage.getItem('admin_token');
+        let currentFilter = 'all';
         
         // 页面卸载时清除敏感信息
         window.addEventListener('beforeunload', () => {
@@ -447,44 +467,20 @@
         });
         
         document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
             loadMessages();
         });
         
-        async function addMessage() {
-            const author = document.getElementById('messageAuthor').value.trim();
-            const email = document.getElementById('messageEmail').value.trim();
-            const content = document.getElementById('messageContent').value.trim();
-            const status = document.getElementById('messageStatus').value;
-            
-            if (!author || !content) {
-                showStatus('请填写留言者姓名和留言内容', 'error');
-                return;
-            }
-            
-            try {
-                showStatus('正在获取当前数据...', 'info');
-                const currentData = await fetchCurrentData();
-                
-                const newMessage = {
-                    id: `msg_${Date.now()}`,
-                    author: author,
-                    email: email,
-                    content: content,
-                    date: new Date().toLocaleDateString('zh-CN'),
-                    status: status
-                };
-                
-                currentData.unshift(newMessage);
-                await updateGistData(currentData);
-                
-                showStatus('✅ 留言添加成功！', 'success');
-                clearForm();
-                loadMessages();
-                
-            } catch (error) {
-                console.error('添加留言失败:', error);
-                showStatus(`❌ 添加失败: ${error.message}`, 'error');
-            }
+        function setupEventListeners() {
+            // 筛选按钮
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentFilter = this.dataset.filter;
+                    displayMessagesList(currentMessagesData);
+                });
+            });
         }
         
         async function updateMessageStatus(messageId, newStatus) {
@@ -522,6 +518,42 @@
             }
         }
         
+        async function bulkUpdateStatus() {
+            const newStatus = document.getElementById('bulkStatus').value;
+            if (!newStatus) {
+                showStatus('请选择要应用的状态', 'error');
+                return;
+            }
+            
+            const selectedCheckboxes = document.querySelectorAll('.message-checkbox:checked');
+            if (selectedCheckboxes.length === 0) {
+                showStatus('请先选择要操作的留言', 'error');
+                return;
+            }
+            
+            const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.dataset.messageId);
+            
+            try {
+                showStatus('正在批量更新状态...', 'info');
+                const currentData = await fetchCurrentData();
+                
+                selectedIds.forEach(id => {
+                    const messageIndex = currentData.findIndex(msg => msg.id === id);
+                    if (messageIndex !== -1) {
+                        currentData[messageIndex].status = newStatus;
+                    }
+                });
+                
+                await updateGistData(currentData);
+                showStatus(`✅ 成功更新 ${selectedIds.length} 条留言状态`, 'success');
+                loadMessages();
+                
+            } catch (error) {
+                console.error('批量更新失败:', error);
+                showStatus(`❌ 批量更新失败: ${error.message}`, 'error');
+            }
+        }
+        
         async function fetchCurrentData() {
             const response = await fetch(GIST_URL, {
                 headers: {
@@ -537,10 +569,11 @@
             const gist = await response.json();
             const data = JSON.parse(gist.files['blog.json'].content);
             
-            // 确保 messages 字段存在
+            // 确保 messages 字段存在，默认状态为 unprocessed
             return (data.messages || []).map(msg => ({
                 ...msg,
-                status: msg.status || 'published'
+                status: msg.status || 'unprocessed',
+                tags: msg.tags || []
             }));
         }
         
@@ -603,50 +636,83 @@
             const container = document.getElementById('messagesList');
             const countElement = document.getElementById('messagesCount');
             
-            countElement.textContent = `${data.length} 条留言`;
+            // 应用筛选
+            let filteredData = data;
+            if (currentFilter !== 'all') {
+                filteredData = data.filter(msg => msg.status === currentFilter);
+            }
             
-            if (data.length === 0) {
-                container.innerHTML = '<div class="message-card"><p>暂无留言</p></div>';
+            countElement.textContent = `${filteredData.length} 条留言 (共 ${data.length} 条)`;
+            
+            if (filteredData.length === 0) {
+                container.innerHTML = '<div class="message-card"><p>暂无符合条件的留言</p></div>';
                 return;
             }
             
-            container.innerHTML = data.map(msg => `
+            container.innerHTML = filteredData.map(msg => `
                 <div class="message-card">
-                    <div class="message-header">
-                        <div>
-                            <div class="message-author">${msg.author}</div>
-                            <div class="message-meta">
-                                <span>${msg.date}</span>
-                                ${msg.email ? `<span>${msg.email}</span>` : ''}
+                    <div style="display: flex; gap: 15px;">
+                        <input type="checkbox" class="message-checkbox" data-message-id="${msg.id}" style="margin-top: 5px;">
+                        <div style="flex: 1;">
+                            <div class="message-header">
+                                <div>
+                                    <div class="message-author">${msg.author}</div>
+                                    <div class="message-meta">
+                                        <span>${msg.date}</span>
+                                        ${msg.email ? `<span>${msg.email}</span>` : ''}
+                                        ${msg.source ? `<span>来源: ${msg.source}</span>` : ''}
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="message-status status-${msg.status}">
+                                        ${getStatusText(msg.status)}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            ${msg.tags && msg.tags.length > 0 ? `
+                            <div class="message-tags">
+                                ${msg.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                            </div>` : ''}
+                            
+                            <p>${msg.content}</p>
+                            
+                            <div class="message-actions">
+                                ${msg.status !== 'unprocessed' ? 
+                                    `<button class="btn-warning action-btn" onclick="updateMessageStatus('${msg.id}', 'unprocessed')">
+                                        <i class="fas fa-exclamation-circle"></i> 标记为未处理
+                                    </button>` : ''}
+                                ${msg.status !== 'read' ? 
+                                    `<button class="btn-secondary action-btn" onclick="updateMessageStatus('${msg.id}', 'read')">
+                                        <i class="fas fa-eye"></i> 标记为已读
+                                    </button>` : ''}
+                                ${msg.status !== 'replied' ? 
+                                    `<button class="btn-success action-btn" onclick="updateMessageStatus('${msg.id}', 'replied')">
+                                        <i class="fas fa-reply"></i> 标记为已回复
+                                    </button>` : ''}
+                                <button class="btn-danger action-btn" onclick="deleteMessageConfirm('${msg.id}')">
+                                    <i class="fas fa-trash"></i> 删除
+                                </button>
                             </div>
                         </div>
-                        <div>
-                            <span class="message-status status-${msg.status}">
-                                ${msg.status === 'published' ? '已发布' : '草稿'}
-                            </span>
-                        </div>
-                    </div>
-                    <p>${msg.content}</p>
-                    <div class="message-actions">
-                        ${msg.status === 'published' ? 
-                            `<button class="btn-warning action-btn" onclick="toggleMessageStatus('${msg.id}', 'draft')">
-                                <i class="fas fa-eye-slash"></i> 隐藏
-                            </button>` : 
-                            `<button class="btn-success action-btn" onclick="toggleMessageStatus('${msg.id}', 'published')">
-                                <i class="fas fa-eye"></i> 显示
-                            </button>`}
-                        <button class="btn-danger action-btn" onclick="deleteMessageConfirm('${msg.id}')">
-                            <i class="fas fa-trash"></i> 删除
-                        </button>
                     </div>
                 </div>
             `).join('');
         }
         
-        async function toggleMessageStatus(messageId, newStatus) {
+        function getStatusText(status) {
+            switch(status) {
+                case 'unprocessed': return '未处理';
+                case 'read': return '已读';
+                case 'replied': return '已回复';
+                default: return status;
+            }
+        }
+        
+        async function updateMessageStatus(messageId, newStatus) {
             try {
                 await updateMessageStatus(messageId, newStatus);
-                showStatus(`✅ 留言状态已更新为 ${newStatus === 'published' ? '已发布' : '草稿'}`, 'success');
+                showStatus(`✅ 留言状态已更新为 ${getStatusText(newStatus)}`, 'success');
                 loadMessages();
             } catch (error) {
                 showStatus(`❌ 状态更新失败: ${error.message}`, 'error');
@@ -681,13 +747,6 @@
                     statusDiv.className = '';
                 }, 5000);
             }
-        }
-        
-        function clearForm() {
-            document.getElementById('messageAuthor').value = '';
-            document.getElementById('messageEmail').value = '';
-            document.getElementById('messageContent').value = '';
-            document.getElementById('messageStatus').value = 'published';
         }
     </script>
 </body>
