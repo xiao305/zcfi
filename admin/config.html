@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>配置管理 | zcfi.cn</title>
+    <title>网站配置 | zcfi.cn</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="../favicon/favicon.svg">
@@ -18,75 +18,135 @@
     
     <style>
         /* 配置管理特定样式 */
-        .config-sections {
+        .config-layout {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            grid-template-columns: 250px 1fr;
             gap: 30px;
         }
         
-        .config-section {
+        .config-sidebar {
             background: #f8f9fa;
-            border: 1px solid #e9ecef;
             border-radius: 10px;
-            padding: 25px;
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
+            padding: 20px;
+            height: fit-content;
         }
         
-        .config-section:hover {
-            border-color: #4a6fa5;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        .config-nav {
+            list-style: none;
         }
         
-        .config-header {
+        .config-nav li {
+            margin-bottom: 5px;
+        }
+        
+        .config-nav a {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #dee2e6;
+            gap: 10px;
+            padding: 12px 15px;
+            color: #495057;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
         }
         
-        .config-header h3 {
+        .config-nav a:hover {
+            background: #e9ecef;
+            color: #4a6fa5;
+        }
+        
+        .config-nav a.active {
+            background: #4a6fa5;
+            color: white;
+        }
+        
+        .config-nav i {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .config-content {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .config-section {
+            display: none;
+        }
+        
+        .config-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .section-header {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .section-header h2 {
             color: #333;
-            font-size: 18px;
+            font-size: 20px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
         
-        .config-header i {
-            color: #4a6fa5;
+        .section-header p {
+            color: #6c757d;
+            margin-top: 8px;
+            font-size: 14px;
         }
         
-        /* 表单增强样式 */
-        .form-group textarea {
-            min-height: 150px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
+        /* 紧凑的表单样式 */
+        .compact-form .form-group {
+            margin-bottom: 15px;
         }
         
-        /* 开关样式 */
-        .switch-group {
+        .compact-form .form-group label {
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+        
+        .compact-form input,
+        .compact-form textarea {
+            padding: 10px 12px;
+            font-size: 14px;
+        }
+        
+        /* 开关控件 */
+        .toggle-switch {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 10px;
         }
         
-        .switch {
+        .toggle-label {
+            font-size: 14px;
+            color: #495057;
+        }
+        
+        .toggle-container {
             position: relative;
-            display: inline-block;
-            width: 60px;
-            height: 34px;
+            width: 50px;
+            height: 26px;
         }
         
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
+        .toggle-checkbox {
+            display: none;
         }
         
-        .slider {
+        .toggle-slider {
             position: absolute;
             cursor: pointer;
             top: 0;
@@ -98,11 +158,11 @@
             border-radius: 34px;
         }
         
-        .slider:before {
+        .toggle-slider:before {
             position: absolute;
             content: "";
-            height: 26px;
-            width: 26px;
+            height: 18px;
+            width: 18px;
             left: 4px;
             bottom: 4px;
             background-color: white;
@@ -110,46 +170,116 @@
             border-radius: 50%;
         }
         
-        input:checked + .slider {
+        .toggle-checkbox:checked + .toggle-slider {
             background-color: #4a6fa5;
         }
         
-        input:checked + .slider:before {
-            transform: translateX(26px);
+        .toggle-checkbox:checked + .toggle-slider:before {
+            transform: translateX(24px);
         }
         
-        /* 预览按钮 */
-        .preview-btn {
-            background: #17a2b8;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
-            text-decoration: none;
+        /* 操作按钮组 */
+        .section-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        /* 预览区域 */
+        .preview-area {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid #e9ecef;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .preview-area h4 {
+            color: #495057;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .preview-content {
             font-size: 14px;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.3s ease;
+            line-height: 1.6;
+            color: #495057;
         }
         
-        .preview-btn:hover {
-            background: #138496;
+        /* 富文本编辑器简化版 */
+        .editor-toolbar {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+            flex-wrap: wrap;
+        }
+        
+        .editor-btn {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s;
+        }
+        
+        .editor-btn:hover {
+            background: #f8f9fa;
+            border-color: #4a6fa5;
         }
         
         /* 响应式设计 */
-        @media (max-width: 768px) {
-            .config-sections {
+        @media (max-width: 992px) {
+            .config-layout {
                 grid-template-columns: 1fr;
             }
             
-            .config-section {
+            .config-sidebar {
+                position: sticky;
+                top: 20px;
+                z-index: 100;
+            }
+            
+            .config-nav {
+                display: flex;
+                overflow-x: auto;
+                gap: 10px;
+                padding-bottom: 10px;
+            }
+            
+            .config-nav li {
+                margin-bottom: 0;
+                flex-shrink: 0;
+            }
+            
+            .config-nav a {
+                white-space: nowrap;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .config-content {
                 padding: 20px;
             }
             
-            .config-header {
+            .section-actions {
                 flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
+            }
+            
+            .section-actions button {
+                width: 100%;
             }
         }
     </style>
@@ -162,161 +292,293 @@
             </a>
             <a href="https://zcfi.cn" class="admin-logo">zcfi<span>.</span>cn</a>
             <div class="header-title">
-                <h1><i class="fas fa-cog"></i> 配置管理</h1>
-                <p>管理网站配置和页面内容</p>
+                <h1><i class="fas fa-cog"></i> 网站配置</h1>
+                <p>管理网站基本信息和页面内容</p>
             </div>
         </div>
         
         <div class="admin-main-content">
-            <div class="admin-button-group">
-                <button class="admin-btn btn-success" id="saveAllBtn">
-                    <i class="fas fa-save"></i> 保存所有配置
-                </button>
-                <button class="admin-btn btn-secondary" id="refreshConfigBtn">
-                    <i class="fas fa-sync-alt"></i> 刷新配置
-                </button>
-                <button class="admin-btn btn-info" id="backupConfigBtn">
-                    <i class="fas fa-download"></i> 备份配置
-                </button>
-            </div>
-            
-            <div class="config-sections">
-                <!-- 隐私政策配置 -->
-                <div class="config-section">
-                    <div class="config-header">
-                        <h3><i class="fas fa-shield-alt"></i> 隐私政策</h3>
-                        <a href="../privacy.html" target="_blank" class="preview-btn">
-                            <i class="fas fa-eye"></i> 预览页面
-                        </a>
+            <div class="config-layout">
+                <!-- 左侧导航 -->
+                <div class="config-sidebar">
+                    <ul class="config-nav">
+                        <li><a href="#site-info" class="active">
+                            <i class="fas fa-info-circle"></i> 网站信息
+                        </a></li>
+                        <li><a href="#privacy-policy">
+                            <i class="fas fa-shield-alt"></i> 隐私政策
+                        </a></li>
+                        <li><a href="#terms-of-service">
+                            <i class="fas fa-file-contract"></i> 使用条款
+                        </a></li>
+                        <li><a href="#copyright">
+                            <i class="fas fa-copyright"></i> 版权声明
+                        </a></li>
+                        <li><a href="#social-links">
+                            <i class="fas fa-share-alt"></i> 社交链接
+                        </a></li>
+                    </ul>
+                    
+                    <div style="margin-top: 30px; padding: 15px; background: #e9ecef; border-radius: 8px;">
+                        <h4 style="font-size: 14px; margin-bottom: 10px; color: #495057;">配置说明</h4>
+                        <p style="font-size: 12px; color: #6c757d; line-height: 1.5;">
+                            所有配置保存到独立的 Gist 中。
+                            保存后，前台页面会实时加载更新。
+                        </p>
                     </div>
-                    <div class="form-group">
-                        <label for="privacyTitle"><i class="fas fa-heading"></i> 页面标题:</label>
-                        <input type="text" id="privacyTitle" placeholder="隐私政策标题">
+                </div>
+                
+                <!-- 右侧内容 -->
+                <div class="config-content">
+                    <!-- 网站信息 -->
+                    <div class="config-section active" id="site-info-section">
+                        <div class="section-header">
+                            <h2><i class="fas fa-info-circle"></i> 网站基本信息</h2>
+                            <p>配置网站的名称、描述和联系信息</p>
+                        </div>
+                        
+                        <div class="compact-form">
+                            <div class="form-group">
+                                <label for="siteName"><i class="fas fa-globe"></i> 网站名称</label>
+                                <input type="text" id="siteName" placeholder="例如：我的个人网站">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="siteDescription"><i class="fas fa-align-left"></i> 网站描述</label>
+                                <textarea id="siteDescription" placeholder="网站的简短描述，用于 SEO 和社交媒体分享" rows="3"></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="siteKeywords"><i class="fas fa-tags"></i> 网站关键词</label>
+                                <input type="text" id="siteKeywords" placeholder="例如：个人网站,技术博客,作品展示">
+                                <div style="font-size: 12px; color: #6c757d; margin-top: 5px;">
+                                    使用逗号分隔多个关键词
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="adminEmail"><i class="fas fa-envelope"></i> 管理员邮箱</label>
+                                <input type="email" id="adminEmail" placeholder="admin@example.com">
+                            </div>
+                        </div>
+                        
+                        <div class="section-actions">
+                            <button class="admin-btn btn-primary" onclick="saveCurrentSection('site-info')">
+                                <i class="fas fa-save"></i> 保存网站信息
+                            </button>
+                            <button class="admin-btn btn-secondary" onclick="resetCurrentSection('site-info')">
+                                <i class="fas fa-undo"></i> 重置
+                            </button>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="privacyContent"><i class="fas fa-file-alt"></i> 政策内容 (支持 HTML):</label>
-                        <textarea id="privacyContent" placeholder="在此编辑隐私政策内容..."></textarea>
+                    
+                    <!-- 隐私政策 -->
+                    <div class="config-section" id="privacy-policy-section">
+                        <div class="section-header">
+                            <h2><i class="fas fa-shield-alt"></i> 隐私政策</h2>
+                            <p>编辑网站隐私政策内容，支持 HTML 格式</p>
+                        </div>
+                        
+                        <div class="compact-form">
+                            <div class="form-group">
+                                <label for="privacyTitle"><i class="fas fa-heading"></i> 页面标题</label>
+                                <input type="text" id="privacyTitle" placeholder="隐私政策">
+                            </div>
+                            
+                            <div class="editor-toolbar">
+                                <button type="button" class="editor-btn" onclick="formatText('privacyContent', 'bold')">
+                                    <i class="fas fa-bold"></i> 加粗
+                                </button>
+                                <button type="button" class="editor-btn" onclick="formatText('privacyContent', 'italic')">
+                                    <i class="fas fa-italic"></i> 斜体
+                                </button>
+                                <button type="button" class="editor-btn" onclick="formatText('privacyContent', 'link')">
+                                    <i class="fas fa-link"></i> 链接
+                                </button>
+                                <button type="button" class="editor-btn" onclick="formatText('privacyContent', 'list')">
+                                    <i class="fas fa-list"></i> 列表
+                                </button>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="privacyContent"><i class="fas fa-file-alt"></i> 政策内容</label>
+                                <textarea id="privacyContent" rows="10" placeholder="在此编辑隐私政策内容..."></textarea>
+                                <div style="font-size: 12px; color: #6c757d; margin-top: 5px;">
+                                    支持 HTML 标签，如 &lt;strong&gt;, &lt;em&gt;, &lt;a&gt;, &lt;ul&gt;, &lt;li&gt; 等
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>页面状态</label>
+                                <div class="toggle-switch">
+                                    <label class="toggle-container">
+                                        <input type="checkbox" id="privacyEnabled" class="toggle-checkbox" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                    <span class="toggle-label" id="privacyStatusLabel">已启用 (公开访问)</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="preview-area">
+                            <h4>预览效果：</h4>
+                            <div class="preview-content" id="privacyPreview">
+                                内容将在这里预览...
+                            </div>
+                        </div>
+                        
+                        <div class="section-actions">
+                            <button class="admin-btn btn-primary" onclick="saveCurrentSection('privacy')">
+                                <i class="fas fa-save"></i> 保存隐私政策
+                            </button>
+                            <button class="admin-btn btn-secondary" onclick="previewContent('privacy')">
+                                <i class="fas fa-eye"></i> 更新预览
+                            </button>
+                            <a href="../privacy.html" target="_blank" class="admin-btn btn-info">
+                                <i class="fas fa-external-link-alt"></i> 查看页面
+                            </a>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="privacyEnabled"><i class="fas fa-toggle-on"></i> 页面状态:</label>
-                        <div class="switch-group">
-                            <label class="switch">
-                                <input type="checkbox" id="privacyEnabled" checked>
-                                <span class="slider"></span>
-                            </label>
-                            <span id="privacyStatusText">已启用</span>
+                    
+                    <!-- 使用条款 -->
+                    <div class="config-section" id="terms-of-service-section">
+                        <div class="section-header">
+                            <h2><i class="fas fa-file-contract"></i> 使用条款</h2>
+                            <p>编辑网站使用条款内容</p>
+                        </div>
+                        
+                        <div class="compact-form">
+                            <div class="form-group">
+                                <label for="termsTitle"><i class="fas fa-heading"></i> 页面标题</label>
+                                <input type="text" id="termsTitle" placeholder="使用条款">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="termsContent"><i class="fas fa-file-alt"></i> 条款内容</label>
+                                <textarea id="termsContent" rows="10" placeholder="在此编辑使用条款内容..."></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>页面状态</label>
+                                <div class="toggle-switch">
+                                    <label class="toggle-container">
+                                        <input type="checkbox" id="termsEnabled" class="toggle-checkbox" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                    <span class="toggle-label" id="termsStatusLabel">已启用 (公开访问)</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="preview-area">
+                            <h4>预览效果：</h4>
+                            <div class="preview-content" id="termsPreview">
+                                内容将在这里预览...
+                            </div>
+                        </div>
+                        
+                        <div class="section-actions">
+                            <button class="admin-btn btn-primary" onclick="saveCurrentSection('terms')">
+                                <i class="fas fa-save"></i> 保存使用条款
+                            </button>
+                            <button class="admin-btn btn-secondary" onclick="previewContent('terms')">
+                                <i class="fas fa-eye"></i> 更新预览
+                            </button>
+                            <a href="../terms.html" target="_blank" class="admin-btn btn-info">
+                                <i class="fas fa-external-link-alt"></i> 查看页面
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- 版权声明 -->
+                    <div class="config-section" id="copyright-section">
+                        <div class="section-header">
+                            <h2><i class="fas fa-copyright"></i> 版权声明</h2>
+                            <p>编辑网站版权声明内容</p>
+                        </div>
+                        
+                        <div class="compact-form">
+                            <div class="form-group">
+                                <label for="copyrightTitle"><i class="fas fa-heading"></i> 页面标题</label>
+                                <input type="text" id="copyrightTitle" placeholder="版权声明">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="copyrightContent"><i class="fas fa-file-alt"></i> 声明内容</label>
+                                <textarea id="copyrightContent" rows="10" placeholder="在此编辑版权声明内容..."></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>页面状态</label>
+                                <div class="toggle-switch">
+                                    <label class="toggle-container">
+                                        <input type="checkbox" id="copyrightEnabled" class="toggle-checkbox" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                    <span class="toggle-label" id="copyrightStatusLabel">已启用 (公开访问)</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="preview-area">
+                            <h4>预览效果：</h4>
+                            <div class="preview-content" id="copyrightPreview">
+                                内容将在这里预览...
+                            </div>
+                        </div>
+                        
+                        <div class="section-actions">
+                            <button class="admin-btn btn-primary" onclick="saveCurrentSection('copyright')">
+                                <i class="fas fa-save"></i> 保存版权声明
+                            </button>
+                            <button class="admin-btn btn-secondary" onclick="previewContent('copyright')">
+                                <i class="fas fa-eye"></i> 更新预览
+                            </button>
+                            <a href="../copyright.html" target="_blank" class="admin-btn btn-info">
+                                <i class="fas fa-external-link-alt"></i> 查看页面
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- 社交链接 -->
+                    <div class="config-section" id="social-links-section">
+                        <div class="section-header">
+                            <h2><i class="fas fa-share-alt"></i> 社交链接</h2>
+                            <p>配置社交媒体的链接地址</p>
+                        </div>
+                        
+                        <div class="compact-form">
+                            <div class="form-group">
+                                <label for="githubUrl"><i class="fab fa-github"></i> GitHub</label>
+                                <input type="url" id="githubUrl" placeholder="https://github.com/yourusername">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="weiboUrl"><i class="fab fa-weibo"></i> 微博</label>
+                                <input type="url" id="weiboUrl" placeholder="https://weibo.com/yourprofile">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="zhihuUrl"><i class="fab fa-zhihu"></i> 知乎</label>
+                                <input type="url" id="zhihuUrl" placeholder="https://www.zhihu.com/people/yourprofile">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="linkedinUrl"><i class="fab fa-linkedin"></i> LinkedIn</label>
+                                <input type="url" id="linkedinUrl" placeholder="https://linkedin.com/in/yourprofile">
+                            </div>
+                        </div>
+                        
+                        <div class="section-actions">
+                            <button class="admin-btn btn-primary" onclick="saveCurrentSection('social')">
+                                <i class="fas fa-save"></i> 保存社交链接
+                            </button>
+                            <button class="admin-btn btn-secondary" onclick="resetCurrentSection('social')">
+                                <i class="fas fa-undo"></i> 重置
+                            </button>
                         </div>
                     </div>
                 </div>
-                
-                <!-- 使用条款配置 -->
-                <div class="config-section">
-                    <div class="config-header">
-                        <h3><i class="fas fa-file-contract"></i> 使用条款</h3>
-                        <a href="../terms.html" target="_blank" class="preview-btn">
-                            <i class="fas fa-eye"></i> 预览页面
-                        </a>
-                    </div>
-                    <div class="form-group">
-                        <label for="termsTitle"><i class="fas fa-heading"></i> 页面标题:</label>
-                        <input type="text" id="termsTitle" placeholder="使用条款标题">
-                    </div>
-                    <div class="form-group">
-                        <label for="termsContent"><i class="fas fa-file-alt"></i> 条款内容 (支持 HTML):</label>
-                        <textarea id="termsContent" placeholder="在此编辑使用条款内容..."></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="termsEnabled"><i class="fas fa-toggle-on"></i> 页面状态:</label>
-                        <div class="switch-group">
-                            <label class="switch">
-                                <input type="checkbox" id="termsEnabled" checked>
-                                <span class="slider"></span>
-                            </label>
-                            <span id="termsStatusText">已启用</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 版权声明配置 -->
-                <div class="config-section">
-                    <div class="config-header">
-                        <h3><i class="fas fa-copyright"></i> 版权声明</h3>
-                        <a href="../copyright.html" target="_blank" class="preview-btn">
-                            <i class="fas fa-eye"></i> 预览页面
-                        </a>
-                    </div>
-                    <div class="form-group">
-                        <label for="copyrightTitle"><i class="fas fa-heading"></i> 页面标题:</label>
-                        <input type="text" id="copyrightTitle" placeholder="版权声明标题">
-                    </div>
-                    <div class="form-group">
-                        <label for="copyrightContent"><i class="fas fa-file-alt"></i> 声明内容 (支持 HTML):</label>
-                        <textarea id="copyrightContent" placeholder="在此编辑版权声明内容..."></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="copyrightEnabled"><i class="fas fa-toggle-on"></i> 页面状态:</label>
-                        <div class="switch-group">
-                            <label class="switch">
-                                <input type="checkbox" id="copyrightEnabled" checked>
-                                <span class="slider"></span>
-                            </label>
-                            <span id="copyrightStatusText">已启用</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 网站基础配置 -->
-                <div class="config-section">
-                    <div class="config-header">
-                        <h3><i class="fas fa-globe"></i> 网站配置</h3>
-                    </div>
-                    <div class="form-group">
-                        <label for="siteName"><i class="fas fa-sitemap"></i> 网站名称:</label>
-                        <input type="text" id="siteName" placeholder="例如: zcfi.cn">
-                    </div>
-                    <div class="form-group">
-                        <label for="siteDescription"><i class="fas fa-align-left"></i> 网站描述:</label>
-                        <textarea id="siteDescription" placeholder="网站简短描述，用于SEO"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="siteKeywords"><i class="fas fa-tags"></i> 网站关键词 (逗号分隔):</label>
-                        <input type="text" id="siteKeywords" placeholder="例如: 个人网站,技术博客,作品展示">
-                    </div>
-                    <div class="form-group">
-                        <label for="adminEmail"><i class="fas fa-envelope"></i> 管理员邮箱:</label>
-                        <input type="email" id="adminEmail" placeholder="admin@zcfi.cn">
-                    </div>
-                </div>
-                
-                <!-- 社交链接配置 -->
-                <div class="config-section">
-                    <div class="config-header">
-                        <h3><i class="fas fa-share-alt"></i> 社交链接</h3>
-                    </div>
-                    <div class="form-group">
-                        <label for="githubUrl"><i class="fab fa-github"></i> GitHub:</label>
-                        <input type="url" id="githubUrl" placeholder="https://github.com/yourusername">
-                    </div>
-                    <div class="form-group">
-                        <label for="weiboUrl"><i class="fab fa-weibo"></i> 微博:</label>
-                        <input type="url" id="weiboUrl" placeholder="https://weibo.com/yourprofile">
-                    </div>
-                    <div class="form-group">
-                        <label for="zhihuUrl"><i class="fab fa-zhihu"></i> 知乎:</label>
-                        <input type="url" id="zhihuUrl" placeholder="https://www.zhihu.com/people/yourprofile">
-                    </div>
-                    <div class="form-group">
-                        <label for="linkedinUrl"><i class="fab fa-linkedin"></i> LinkedIn:</label>
-                        <input type="url" id="linkedinUrl" placeholder="https://linkedin.com/in/yourprofile">
-                    </div>
-                </div>
-            </div>
-            
-            <div class="admin-footer">
-                <p>© 2026 zcfi.cn 配置管理系统</p>
-                <p style="margin-top: 10px; font-size: 13px; color: #6c757d;">
-                    注意：保存的配置将同步到GitHub Gist，网站前端会实时加载最新配置。
-                </p>
             </div>
         </div>
     </div>
@@ -328,7 +590,7 @@
                 <i class="fas fa-question-circle"></i>
             </div>
             <div class="modal-title">确认保存</div>
-            <div class="modal-message">确定要保存所有配置吗？这将覆盖现有的配置数据。</div>
+            <div class="modal-message" id="confirmMessage">确定要保存当前配置吗？</div>
             <div class="modal-buttons">
                 <button class="modal-btn btn-secondary" id="cancelSaveBtn">取消</button>
                 <button class="modal-btn btn-primary" id="confirmSaveBtn">确认保存</button>
@@ -369,64 +631,526 @@
         }
         
         // 全局配置
-        const CONFIG_GIST_ID = '73cc78400c25eb9effed665e2c89843d';
+        const CONFIG_GIST_ID = '983bb7371ddb439a2fcbfb4885e34d14';
         const CONFIG_GIST_URL = `https://api.github.com/gists/${CONFIG_GIST_ID}`;
+        const CONFIG_RAW_URL = `https://gist.githubusercontent.com/xiao305/${CONFIG_GIST_ID}/raw/config.json`;
         const token = sessionStorage.getItem('admin_token');
         
-        // 初始化事件监听器
+        let currentConfigData = {};
+        let currentSection = 'site-info';
+        
+        // 初始化
         document.addEventListener('DOMContentLoaded', function() {
+            initNavigation();
             initEventListeners();
-            loadConfigData();
-            
-            // 初始化开关状态监听
             initToggleSwitches();
+            loadConfigData();
         });
         
-        function initEventListeners() {
-            // 主按钮
-            document.getElementById('saveAllBtn').addEventListener('click', showSaveConfirm);
-            document.getElementById('refreshConfigBtn').addEventListener('click', loadConfigData);
-            document.getElementById('backupConfigBtn').addEventListener('click', backupConfig);
-            
-            // 弹窗按钮
-            document.getElementById('cancelSaveBtn').addEventListener('click', closeConfirmModal);
-            document.getElementById('confirmSaveBtn').addEventListener('click', saveAllConfig);
-            document.getElementById('closeResultBtn').addEventListener('click', closeResultModal);
+        // 初始化导航
+        function initNavigation() {
+            document.querySelectorAll('.config-nav a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // 更新导航状态
+                    document.querySelectorAll('.config-nav a').forEach(a => a.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 获取目标部分
+                    const targetId = this.getAttribute('href').substring(1);
+                    
+                    // 隐藏所有部分
+                    document.querySelectorAll('.config-section').forEach(section => {
+                        section.classList.remove('active');
+                    });
+                    
+                    // 显示目标部分
+                    const targetSection = document.getElementById(`${targetId}-section`);
+                    if (targetSection) {
+                        targetSection.classList.add('active');
+                        currentSection = targetId;
+                    }
+                });
+            });
         }
         
+        // 初始化事件监听器
+        function initEventListeners() {
+            // 弹窗按钮
+            document.getElementById('cancelSaveBtn').addEventListener('click', closeConfirmModal);
+            document.getElementById('confirmSaveBtn').addEventListener('click', executeSave);
+            document.getElementById('closeResultBtn').addEventListener('click', closeResultModal);
+            
+            // 实时预览
+            document.getElementById('privacyContent').addEventListener('input', function() {
+                previewContent('privacy');
+            });
+            
+            document.getElementById('termsContent').addEventListener('input', function() {
+                previewContent('terms');
+            });
+            
+            document.getElementById('copyrightContent').addEventListener('input', function() {
+                previewContent('copyright');
+            });
+        }
+        
+        // 初始化开关
         function initToggleSwitches() {
             // 隐私政策开关
-            const privacySwitch = document.getElementById('privacyEnabled');
-            const privacyStatus = document.getElementById('privacyStatusText');
-            
-            privacySwitch.addEventListener('change', function() {
-                privacyStatus.textContent = this.checked ? '已启用' : '已禁用';
+            document.getElementById('privacyEnabled').addEventListener('change', function() {
+                document.getElementById('privacyStatusLabel').textContent = 
+                    this.checked ? '已启用 (公开访问)' : '已禁用 (隐藏页面)';
             });
             
             // 使用条款开关
-            const termsSwitch = document.getElementById('termsEnabled');
-            const termsStatus = document.getElementById('termsStatusText');
-            
-            termsSwitch.addEventListener('change', function() {
-                termsStatus.textContent = this.checked ? '已启用' : '已禁用';
+            document.getElementById('termsEnabled').addEventListener('change', function() {
+                document.getElementById('termsStatusLabel').textContent = 
+                    this.checked ? '已启用 (公开访问)' : '已禁用 (隐藏页面)';
             });
             
             // 版权声明开关
-            const copyrightSwitch = document.getElementById('copyrightEnabled');
-            const copyrightStatus = document.getElementById('copyrightStatusText');
-            
-            copyrightSwitch.addEventListener('change', function() {
-                copyrightStatus.textContent = this.checked ? '已启用' : '已禁用';
+            document.getElementById('copyrightEnabled').addEventListener('change', function() {
+                document.getElementById('copyrightStatusLabel').textContent = 
+                    this.checked ? '已启用 (公开访问)' : '已禁用 (隐藏页面)';
             });
         }
         
-        // 弹窗控制函数
-        function showSaveConfirm() {
+        // 加载配置数据
+        async function loadConfigData() {
+            try {
+                showLoading('正在加载配置数据...');
+                
+                const timestamp = new Date().getTime();
+                const response = await fetch(`${CONFIG_RAW_URL}?t=${timestamp}`);
+                
+                if (!response.ok) {
+                    // 如果Gist不存在或为空，使用默认配置
+                    console.warn('配置Gist不存在或为空，使用默认配置');
+                    currentConfigData = getDefaultConfig();
+                    populateFormWithConfig(currentConfigData);
+                    hideLoading();
+                    showResult('info', '提示', '使用默认配置，请保存以创建配置文件。');
+                    return;
+                }
+                
+                const data = await response.json();
+                currentConfigData = data;
+                populateFormWithConfig(data);
+                hideLoading();
+                
+            } catch (error) {
+                console.error('加载配置失败:', error);
+                currentConfigData = getDefaultConfig();
+                populateFormWithConfig(currentConfigData);
+                hideLoading();
+                showResult('error', '加载失败', '无法加载配置，使用默认设置。');
+            }
+        }
+        
+        // 获取默认配置
+        function getDefaultConfig() {
+            return {
+                site: {
+                    name: 'zcfi.cn',
+                    description: '个人网站和作品展示平台',
+                    keywords: '个人网站,技术博客,作品展示',
+                    adminEmail: 'admin@zcfi.cn',
+                    lastUpdated: new Date().toISOString()
+                },
+                privacy: {
+                    title: '隐私政策',
+                    content: `<h3>1. 信息收集</h3>
+<p>本站为个人非商业网站，不主动收集用户任何个人信息。</p>
+<h3>2. 数据安全</h3>
+<p>所有通过表单提交的数据将通过 HTTPS 加密传输。</p>
+<h3>3. 联系我们</h3>
+<p>如有任何隐私相关疑问，请通过联系页面与我沟通。</p>`,
+                    enabled: true,
+                    lastUpdated: new Date().toISOString()
+                },
+                terms: {
+                    title: '使用条款',
+                    content: `<h3>1. 接受条款</h3>
+<p>通过访问和使用本网站，您同意遵守以下使用条款。</p>
+<h3>2. 网站内容</h3>
+<p>本网站所有内容均为原创或已获得合法授权，受版权法保护。</p>
+<h3>3. 免责声明</h3>
+<p>本网站按"现状"提供，不提供任何形式的保证。</p>`,
+                    enabled: true,
+                    lastUpdated: new Date().toISOString()
+                },
+                copyright: {
+                    title: '版权声明',
+                    content: `<h3>1. 版权归属</h3>
+<p>本网站的所有原创内容均归网站所有者所有。</p>
+<h3>2. 使用许可</h3>
+<p>允许个人用户出于学习、研究目的下载、保存和参考本网站内容。</p>
+<h3>3. 禁止行为</h3>
+<p>未经授权，严禁复制、转载或重新发布本网站内容。</p>`,
+                    enabled: true,
+                    lastUpdated: new Date().toISOString()
+                },
+                social: {
+                    github: 'https://github.com',
+                    weibo: 'https://weibo.com',
+                    zhihu: 'https://zhihu.com',
+                    linkedin: 'https://linkedin.com',
+                    lastUpdated: new Date().toISOString()
+                }
+            };
+        }
+        
+        // 填充表单数据
+        function populateFormWithConfig(config) {
+            // 网站信息
+            if (config.site) {
+                document.getElementById('siteName').value = config.site.name || '';
+                document.getElementById('siteDescription').value = config.site.description || '';
+                document.getElementById('siteKeywords').value = config.site.keywords || '';
+                document.getElementById('adminEmail').value = config.site.adminEmail || '';
+            }
+            
+            // 隐私政策
+            if (config.privacy) {
+                document.getElementById('privacyTitle').value = config.privacy.title || '';
+                document.getElementById('privacyContent').value = config.privacy.content || '';
+                document.getElementById('privacyEnabled').checked = config.privacy.enabled !== false;
+                document.getElementById('privacyStatusLabel').textContent = 
+                    config.privacy.enabled !== false ? '已启用 (公开访问)' : '已禁用 (隐藏页面)';
+                previewContent('privacy');
+            }
+            
+            // 使用条款
+            if (config.terms) {
+                document.getElementById('termsTitle').value = config.terms.title || '';
+                document.getElementById('termsContent').value = config.terms.content || '';
+                document.getElementById('termsEnabled').checked = config.terms.enabled !== false;
+                document.getElementById('termsStatusLabel').textContent = 
+                    config.terms.enabled !== false ? '已启用 (公开访问)' : '已禁用 (隐藏页面)';
+                previewContent('terms');
+            }
+            
+            // 版权声明
+            if (config.copyright) {
+                document.getElementById('copyrightTitle').value = config.copyright.title || '';
+                document.getElementById('copyrightContent').value = config.copyright.content || '';
+                document.getElementById('copyrightEnabled').checked = config.copyright.enabled !== false;
+                document.getElementById('copyrightStatusLabel').textContent = 
+                    config.copyright.enabled !== false ? '已启用 (公开访问)' : '已禁用 (隐藏页面)';
+                previewContent('copyright');
+            }
+            
+            // 社交链接
+            if (config.social) {
+                document.getElementById('githubUrl').value = config.social.github || '';
+                document.getElementById('weiboUrl').value = config.social.weibo || '';
+                document.getElementById('zhihuUrl').value = config.social.zhihu || '';
+                document.getElementById('linkedinUrl').value = config.social.linkedin || '';
+            }
+        }
+        
+        // 保存当前部分
+        function saveCurrentSection(section) {
+            // 收集当前部分的数据
+            const sectionData = {};
+            
+            switch(section) {
+                case 'site-info':
+                    sectionData.site = {
+                        name: document.getElementById('siteName').value.trim(),
+                        description: document.getElementById('siteDescription').value.trim(),
+                        keywords: document.getElementById('siteKeywords').value.trim(),
+                        adminEmail: document.getElementById('adminEmail').value.trim(),
+                        lastUpdated: new Date().toISOString()
+                    };
+                    break;
+                    
+                case 'privacy':
+                    sectionData.privacy = {
+                        title: document.getElementById('privacyTitle').value.trim(),
+                        content: document.getElementById('privacyContent').value.trim(),
+                        enabled: document.getElementById('privacyEnabled').checked,
+                        lastUpdated: new Date().toISOString()
+                    };
+                    break;
+                    
+                case 'terms':
+                    sectionData.terms = {
+                        title: document.getElementById('termsTitle').value.trim(),
+                        content: document.getElementById('termsContent').value.trim(),
+                        enabled: document.getElementById('termsEnabled').checked,
+                        lastUpdated: new Date().toISOString()
+                    };
+                    break;
+                    
+                case 'copyright':
+                    sectionData.copyright = {
+                        title: document.getElementById('copyrightTitle').value.trim(),
+                        content: document.getElementById('copyrightContent').value.trim(),
+                        enabled: document.getElementById('copyrightEnabled').checked,
+                        lastUpdated: new Date().toISOString()
+                    };
+                    break;
+                    
+                case 'social':
+                    sectionData.social = {
+                        github: document.getElementById('githubUrl').value.trim(),
+                        weibo: document.getElementById('weiboUrl').value.trim(),
+                        zhihu: document.getElementById('zhihuUrl').value.trim(),
+                        linkedin: document.getElementById('linkedinUrl').value.trim(),
+                        lastUpdated: new Date().toISOString()
+                    };
+                    break;
+            }
+            
+            // 显示确认弹窗
+            document.getElementById('confirmMessage').textContent = `确定要保存${getSectionName(section)}吗？`;
+            document.getElementById('confirmSaveBtn').dataset.section = section;
+            document.getElementById('confirmSaveBtn').dataset.sectionData = JSON.stringify(sectionData);
             showModal('confirmModal');
+        }
+        
+        // 执行保存
+        async function executeSave() {
+            const section = this.dataset.section;
+            const sectionData = JSON.parse(this.dataset.sectionData);
+            
+            try {
+                showLoading('正在保存配置...');
+                
+                // 更新当前配置数据
+                Object.assign(currentConfigData, sectionData);
+                
+                // 保存到Gist
+                await saveConfigToGist(currentConfigData);
+                
+                hideLoading();
+                showResult('success', '保存成功', `${getSectionName(section)}已成功保存。`);
+                closeConfirmModal();
+                
+            } catch (error) {
+                hideLoading();
+                showResult('error', '保存失败', error.message);
+            }
+        }
+        
+        // 保存到Gist
+        async function saveConfigToGist(configData) {
+            try {
+                // 首先尝试通过API获取现有Gist
+                const response = await fetch(CONFIG_GIST_URL, {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                let gistExists = response.ok;
+                
+                // 准备更新数据
+                const updateData = {
+                    description: '网站配置数据',
+                    files: {
+                        'config.json': {
+                            content: JSON.stringify(configData, null, 2)
+                        }
+                    }
+                };
+                
+                let updateResponse;
+                
+                if (gistExists) {
+                    // 更新现有Gist
+                    updateResponse = await fetch(CONFIG_GIST_URL, {
+                        method: 'PATCH',
+                        headers: {
+                            'Authorization': `token ${token}`,
+                            'Accept': 'application/vnd.github.v3+json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(updateData)
+                    });
+                } else {
+                    // 创建新Gist
+                    updateResponse = await fetch('https://api.github.com/gists', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `token ${token}`,
+                            'Accept': 'application/vnd.github.v3+json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(updateData)
+                    });
+                }
+                
+                if (!updateResponse.ok) {
+                    throw new Error(`保存失败: ${updateResponse.status} ${updateResponse.statusText}`);
+                }
+                
+                return true;
+                
+            } catch (error) {
+                console.error('保存配置到Gist失败:', error);
+                throw error;
+            }
+        }
+        
+        // 重置当前部分
+        function resetCurrentSection(section) {
+            if (confirm(`确定要重置${getSectionName(section)}吗？所有未保存的更改将丢失。`)) {
+                // 重新从当前配置数据填充表单
+                populateSectionFromConfig(section);
+            }
+        }
+        
+        // 从配置数据填充部分
+        function populateSectionFromConfig(section) {
+            switch(section) {
+                case 'site-info':
+                    if (currentConfigData.site) {
+                        document.getElementById('siteName').value = currentConfigData.site.name || '';
+                        document.getElementById('siteDescription').value = currentConfigData.site.description || '';
+                        document.getElementById('siteKeywords').value = currentConfigData.site.keywords || '';
+                        document.getElementById('adminEmail').value = currentConfigData.site.adminEmail || '';
+                    }
+                    break;
+                    
+                case 'privacy':
+                    if (currentConfigData.privacy) {
+                        document.getElementById('privacyTitle').value = currentConfigData.privacy.title || '';
+                        document.getElementById('privacyContent').value = currentConfigData.privacy.content || '';
+                        document.getElementById('privacyEnabled').checked = currentConfigData.privacy.enabled !== false;
+                        previewContent('privacy');
+                    }
+                    break;
+                    
+                case 'terms':
+                    if (currentConfigData.terms) {
+                        document.getElementById('termsTitle').value = currentConfigData.terms.title || '';
+                        document.getElementById('termsContent').value = currentConfigData.terms.content || '';
+                        document.getElementById('termsEnabled').checked = currentConfigData.terms.enabled !== false;
+                        previewContent('terms');
+                    }
+                    break;
+                    
+                case 'copyright':
+                    if (currentConfigData.copyright) {
+                        document.getElementById('copyrightTitle').value = currentConfigData.copyright.title || '';
+                        document.getElementById('copyrightContent').value = currentConfigData.copyright.content || '';
+                        document.getElementById('copyrightEnabled').checked = currentConfigData.copyright.enabled !== false;
+                        previewContent('copyright');
+                    }
+                    break;
+                    
+                case 'social':
+                    if (currentConfigData.social) {
+                        document.getElementById('githubUrl').value = currentConfigData.social.github || '';
+                        document.getElementById('weiboUrl').value = currentConfigData.social.weibo || '';
+                        document.getElementById('zhihuUrl').value = currentConfigData.social.zhihu || '';
+                        document.getElementById('linkedinUrl').value = currentConfigData.social.linkedin || '';
+                    }
+                    break;
+            }
+        }
+        
+        // 预览内容
+        function previewContent(type) {
+            let content = '';
+            let title = '';
+            
+            switch(type) {
+                case 'privacy':
+                    content = document.getElementById('privacyContent').value;
+                    title = document.getElementById('privacyTitle').value || '隐私政策';
+                    break;
+                case 'terms':
+                    content = document.getElementById('termsContent').value;
+                    title = document.getElementById('termsTitle').value || '使用条款';
+                    break;
+                case 'copyright':
+                    content = document.getElementById('copyrightContent').value;
+                    title = document.getElementById('copyrightTitle').value || '版权声明';
+                    break;
+            }
+            
+            const previewElement = document.getElementById(`${type}Preview`);
+            if (previewElement) {
+                previewElement.innerHTML = `
+                    <h3 style="color: #333; margin-bottom: 15px;">${title}</h3>
+                    <div>${content || '<p style="color: #999;">暂无内容</p>'}</div>
+                `;
+            }
+        }
+        
+        // 文本格式化工具
+        function formatText(textareaId, format) {
+            const textarea = document.getElementById(textareaId);
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end);
+            let formattedText = '';
+            
+            switch(format) {
+                case 'bold':
+                    formattedText = `<strong>${selectedText}</strong>`;
+                    break;
+                case 'italic':
+                    formattedText = `<em>${selectedText}</em>`;
+                    break;
+                case 'link':
+                    const url = prompt('请输入链接地址:', 'https://');
+                    if (url) {
+                        const linkText = selectedText || '链接文本';
+                        formattedText = `<a href="${url}" target="_blank">${linkText}</a>`;
+                    } else {
+                        return;
+                    }
+                    break;
+                case 'list':
+                    const listItems = selectedText.split('\n').filter(item => item.trim());
+                    formattedText = '<ul>\n' + listItems.map(item => `  <li>${item}</li>`).join('\n') + '\n</ul>';
+                    break;
+            }
+            
+            textarea.value = textarea.value.substring(0, start) + formattedText + textarea.value.substring(end);
+            
+            // 重新聚焦并设置光标位置
+            textarea.focus();
+            textarea.setSelectionRange(start + formattedText.length, start + formattedText.length);
+            
+            // 触发输入事件以更新预览
+            textarea.dispatchEvent(new Event('input'));
+        }
+        
+        // 获取部分名称
+        function getSectionName(section) {
+            const names = {
+                'site-info': '网站信息',
+                'privacy': '隐私政策',
+                'terms': '使用条款',
+                'copyright': '版权声明',
+                'social': '社交链接'
+            };
+            return names[section] || '配置';
+        }
+        
+        // 弹窗控制函数
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('show');
+        }
+        
+        function hideModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
         }
         
         function closeConfirmModal() {
             hideModal('confirmModal');
+        }
+        
+        function closeResultModal() {
+            hideModal('resultModal');
         }
         
         function showLoading(message = '正在处理您的请求，请稍候...') {
@@ -455,317 +1179,6 @@
             document.getElementById('resultTitle').textContent = title;
             document.getElementById('resultMessage').textContent = message;
             showModal('resultModal');
-        }
-        
-        function closeResultModal() {
-            hideModal('resultModal');
-        }
-        
-        function showModal(modalId) {
-            document.getElementById(modalId).classList.add('show');
-        }
-        
-        function hideModal(modalId) {
-            document.getElementById(modalId).classList.remove('show');
-        }
-        
-        // 配置数据操作
-        async function loadConfigData() {
-            try {
-                showLoading('正在加载配置数据...');
-                
-                const response = await fetch(CONFIG_GIST_URL, {
-                    headers: {
-                        'Authorization': `token ${token}`,
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`获取数据失败: ${response.status} ${response.statusText}`);
-                }
-                
-                const gist = await response.json();
-                const gistContent = gist.files['blog.json']?.content;
-                
-                if (!gistContent) {
-                    // 如果没有配置数据，使用默认配置
-                    showResult('info', '提示', '未找到配置数据，将使用默认配置。');
-                    loadDefaultConfig();
-                } else {
-                    const data = JSON.parse(gistContent);
-                    populateFormWithConfig(data);
-                    showResult('success', '加载成功', '配置数据已成功加载。');
-                }
-                
-            } catch (error) {
-                console.error('加载配置失败:', error);
-                showResult('error', '加载失败', `无法加载配置数据: ${error.message}`);
-                loadDefaultConfig(); // 加载默认配置
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        function loadDefaultConfig() {
-            // 默认配置
-            const defaultConfig = {
-                privacy: {
-                    title: '隐私政策',
-                    content: '<p>这是默认的隐私政策内容...</p>',
-                    enabled: true
-                },
-                terms: {
-                    title: '使用条款',
-                    content: '<p>这是默认的使用条款内容...</p>',
-                    enabled: true
-                },
-                copyright: {
-                    title: '版权声明',
-                    content: '<p>这是默认的版权声明内容...</p>',
-                    enabled: true
-                },
-                site: {
-                    name: 'zcfi.cn',
-                    description: '个人网站和作品展示',
-                    keywords: '个人网站,技术博客,作品展示',
-                    adminEmail: 'admin@zcfi.cn'
-                },
-                social: {
-                    github: 'https://github.com',
-                    weibo: 'https://weibo.com',
-                    zhihu: 'https://zhihu.com',
-                    linkedin: 'https://linkedin.com'
-                }
-            };
-            
-            populateFormWithConfig(defaultConfig);
-        }
-        
-        function populateFormWithConfig(config) {
-            // 隐私政策
-            if (config.privacy) {
-                document.getElementById('privacyTitle').value = config.privacy.title || '';
-                document.getElementById('privacyContent').value = config.privacy.content || '';
-                document.getElementById('privacyEnabled').checked = config.privacy.enabled !== false;
-                document.getElementById('privacyStatusText').textContent = 
-                    config.privacy.enabled !== false ? '已启用' : '已禁用';
-            }
-            
-            // 使用条款
-            if (config.terms) {
-                document.getElementById('termsTitle').value = config.terms.title || '';
-                document.getElementById('termsContent').value = config.terms.content || '';
-                document.getElementById('termsEnabled').checked = config.terms.enabled !== false;
-                document.getElementById('termsStatusText').textContent = 
-                    config.terms.enabled !== false ? '已启用' : '已禁用';
-            }
-            
-            // 版权声明
-            if (config.copyright) {
-                document.getElementById('copyrightTitle').value = config.copyright.title || '';
-                document.getElementById('copyrightContent').value = config.copyright.content || '';
-                document.getElementById('copyrightEnabled').checked = config.copyright.enabled !== false;
-                document.getElementById('copyrightStatusText').textContent = 
-                    config.copyright.enabled !== false ? '已启用' : '已禁用';
-            }
-            
-            // 网站配置
-            if (config.site) {
-                document.getElementById('siteName').value = config.site.name || '';
-                document.getElementById('siteDescription').value = config.site.description || '';
-                document.getElementById('siteKeywords').value = config.site.keywords || '';
-                document.getElementById('adminEmail').value = config.site.adminEmail || '';
-            }
-            
-            // 社交链接
-            if (config.social) {
-                document.getElementById('githubUrl').value = config.social.github || '';
-                document.getElementById('weiboUrl').value = config.social.weibo || '';
-                document.getElementById('zhihuUrl').value = config.social.zhihu || '';
-                document.getElementById('linkedinUrl').value = config.social.linkedin || '';
-            }
-        }
-        
-        async function saveAllConfig() {
-            try {
-                showLoading('正在保存配置...');
-                
-                // 收集表单数据
-                const configData = {
-                    privacy: {
-                        title: document.getElementById('privacyTitle').value.trim(),
-                        content: document.getElementById('privacyContent').value.trim(),
-                        enabled: document.getElementById('privacyEnabled').checked,
-                        lastUpdated: new Date().toISOString()
-                    },
-                    terms: {
-                        title: document.getElementById('termsTitle').value.trim(),
-                        content: document.getElementById('termsContent').value.trim(),
-                        enabled: document.getElementById('termsEnabled').checked,
-                        lastUpdated: new Date().toISOString()
-                    },
-                    copyright: {
-                        title: document.getElementById('copyrightTitle').value.trim(),
-                        content: document.getElementById('copyrightContent').value.trim(),
-                        enabled: document.getElementById('copyrightEnabled').checked,
-                        lastUpdated: new Date().toISOString()
-                    },
-                    site: {
-                        name: document.getElementById('siteName').value.trim(),
-                        description: document.getElementById('siteDescription').value.trim(),
-                        keywords: document.getElementById('siteKeywords').value.trim(),
-                        adminEmail: document.getElementById('adminEmail').value.trim(),
-                        lastUpdated: new Date().toISOString()
-                    },
-                    social: {
-                        github: document.getElementById('githubUrl').value.trim(),
-                        weibo: document.getElementById('weiboUrl').value.trim(),
-                        zhihu: document.getElementById('zhihuUrl').value.trim(),
-                        linkedin: document.getElementById('linkedinUrl').value.trim(),
-                        lastUpdated: new Date().toISOString()
-                    }
-                };
-                
-                // 验证必填字段
-                if (!configData.site.name || !configData.site.description) {
-                    throw new Error('请填写网站名称和描述');
-                }
-                
-                // 保存到Gist
-                await saveConfigToGist(configData);
-                
-                hideLoading();
-                showResult('success', '保存成功', '所有配置已保存到GitHub Gist。');
-                closeConfirmModal();
-                
-            } catch (error) {
-                hideLoading();
-                showResult('error', '保存失败', error.message);
-            }
-        }
-        
-        async function saveConfigToGist(configData) {
-            try {
-                // 首先获取当前Gist数据
-                const response = await fetch(CONFIG_GIST_URL, {
-                    headers: {
-                        'Authorization': `token ${token}`,
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`获取现有数据失败: ${response.status} ${response.statusText}`);
-                }
-                
-                const gist = await response.json();
-                const existingContent = gist.files['blog.json']?.content;
-                
-                let existingData = {};
-                if (existingContent) {
-                    try {
-                        existingData = JSON.parse(existingContent);
-                    } catch (e) {
-                        console.warn('解析现有数据失败，将创建新配置');
-                    }
-                }
-                
-                // 合并数据（保留原有的blog、messages等字段）
-                const updatedData = {
-                    ...existingData,
-                    config: configData
-                };
-                
-                // 更新Gist
-                const updateResponse = await fetch(CONFIG_GIST_URL, {
-                    method: 'PATCH',
-                    headers: {
-                        'Authorization': `token ${token}`,
-                        'Accept': 'application/vnd.github.v3+json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        description: '网站配置数据',
-                        files: {
-                            'blog.json': {
-                                content: JSON.stringify(updatedData, null, 2)
-                            }
-                        }
-                    })
-                });
-                
-                if (!updateResponse.ok) {
-                    throw new Error(`保存失败: ${updateResponse.status} ${updateResponse.statusText}`);
-                }
-                
-                return true;
-                
-            } catch (error) {
-                console.error('保存配置到Gist失败:', error);
-                throw error;
-            }
-        }
-        
-        async function backupConfig() {
-            try {
-                showLoading('正在创建备份...');
-                
-                // 收集当前配置数据
-                const configData = {
-                    privacy: {
-                        title: document.getElementById('privacyTitle').value,
-                        content: document.getElementById('privacyContent').value,
-                        enabled: document.getElementById('privacyEnabled').checked
-                    },
-                    terms: {
-                        title: document.getElementById('termsTitle').value,
-                        content: document.getElementById('termsContent').value,
-                        enabled: document.getElementById('termsEnabled').checked
-                    },
-                    copyright: {
-                        title: document.getElementById('copyrightTitle').value,
-                        content: document.getElementById('copyrightContent').value,
-                        enabled: document.getElementById('copyrightEnabled').checked
-                    },
-                    site: {
-                        name: document.getElementById('siteName').value,
-                        description: document.getElementById('siteDescription').value,
-                        keywords: document.getElementById('siteKeywords').value,
-                        adminEmail: document.getElementById('adminEmail').value
-                    },
-                    social: {
-                        github: document.getElementById('githubUrl').value,
-                        weibo: document.getElementById('weiboUrl').value,
-                        zhihu: document.getElementById('zhihuUrl').value,
-                        linkedin: document.getElementById('linkedinUrl').value
-                    }
-                };
-                
-                // 创建备份文件
-                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-                const backupBlob = new Blob(
-                    [JSON.stringify(configData, null, 2)], 
-                    { type: 'application/json' }
-                );
-                
-                // 下载备份文件
-                const backupUrl = URL.createObjectURL(backupBlob);
-                const downloadLink = document.createElement('a');
-                downloadLink.href = backupUrl;
-                downloadLink.download = `config-backup-${timestamp}.json`;
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                document.body.removeChild(downloadLink);
-                URL.revokeObjectURL(backupUrl);
-                
-                hideLoading();
-                showResult('success', '备份成功', '配置文件已下载到您的设备。');
-                
-            } catch (error) {
-                hideLoading();
-                showResult('error', '备份失败', error.message);
-            }
         }
         
         // 页面卸载时清除敏感信息
