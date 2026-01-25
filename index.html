@@ -137,7 +137,6 @@
                 <a href="/" class="logo">zcfi<span>.</span>cn</a>
                 <ul class="nav-links">
                     <li><a href="/">首页</a></li>
-                    <li><a href="/about">关于我</a></li>
                     <li><a href="/portfolio">作品集</a></li>
                     <li><a href="/blog">博客</a></li>
                     <li><a href="/contact">联系我</a></li>
@@ -201,17 +200,16 @@
                     <a href="/" class="footer-logo">zcfi<span>.</span>cn</a>
                     <p>这是我的个人网站，用于展示作品、分享知识和记录成长。网站正在持续完善中，感谢您的访问。</p>
                     <div class="social-links">
-                        <a href="https://github.com/xiao305" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
-                        <a href="#" rel="noopener noreferrer"><i class="fab fa-weibo"></i></a>
-                        <a href="#" rel="noopener noreferrer"><i class="fab fa-zhihu"></i></a>
-                        <a href="#" rel="noopener noreferrer"><i class="fab fa-linkedin"></i></a>
+                        <a href="https://github.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
+                        <a href="https://weibo.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-weibo"></i></a>
+                        <a href="https://zhihu.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-zhihu"></i></a>
+                        <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin"></i></a>
                     </div>
                 </div>
                 <div class="footer-links">
                     <h3 class="footer-heading">快速链接</h3>
                     <ul>
                         <li><a href="/">首页</a></li>
-                        <li><a href="/about">关于我</a></li>
                         <li><a href="/portfolio">作品集</a></li>
                         <li><a href="/blog">博客</a></li>
                         <li><a href="/contact">联系我</a></li>
@@ -223,7 +221,6 @@
                         <li><a href="/privacy">隐私政策</a></li>
                         <li><a href="/terms">使用条款</a></li>
                         <li><a href="/copyright">版权声明</a></li>
-                        <li><a href="https://github.com/xiao305/zcfi" target="_blank" rel="noopener noreferrer">GitHub 仓库</a></li>
                     </ul>
                 </div>
             </div>
@@ -236,12 +233,8 @@
                     <a href="/privacy">隐私政策</a>
                     <a href="/terms">使用条款</a>
                     <a href="/copyright">版权声明</a>
-                    <a href="https://github.com/xiao305/zcfi" target="_blank" rel="noopener noreferrer">GitHub 仓库</a>
                     <a href="#">网站地图</a>
                 </div>
-                <p style="margin-top: 10px; font-size: 0.85rem; color: #aaa;">
-                    本网站源码托管于 GitHub，遵循开源精神，欢迎 Star 和 Fork。
-                </p>
             </div>
         </div>
     </footer>
@@ -256,8 +249,8 @@
         const PORTFOLIO_GIST_ID = '311b9a0a483aafc4314d17f577e859bb';
         
         // 页面配置
-        const MAX_BLOG_POSTS = 4; // 首页显示的博客数量（2行×2个）
-        const MAX_PORTFOLIO_ITEMS = 4; // 首页显示的作品数量（2行×2个）
+        const MAX_BLOG_POSTS = 4; // 首页显示的博客数量
+        const MAX_PORTFOLIO_ITEMS = 4; // 首页显示的作品数量
         
         // 图标映射
         const portfolioIcons = {
@@ -303,14 +296,14 @@
                 // 兼容数据格式：可能是数组或对象
                 const blogPosts = Array.isArray(data) ? data : (data.blog || []);
                 
-                // 过滤已发布的文章并按时间排序（假设有date字段）
+                // 过滤已发布的文章并按时间排序
                 const publishedPosts = blogPosts
                     .filter(post => post.status === 'published' || !post.status)
                     .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
                     .slice(0, MAX_BLOG_POSTS);
                 
                 if (publishedPosts.length === 0) {
-                    showBlogFallback(container);
+                    container.innerHTML = '<div class="error-message">暂无博客文章</div>';
                     return;
                 }
                 
@@ -327,11 +320,16 @@
                 
             } catch (error) {
                 console.error('加载博客失败:', error);
-                showBlogFallback(container);
+                container.innerHTML = `
+                    <div class="error-message">
+                        <p>❌ 博客加载失败</p>
+                        <p>请检查网络连接，或稍后重试。</p>
+                    </div>
+                `;
             }
         }
         
-        // 加载精选作品
+        // 加载精选作品 - 根据后台设置显示
         async function loadFeaturedPortfolio() {
             const container = document.getElementById('featured-portfolio-container');
             
@@ -343,22 +341,62 @@
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
                 
-                const portfolioItems = await response.json();
+                const portfolioData = await response.json();
                 
-                // 确保是数组
-                const items = Array.isArray(portfolioItems) ? portfolioItems : [];
+                // 处理数据格式
+                let portfolioItems = [];
+                let featuredItems = [];
                 
-                // 过滤已发布的项目
-                const publishedItems = items
-                    .filter(item => item.status === 'published' || !item.status)
-                    .slice(0, MAX_PORTFOLIO_ITEMS);
+                if (Array.isArray(portfolioData)) {
+                    // 数据是数组格式
+                    portfolioItems = portfolioData;
+                    
+                    // 获取被标记为featured的项目
+                    featuredItems = portfolioItems
+                        .filter(item => item.featured === true)
+                        .sort((a, b) => (a.featuredOrder || 0) - (b.featuredOrder || 0))
+                        .slice(0, MAX_PORTFOLIO_ITEMS);
+                    
+                    // 如果featured项目不足，用其他已发布项目补足
+                    if (featuredItems.length < MAX_PORTFOLIO_ITEMS) {
+                        const otherItems = portfolioItems
+                            .filter(item => item.featured !== true && (item.status === 'published' || !item.status))
+                            .slice(0, MAX_PORTFOLIO_ITEMS - featuredItems.length);
+                        featuredItems = featuredItems.concat(otherItems);
+                    }
+                } else {
+                    // 数据是对象格式
+                    portfolioItems = portfolioData.projects || [];
+                    
+                    // 优先使用独立的featured数组
+                    if (portfolioData.featured && Array.isArray(portfolioData.featured)) {
+                        const featuredIds = portfolioData.featured.slice(0, MAX_PORTFOLIO_ITEMS);
+                        featuredItems = featuredIds.map(id => 
+                            portfolioItems.find(item => item.id === id)
+                        ).filter(Boolean);
+                    } else {
+                        // 如果没有独立的featured数组，使用项目的featured属性
+                        featuredItems = portfolioItems
+                            .filter(item => item.featured === true && (item.status === 'published' || !item.status))
+                            .sort((a, b) => (a.featuredOrder || 0) - (b.featuredOrder || 0))
+                            .slice(0, MAX_PORTFOLIO_ITEMS);
+                    }
+                    
+                    // 如果featured项目不足，用其他已发布项目补足
+                    if (featuredItems.length < MAX_PORTFOLIO_ITEMS) {
+                        const otherItems = portfolioItems
+                            .filter(item => item.featured !== true && (item.status === 'published' || !item.status))
+                            .slice(0, MAX_PORTFOLIO_ITEMS - featuredItems.length);
+                        featuredItems = featuredItems.concat(otherItems);
+                    }
+                }
                 
-                if (publishedItems.length === 0) {
-                    showPortfolioFallback(container);
+                if (featuredItems.length === 0) {
+                    container.innerHTML = '<div class="error-message">暂无作品展示</div>';
                     return;
                 }
                 
-                container.innerHTML = publishedItems.map(item => `
+                container.innerHTML = featuredItems.map(item => `
                     <div class="portfolio-item">
                         <div class="portfolio-img">
                             ${item.image ? 
@@ -376,7 +414,12 @@
                 
             } catch (error) {
                 console.error('加载作品集失败:', error);
-                showPortfolioFallback(container);
+                container.innerHTML = `
+                    <div class="error-message">
+                        <p>❌ 作品集加载失败</p>
+                        <p>请检查网络连接，或稍后重试。</p>
+                    </div>
+                `;
             }
         }
         
@@ -420,97 +463,27 @@
             `;
         }
         
-        // 博客加载失败时的降级内容
-        function showBlogFallback(container) {
-            container.innerHTML = `
-                <div class="blog-card">
-                    <div class="blog-date">2026年1月23日</div>
-                    <div class="blog-content">
-                        <h3>从零搭建个人网站</h3>
-                        <p>完整指南：GitHub Pages + 阿里云 FC + 域名配置，一步到位。</p>
-                        <a href="/blog" class="read-more">阅读更多 →</a>
-                    </div>
-                </div>
-                <div class="blog-card">
-                    <div class="blog-date">2026年1月20日</div>
-                    <div class="blog-content">
-                        <h3>阿里云 FC 实战</h3>
-                        <p>如何用函数计算搭建无服务器后端？详细教程。</p>
-                        <a href="/blog" class="read-more">阅读更多 →</a>
-                    </div>
-                </div>
-                <div class="blog-card">
-                    <div class="blog-date">2026年1月15日</div>
-                    <div class="blog-content">
-                        <h3>前端性能优化</h3>
-                        <p>提升网站加载速度的10个实用技巧。</p>
-                        <a href="/blog" class="read-more">阅读更多 →</a>
-                    </div>
-                </div>
-                <div class="blog-card">
-                    <div class="blog-date">2026年1月10日</div>
-                    <div class="blog-content">
-                        <h3>响应式设计原理</h3>
-                        <p>创建适配所有设备的现代网站。</p>
-                        <a href="/blog" class="read-more">阅读更多 →</a>
-                    </div>
-                </div>
-            `;
-        }
-        
-        // 作品集加载失败时的降级内容
-        function showPortfolioFallback(container) {
-            container.innerHTML = `
-                <div class="portfolio-item">
-                    <div class="portfolio-img">
-                        <i class="fas fa-laptop-code"></i>
-                    </div>
-                    <div class="portfolio-content">
-                        <h3>个人网站</h3>
-                        <p>使用GitHub Pages和阿里云FC搭建的全栈个人网站。</p>
-                    </div>
-                </div>
-                <div class="portfolio-item">
-                    <div class="portfolio-img">
-                        <i class="fas fa-mobile-alt"></i>
-                    </div>
-                    <div class="portfolio-content">
-                        <h3>移动应用</h3>
-                        <p>基于React Native开发的跨平台移动应用。</p>
-                    </div>
-                </div>
-                <div class="portfolio-item">
-                    <div class="portfolio-img">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <div class="portfolio-content">
-                        <h3>数据可视化</h3>
-                        <p>使用D3.js和ECharts创建的数据可视化仪表板。</p>
-                    </div>
-                </div>
-                <div class="portfolio-item">
-                    <div class="portfolio-img">
-                        <i class="fas fa-database"></i>
-                    </div>
-                    <div class="portfolio-content">
-                        <h3>全栈应用</h3>
-                        <p>完整的全栈应用，包含用户认证、数据可视化等功能。</p>
-                    </div>
-                </div>
-            `;
-        }
-        
         // 全局加载失败处理
         function showErrorFallback() {
             const blogContainer = document.getElementById('latest-blog-container');
             const portfolioContainer = document.getElementById('featured-portfolio-container');
             
             if (blogContainer.innerHTML.includes('加载中')) {
-                showBlogFallback(blogContainer);
+                blogContainer.innerHTML = `
+                    <div class="error-message">
+                        <p>❌ 博客加载失败</p>
+                        <p>请检查网络连接，或稍后重试。</p>
+                    </div>
+                `;
             }
             
             if (portfolioContainer.innerHTML.includes('加载中')) {
-                showPortfolioFallback(portfolioContainer);
+                portfolioContainer.innerHTML = `
+                    <div class="error-message">
+                        <p>❌ 作品集加载失败</p>
+                        <p>请检查网络连接，或稍后重试。</p>
+                    </div>
+                `;
             }
         }
         
