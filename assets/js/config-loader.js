@@ -45,11 +45,58 @@ class SiteConfigLoader {
                 adminEmail: 'admin@zcfi.cn',
                 lastUpdated: new Date().toISOString()
             },
+            privacy: {
+                title: '隐私政策',
+                content: `<h3>1. 信息收集</h3>
+<p>本站为个人非商业网站，不主动收集用户任何个人信息。</p>
+<h3>2. 数据安全</h3>
+<p>所有通过表单提交的数据将通过 HTTPS 加密传输。</p>
+<h3>3. 联系我们</h3>
+<p>如有任何隐私相关疑问，请通过联系页面与我沟通。</p>`,
+                enabled: true,
+                lastUpdated: new Date().toISOString()
+            },
+            terms: {
+                title: '使用条款',
+                content: `<h3>1. 接受条款</h3>
+<p>通过访问和使用本网站，您同意遵守以下使用条款。</p>
+<h3>2. 网站内容</h3>
+<p>本网站所有内容均为原创或已获得合法授权，受版权法保护。</p>
+<h3>3. 免责声明</h3>
+<p>本网站按"现状"提供，不提供任何形式的保证。</p>`,
+                enabled: true,
+                lastUpdated: new Date().toISOString()
+            },
+            copyright: {
+                title: '版权声明',
+                content: `<h3>1. 版权归属</h3>
+<p>本网站的所有原创内容均归网站所有者所有。</p>
+<h3>2. 使用许可</h3>
+<p>允许个人用户出于学习、研究目的下载、保存和参考本网站内容。</p>
+<h3>3. 禁止行为</h3>
+<p>未经授权，严禁复制、转载或重新发布本网站内容。</p>`,
+                enabled: true,
+                lastUpdated: new Date().toISOString()
+            },
             social: {
                 github: 'https://github.com',
                 weibo: 'https://weibo.com',
                 zhihu: 'https://zhihu.com',
                 linkedin: 'https://linkedin.com',
+                lastUpdated: new Date().toISOString()
+            },
+            navigation: {
+                items: [
+                    { name: '首页', url: './', order: 1 },
+                    { name: '作品集', url: 'portfolio.html', order: 2 },
+                    { name: '博客', url: 'blog.html', order: 3 },
+                    { name: '联系我', url: 'contact.html', order: 4 }
+                ],
+                lastUpdated: new Date().toISOString()
+            },
+            footer: {
+                description: '个人网站和作品展示平台',
+                copyright: '© 2026 zcfi.cn 版权所有',
                 lastUpdated: new Date().toISOString()
             }
         };
@@ -66,6 +113,12 @@ class SiteConfigLoader {
         if (currentTitle.includes('|')) {
             const pageName = currentTitle.split('|')[0].trim();
             document.title = `${pageName} | ${site.name}`;
+        } else if (currentTitle.includes(' - ')) {
+            const pageName = currentTitle.split(' - ')[0].trim();
+            document.title = `${pageName} | ${site.name}`;
+        } else {
+            // 如果标题中没有分隔符，直接添加网站名称
+            document.title = `${currentTitle} | ${site.name}`;
         }
         
         // 更新meta描述
@@ -115,7 +168,6 @@ class SiteConfigLoader {
                     link.target = '_blank';
                     link.rel = 'noopener noreferrer';
                     link.title = platform.label;
-                    link.style.color = platform.color;
                     
                     const icon = document.createElement('i');
                     icon.className = platform.icon;
@@ -159,6 +211,69 @@ class SiteConfigLoader {
         descElements.forEach(element => {
             element.textContent = siteDescription;
         });
+    }
+
+    // 更新导航栏
+    updateNavigation() {
+        if (!this.configData || !this.configData.navigation || !this.configData.navigation.items) return;
+        
+        const navigation = this.configData.navigation.items;
+        
+        // 更新主导航
+        const mainNavLinks = document.getElementById('mainNavLinks');
+        if (mainNavLinks) {
+            // 按order排序
+            const sortedNav = [...navigation].sort((a, b) => (a.order || 0) - (b.order || 0));
+            
+            mainNavLinks.innerHTML = sortedNav.map(item => `
+                <li><a href="${item.url}" class="nav-link">${item.name}</a></li>
+            `).join('');
+        }
+        
+        // 更新页脚快速链接
+        const footerQuickLinks = document.getElementById('footerQuickLinks');
+        if (footerQuickLinks) {
+            const sortedFooterNav = [...navigation].sort((a, b) => (a.order || 0) - (b.order || 0));
+            
+            footerQuickLinks.innerHTML = sortedFooterNav.map(item => `
+                <li><a href="${item.url}">${item.name}</a></li>
+            `).join('');
+        }
+    }
+
+    // 更新页脚内容
+    updateFooterContent() {
+        if (!this.configData || !this.configData.footer) return;
+        
+        const footer = this.configData.footer;
+        
+        // 更新页脚描述
+        const footerDescElement = document.getElementById('siteDescriptionFooter');
+        if (footerDescElement && footer.description) {
+            footerDescElement.textContent = footer.description;
+        }
+        
+        // 更新版权信息
+        const copyrightElement = document.getElementById('copyrightText');
+        if (copyrightElement && footer.copyright) {
+            copyrightElement.textContent = footer.copyright;
+        }
+    }
+
+    // 获取特定页面内容（用于privacy、terms、copyright页面）
+    getPageContent(pageType) {
+        if (!this.configData || !this.configData[pageType]) {
+            return null;
+        }
+        return this.configData[pageType];
+    }
+
+    // 检查页面是否启用
+    isPageEnabled(pageType) {
+        if (!this.configData || !this.configData[pageType]) {
+            return false;
+        }
+        return this.configData[pageType].enabled !== false;
     }
 
     // 获取管理员邮箱
