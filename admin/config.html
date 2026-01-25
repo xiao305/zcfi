@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>配置管理 | zcfi.cn</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="../favicon/favicon.svg">
+    <link rel="icon" type="image/png" sizes="96x96" href="../favicon/favicon-96x96.png">
+    <link rel="icon" type="image/x-icon" href="../favicon/favicon.ico">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- 后台公共CSS -->
+    <link rel="stylesheet" href="assets/css/admin-common.css">
+    
+    <style>
+        /* 配置管理特定样式 */
+        .config-sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+        }
+        
+        .config-section {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .config-section:hover {
+            border-color: #4a6fa5;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .config-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .config-header h3 {
+            color: #333;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .config-header i {
+            color: #4a6fa5;
+        }
+        
+        /* 表单增强样式 */
+        .form-group textarea {
+            min-height: 150px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+        }
+        
+        /* 开关样式 */
+        .switch-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #4a6fa5;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        /* 预览按钮 */
+        .preview-btn {
+            background: #17a2b8;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+        }
+        
+        .preview-btn:hover {
+            background: #138496;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .config-sections {
+                grid-template-columns: 1fr;
+            }
+            
+            .config-section {
+                padding: 20px;
+            }
+            
+            .config-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body class="admin-body">
+    <div class="admin-container">
+        <div class="admin-header">
+            <a href="index.html" class="nav-back">
+                <i class="fas fa-arrow-left"></i> 返回
+            </a>
+            <a href="https://zcfi.cn" class="admin-logo">zcfi<span>.</span>cn</a>
+            <div class="header-title">
+                <h1><i class="fas fa-cog"></i> 配置管理</h1>
+                <p>管理网站配置和页面内容</p>
+            </div>
+        </div>
+        
+        <div class="admin-main-content">
+            <div class="admin-button-group">
+                <button class="admin-btn btn-success" id="saveAllBtn">
+                    <i class="fas fa-save"></i> 保存所有配置
+                </button>
+                <button class="admin-btn btn-secondary" id="refreshConfigBtn">
+                    <i class="fas fa-sync-alt"></i> 刷新配置
+                </button>
+                <button class="admin-btn btn-info" id="backupConfigBtn">
+                    <i class="fas fa-download"></i> 备份配置
+                </button>
+            </div>
+            
+            <div class="config-sections">
+                <!-- 隐私政策配置 -->
+                <div class="config-section">
+                    <div class="config-header">
+                        <h3><i class="fas fa-shield-alt"></i> 隐私政策</h3>
+                        <a href="../privacy.html" target="_blank" class="preview-btn">
+                            <i class="fas fa-eye"></i> 预览页面
+                        </a>
+                    </div>
+                    <div class="form-group">
+                        <label for="privacyTitle"><i class="fas fa-heading"></i> 页面标题:</label>
+                        <input type="text" id="privacyTitle" placeholder="隐私政策标题">
+                    </div>
+                    <div class="form-group">
+                        <label for="privacyContent"><i class="fas fa-file-alt"></i> 政策内容 (支持 HTML):</label>
+                        <textarea id="privacyContent" placeholder="在此编辑隐私政策内容..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="privacyEnabled"><i class="fas fa-toggle-on"></i> 页面状态:</label>
+                        <div class="switch-group">
+                            <label class="switch">
+                                <input type="checkbox" id="privacyEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                            <span id="privacyStatusText">已启用</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 使用条款配置 -->
+                <div class="config-section">
+                    <div class="config-header">
+                        <h3><i class="fas fa-file-contract"></i> 使用条款</h3>
+                        <a href="../terms.html" target="_blank" class="preview-btn">
+                            <i class="fas fa-eye"></i> 预览页面
+                        </a>
+                    </div>
+                    <div class="form-group">
+                        <label for="termsTitle"><i class="fas fa-heading"></i> 页面标题:</label>
+                        <input type="text" id="termsTitle" placeholder="使用条款标题">
+                    </div>
+                    <div class="form-group">
+                        <label for="termsContent"><i class="fas fa-file-alt"></i> 条款内容 (支持 HTML):</label>
+                        <textarea id="termsContent" placeholder="在此编辑使用条款内容..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="termsEnabled"><i class="fas fa-toggle-on"></i> 页面状态:</label>
+                        <div class="switch-group">
+                            <label class="switch">
+                                <input type="checkbox" id="termsEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                            <span id="termsStatusText">已启用</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 版权声明配置 -->
+                <div class="config-section">
+                    <div class="config-header">
+                        <h3><i class="fas fa-copyright"></i> 版权声明</h3>
+                        <a href="../copyright.html" target="_blank" class="preview-btn">
+                            <i class="fas fa-eye"></i> 预览页面
+                        </a>
+                    </div>
+                    <div class="form-group">
+                        <label for="copyrightTitle"><i class="fas fa-heading"></i> 页面标题:</label>
+                        <input type="text" id="copyrightTitle" placeholder="版权声明标题">
+                    </div>
+                    <div class="form-group">
+                        <label for="copyrightContent"><i class="fas fa-file-alt"></i> 声明内容 (支持 HTML):</label>
+                        <textarea id="copyrightContent" placeholder="在此编辑版权声明内容..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="copyrightEnabled"><i class="fas fa-toggle-on"></i> 页面状态:</label>
+                        <div class="switch-group">
+                            <label class="switch">
+                                <input type="checkbox" id="copyrightEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                            <span id="copyrightStatusText">已启用</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 网站基础配置 -->
+                <div class="config-section">
+                    <div class="config-header">
+                        <h3><i class="fas fa-globe"></i> 网站配置</h3>
+                    </div>
+                    <div class="form-group">
+                        <label for="siteName"><i class="fas fa-sitemap"></i> 网站名称:</label>
+                        <input type="text" id="siteName" placeholder="例如: zcfi.cn">
+                    </div>
+                    <div class="form-group">
+                        <label for="siteDescription"><i class="fas fa-align-left"></i> 网站描述:</label>
+                        <textarea id="siteDescription" placeholder="网站简短描述，用于SEO"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="siteKeywords"><i class="fas fa-tags"></i> 网站关键词 (逗号分隔):</label>
+                        <input type="text" id="siteKeywords" placeholder="例如: 个人网站,技术博客,作品展示">
+                    </div>
+                    <div class="form-group">
+                        <label for="adminEmail"><i class="fas fa-envelope"></i> 管理员邮箱:</label>
+                        <input type="email" id="adminEmail" placeholder="admin@zcfi.cn">
+                    </div>
+                </div>
+                
+                <!-- 社交链接配置 -->
+                <div class="config-section">
+                    <div class="config-header">
+                        <h3><i class="fas fa-share-alt"></i> 社交链接</h3>
+                    </div>
+                    <div class="form-group">
+                        <label for="githubUrl"><i class="fab fa-github"></i> GitHub:</label>
+                        <input type="url" id="githubUrl" placeholder="https://github.com/yourusername">
+                    </div>
+                    <div class="form-group">
+                        <label for="weiboUrl"><i class="fab fa-weibo"></i> 微博:</label>
+                        <input type="url" id="weiboUrl" placeholder="https://weibo.com/yourprofile">
+                    </div>
+                    <div class="form-group">
+                        <label for="zhihuUrl"><i class="fab fa-zhihu"></i> 知乎:</label>
+                        <input type="url" id="zhihuUrl" placeholder="https://www.zhihu.com/people/yourprofile">
+                    </div>
+                    <div class="form-group">
+                        <label for="linkedinUrl"><i class="fab fa-linkedin"></i> LinkedIn:</label>
+                        <input type="url" id="linkedinUrl" placeholder="https://linkedin.com/in/yourprofile">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="admin-footer">
+                <p>© 2026 zcfi.cn 配置管理系统</p>
+                <p style="margin-top: 10px; font-size: 13px; color: #6c757d;">
+                    注意：保存的配置将同步到GitHub Gist，网站前端会实时加载最新配置。
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 使用公共弹窗 -->
+    <div class="custom-modal" id="confirmModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <i class="fas fa-question-circle"></i>
+            </div>
+            <div class="modal-title">确认保存</div>
+            <div class="modal-message">确定要保存所有配置吗？这将覆盖现有的配置数据。</div>
+            <div class="modal-buttons">
+                <button class="modal-btn btn-secondary" id="cancelSaveBtn">取消</button>
+                <button class="modal-btn btn-primary" id="confirmSaveBtn">确认保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 结果弹窗 -->
+    <div class="custom-modal" id="resultModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <i class="fas fa-info-circle" id="resultIcon"></i>
+            </div>
+            <div class="modal-title" id="resultTitle">操作结果</div>
+            <div class="modal-message" id="resultMessage">操作已完成</div>
+            <div class="modal-buttons">
+                <button class="modal-btn btn-primary" id="closeResultBtn">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载弹窗 -->
+    <div class="custom-modal" id="loadingModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <i class="fas fa-spinner loading-spinner"></i>
+            </div>
+            <div class="modal-title">处理中</div>
+            <div class="modal-message" id="loadingMessage">正在处理您的请求，请稍候...</div>
+        </div>
+    </div>
+
+    <script>
+        // 安全验证
+        if (!sessionStorage.getItem('admin_verified') || !sessionStorage.getItem('admin_token')) {
+            alert('❌ 未授权访问！请通过后台首页登录。');
+            window.location.href = 'index.html';
+        }
+        
+        // 全局配置
+        const CONFIG_GIST_ID = '73cc78400c25eb9effed665e2c89843d';
+        const CONFIG_GIST_URL = `https://api.github.com/gists/${CONFIG_GIST_ID}`;
+        const token = sessionStorage.getItem('admin_token');
+        
+        // 初始化事件监听器
+        document.addEventListener('DOMContentLoaded', function() {
+            initEventListeners();
+            loadConfigData();
+            
+            // 初始化开关状态监听
+            initToggleSwitches();
+        });
+        
+        function initEventListeners() {
+            // 主按钮
+            document.getElementById('saveAllBtn').addEventListener('click', showSaveConfirm);
+            document.getElementById('refreshConfigBtn').addEventListener('click', loadConfigData);
+            document.getElementById('backupConfigBtn').addEventListener('click', backupConfig);
+            
+            // 弹窗按钮
+            document.getElementById('cancelSaveBtn').addEventListener('click', closeConfirmModal);
+            document.getElementById('confirmSaveBtn').addEventListener('click', saveAllConfig);
+            document.getElementById('closeResultBtn').addEventListener('click', closeResultModal);
+        }
+        
+        function initToggleSwitches() {
+            // 隐私政策开关
+            const privacySwitch = document.getElementById('privacyEnabled');
+            const privacyStatus = document.getElementById('privacyStatusText');
+            
+            privacySwitch.addEventListener('change', function() {
+                privacyStatus.textContent = this.checked ? '已启用' : '已禁用';
+            });
+            
+            // 使用条款开关
+            const termsSwitch = document.getElementById('termsEnabled');
+            const termsStatus = document.getElementById('termsStatusText');
+            
+            termsSwitch.addEventListener('change', function() {
+                termsStatus.textContent = this.checked ? '已启用' : '已禁用';
+            });
+            
+            // 版权声明开关
+            const copyrightSwitch = document.getElementById('copyrightEnabled');
+            const copyrightStatus = document.getElementById('copyrightStatusText');
+            
+            copyrightSwitch.addEventListener('change', function() {
+                copyrightStatus.textContent = this.checked ? '已启用' : '已禁用';
+            });
+        }
+        
+        // 弹窗控制函数
+        function showSaveConfirm() {
+            showModal('confirmModal');
+        }
+        
+        function closeConfirmModal() {
+            hideModal('confirmModal');
+        }
+        
+        function showLoading(message = '正在处理您的请求，请稍候...') {
+            document.getElementById('loadingMessage').textContent = message;
+            showModal('loadingModal');
+        }
+        
+        function hideLoading() {
+            hideModal('loadingModal');
+        }
+        
+        function showResult(type, title, message) {
+            const icon = document.getElementById('resultIcon');
+            
+            if (type === 'success') {
+                icon.className = 'fas fa-check-circle';
+                icon.style.color = '#28a745';
+            } else if (type === 'error') {
+                icon.className = 'fas fa-exclamation-circle';
+                icon.style.color = '#dc3545';
+            } else {
+                icon.className = 'fas fa-info-circle';
+                icon.style.color = '#4a6fa5';
+            }
+            
+            document.getElementById('resultTitle').textContent = title;
+            document.getElementById('resultMessage').textContent = message;
+            showModal('resultModal');
+        }
+        
+        function closeResultModal() {
+            hideModal('resultModal');
+        }
+        
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('show');
+        }
+        
+        function hideModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+        
+        // 配置数据操作
+        async function loadConfigData() {
+            try {
+                showLoading('正在加载配置数据...');
+                
+                const response = await fetch(CONFIG_GIST_URL, {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`获取数据失败: ${response.status} ${response.statusText}`);
+                }
+                
+                const gist = await response.json();
+                const gistContent = gist.files['blog.json']?.content;
+                
+                if (!gistContent) {
+                    // 如果没有配置数据，使用默认配置
+                    showResult('info', '提示', '未找到配置数据，将使用默认配置。');
+                    loadDefaultConfig();
+                } else {
+                    const data = JSON.parse(gistContent);
+                    populateFormWithConfig(data);
+                    showResult('success', '加载成功', '配置数据已成功加载。');
+                }
+                
+            } catch (error) {
+                console.error('加载配置失败:', error);
+                showResult('error', '加载失败', `无法加载配置数据: ${error.message}`);
+                loadDefaultConfig(); // 加载默认配置
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        function loadDefaultConfig() {
+            // 默认配置
+            const defaultConfig = {
+                privacy: {
+                    title: '隐私政策',
+                    content: '<p>这是默认的隐私政策内容...</p>',
+                    enabled: true
+                },
+                terms: {
+                    title: '使用条款',
+                    content: '<p>这是默认的使用条款内容...</p>',
+                    enabled: true
+                },
+                copyright: {
+                    title: '版权声明',
+                    content: '<p>这是默认的版权声明内容...</p>',
+                    enabled: true
+                },
+                site: {
+                    name: 'zcfi.cn',
+                    description: '个人网站和作品展示',
+                    keywords: '个人网站,技术博客,作品展示',
+                    adminEmail: 'admin@zcfi.cn'
+                },
+                social: {
+                    github: 'https://github.com',
+                    weibo: 'https://weibo.com',
+                    zhihu: 'https://zhihu.com',
+                    linkedin: 'https://linkedin.com'
+                }
+            };
+            
+            populateFormWithConfig(defaultConfig);
+        }
+        
+        function populateFormWithConfig(config) {
+            // 隐私政策
+            if (config.privacy) {
+                document.getElementById('privacyTitle').value = config.privacy.title || '';
+                document.getElementById('privacyContent').value = config.privacy.content || '';
+                document.getElementById('privacyEnabled').checked = config.privacy.enabled !== false;
+                document.getElementById('privacyStatusText').textContent = 
+                    config.privacy.enabled !== false ? '已启用' : '已禁用';
+            }
+            
+            // 使用条款
+            if (config.terms) {
+                document.getElementById('termsTitle').value = config.terms.title || '';
+                document.getElementById('termsContent').value = config.terms.content || '';
+                document.getElementById('termsEnabled').checked = config.terms.enabled !== false;
+                document.getElementById('termsStatusText').textContent = 
+                    config.terms.enabled !== false ? '已启用' : '已禁用';
+            }
+            
+            // 版权声明
+            if (config.copyright) {
+                document.getElementById('copyrightTitle').value = config.copyright.title || '';
+                document.getElementById('copyrightContent').value = config.copyright.content || '';
+                document.getElementById('copyrightEnabled').checked = config.copyright.enabled !== false;
+                document.getElementById('copyrightStatusText').textContent = 
+                    config.copyright.enabled !== false ? '已启用' : '已禁用';
+            }
+            
+            // 网站配置
+            if (config.site) {
+                document.getElementById('siteName').value = config.site.name || '';
+                document.getElementById('siteDescription').value = config.site.description || '';
+                document.getElementById('siteKeywords').value = config.site.keywords || '';
+                document.getElementById('adminEmail').value = config.site.adminEmail || '';
+            }
+            
+            // 社交链接
+            if (config.social) {
+                document.getElementById('githubUrl').value = config.social.github || '';
+                document.getElementById('weiboUrl').value = config.social.weibo || '';
+                document.getElementById('zhihuUrl').value = config.social.zhihu || '';
+                document.getElementById('linkedinUrl').value = config.social.linkedin || '';
+            }
+        }
+        
+        async function saveAllConfig() {
+            try {
+                showLoading('正在保存配置...');
+                
+                // 收集表单数据
+                const configData = {
+                    privacy: {
+                        title: document.getElementById('privacyTitle').value.trim(),
+                        content: document.getElementById('privacyContent').value.trim(),
+                        enabled: document.getElementById('privacyEnabled').checked,
+                        lastUpdated: new Date().toISOString()
+                    },
+                    terms: {
+                        title: document.getElementById('termsTitle').value.trim(),
+                        content: document.getElementById('termsContent').value.trim(),
+                        enabled: document.getElementById('termsEnabled').checked,
+                        lastUpdated: new Date().toISOString()
+                    },
+                    copyright: {
+                        title: document.getElementById('copyrightTitle').value.trim(),
+                        content: document.getElementById('copyrightContent').value.trim(),
+                        enabled: document.getElementById('copyrightEnabled').checked,
+                        lastUpdated: new Date().toISOString()
+                    },
+                    site: {
+                        name: document.getElementById('siteName').value.trim(),
+                        description: document.getElementById('siteDescription').value.trim(),
+                        keywords: document.getElementById('siteKeywords').value.trim(),
+                        adminEmail: document.getElementById('adminEmail').value.trim(),
+                        lastUpdated: new Date().toISOString()
+                    },
+                    social: {
+                        github: document.getElementById('githubUrl').value.trim(),
+                        weibo: document.getElementById('weiboUrl').value.trim(),
+                        zhihu: document.getElementById('zhihuUrl').value.trim(),
+                        linkedin: document.getElementById('linkedinUrl').value.trim(),
+                        lastUpdated: new Date().toISOString()
+                    }
+                };
+                
+                // 验证必填字段
+                if (!configData.site.name || !configData.site.description) {
+                    throw new Error('请填写网站名称和描述');
+                }
+                
+                // 保存到Gist
+                await saveConfigToGist(configData);
+                
+                hideLoading();
+                showResult('success', '保存成功', '所有配置已保存到GitHub Gist。');
+                closeConfirmModal();
+                
+            } catch (error) {
+                hideLoading();
+                showResult('error', '保存失败', error.message);
+            }
+        }
+        
+        async function saveConfigToGist(configData) {
+            try {
+                // 首先获取当前Gist数据
+                const response = await fetch(CONFIG_GIST_URL, {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`获取现有数据失败: ${response.status} ${response.statusText}`);
+                }
+                
+                const gist = await response.json();
+                const existingContent = gist.files['blog.json']?.content;
+                
+                let existingData = {};
+                if (existingContent) {
+                    try {
+                        existingData = JSON.parse(existingContent);
+                    } catch (e) {
+                        console.warn('解析现有数据失败，将创建新配置');
+                    }
+                }
+                
+                // 合并数据（保留原有的blog、messages等字段）
+                const updatedData = {
+                    ...existingData,
+                    config: configData
+                };
+                
+                // 更新Gist
+                const updateResponse = await fetch(CONFIG_GIST_URL, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        description: '网站配置数据',
+                        files: {
+                            'blog.json': {
+                                content: JSON.stringify(updatedData, null, 2)
+                            }
+                        }
+                    })
+                });
+                
+                if (!updateResponse.ok) {
+                    throw new Error(`保存失败: ${updateResponse.status} ${updateResponse.statusText}`);
+                }
+                
+                return true;
+                
+            } catch (error) {
+                console.error('保存配置到Gist失败:', error);
+                throw error;
+            }
+        }
+        
+        async function backupConfig() {
+            try {
+                showLoading('正在创建备份...');
+                
+                // 收集当前配置数据
+                const configData = {
+                    privacy: {
+                        title: document.getElementById('privacyTitle').value,
+                        content: document.getElementById('privacyContent').value,
+                        enabled: document.getElementById('privacyEnabled').checked
+                    },
+                    terms: {
+                        title: document.getElementById('termsTitle').value,
+                        content: document.getElementById('termsContent').value,
+                        enabled: document.getElementById('termsEnabled').checked
+                    },
+                    copyright: {
+                        title: document.getElementById('copyrightTitle').value,
+                        content: document.getElementById('copyrightContent').value,
+                        enabled: document.getElementById('copyrightEnabled').checked
+                    },
+                    site: {
+                        name: document.getElementById('siteName').value,
+                        description: document.getElementById('siteDescription').value,
+                        keywords: document.getElementById('siteKeywords').value,
+                        adminEmail: document.getElementById('adminEmail').value
+                    },
+                    social: {
+                        github: document.getElementById('githubUrl').value,
+                        weibo: document.getElementById('weiboUrl').value,
+                        zhihu: document.getElementById('zhihuUrl').value,
+                        linkedin: document.getElementById('linkedinUrl').value
+                    }
+                };
+                
+                // 创建备份文件
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                const backupBlob = new Blob(
+                    [JSON.stringify(configData, null, 2)], 
+                    { type: 'application/json' }
+                );
+                
+                // 下载备份文件
+                const backupUrl = URL.createObjectURL(backupBlob);
+                const downloadLink = document.createElement('a');
+                downloadLink.href = backupUrl;
+                downloadLink.download = `config-backup-${timestamp}.json`;
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+                URL.revokeObjectURL(backupUrl);
+                
+                hideLoading();
+                showResult('success', '备份成功', '配置文件已下载到您的设备。');
+                
+            } catch (error) {
+                hideLoading();
+                showResult('error', '备份失败', error.message);
+            }
+        }
+        
+        // 页面卸载时清除敏感信息
+        window.addEventListener('beforeunload', () => {
+            sessionStorage.removeItem('admin_token');
+            sessionStorage.removeItem('admin_verified');
+        });
+    </script>
+</body>
+</html>
