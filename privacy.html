@@ -15,6 +15,38 @@
     <link rel="stylesheet" href="../assets/css/style.css">
     
     <style>
+        /* 保持原有样式 */
+        .policy-container {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        .policy-container h3 {
+            margin: 30px 0 15px;
+            color: var(--dark-color);
+            font-size: 1.3rem;
+        }
+        
+        .policy-container p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        .policy-container ul {
+            margin: 15px 0 20px;
+            padding-left: 20px;
+        }
+        
+        .policy-container li {
+            margin-bottom: 8px;
+        }
+        
+        .policy-container strong {
+            color: var(--dark-color);
+        }
+        
         .loading-message {
             text-align: center;
             color: #777;
@@ -35,7 +67,9 @@
             text-align: right;
             color: #666;
             font-size: 14px;
-            margin-bottom: 20px;
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
         }
     </style>
 </head>
@@ -65,7 +99,7 @@
                 <h2 id="pageTitle">隐私政策</h2>
                 <p id="pageSubtitle">加载中...</p>
             </div>
-            <div id="contentContainer" style="background: white; padding: 40px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.08);">
+            <div class="policy-container" id="contentContainer">
                 <div class="loading-message">正在加载隐私政策内容...</div>
             </div>
         </div>
