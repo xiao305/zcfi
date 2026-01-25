@@ -2,9 +2,10 @@
 <header>
     <div class="container">
         <nav class="navbar">
-            <a href="index.html" class="logo" id="siteNameLogo">zcfi<span>.</span>cn</a>
+            <!-- 使用相对路径，兼容不同页面 -->
+            <a href="./" class="logo" id="siteNameLogo">zcfi<span>.</span>cn</a>
             <ul class="nav-links" id="mainNavLinks">
-                <li><a href="index.html" class="nav-link">首页</a></li>
+                <li><a href="./" class="nav-link">首页</a></li>
                 <li><a href="portfolio.html" class="nav-link">作品集</a></li>
                 <li><a href="blog.html" class="nav-link">博客</a></li>
                 <li><a href="contact.html" class="nav-link">联系我</a></li>
@@ -15,3 +16,24 @@
         </nav>
     </div>
 </header>
+
+<script>
+// 高亮当前页面导航项 - 修正版本
+document.addEventListener('DOMContentLoaded', function() {
+    const currentPage = window.location.pathname.split('/').pop();
+    const navLinks = document.querySelectorAll('.nav-link');
+    
+    navLinks.forEach(link => {
+        const linkHref = link.getAttribute('href');
+        
+        // 处理首页特殊逻辑
+        if (currentPage === '' || currentPage === 'index.html' || currentPage === '/') {
+            if (linkHref === './' || linkHref === 'index.html') {
+                link.classList.add('active');
+            }
+        } else if (linkHref.includes(currentPage)) {
+            link.classList.add('active');
+        }
+    });
+});
+</script>
