@@ -166,6 +166,15 @@
             cursor: pointer;
         }
         
+        /* 模块说明样式 */
+        .module-description {
+            font-size: 13px;
+            color: #6c757d;
+            margin-top: 8px;
+            line-height: 1.4;
+            min-height: 36px;
+        }
+        
         @media (max-width: 768px) {
             .modules-grid {
                 grid-template-columns: 1fr;
@@ -188,29 +197,40 @@
             </div>
             
             <div class="modules-grid">
+                <!-- 博客管理 -->
                 <div class="module-card" data-module="blog">
                     <div class="module-icon">
                         <i class="fas fa-blog"></i>
                     </div>
                     <div class="module-title">博客管理</div>
+                    <div class="module-description">管理博客文章，编辑发布新内容</div>
                 </div>
+                
+                <!-- 作品集管理 -->
                 <div class="module-card" data-module="portfolio">
                     <div class="module-icon">
                         <i class="fas fa-briefcase"></i>
                     </div>
                     <div class="module-title">作品集管理</div>
+                    <div class="module-description">管理项目作品，设置首页展示</div>
                 </div>
-                <div class="module-card" data-module="about">
-                    <div class="module-icon">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="module-title">关于我</div>
-                </div>
+                
+                <!-- 留言管理 -->
                 <div class="module-card" data-module="contact">
                     <div class="module-icon">
-                        <i class="fas fa-envelope"></i>
+                        <i class="fas fa-comments"></i>
                     </div>
-                    <div class="module-title">联系方式</div>
+                    <div class="module-title">留言管理</div>
+                    <div class="module-description">查看和处理访客留言</div>
+                </div>
+                
+                <!-- 配置面板 -->
+                <div class="module-card" data-module="config">
+                    <div class="module-icon">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                    <div class="module-title">配置面板</div>
+                    <div class="module-description">网站设置和法律声明配置</div>
                 </div>
             </div>
             
@@ -218,6 +238,18 @@
                 <i class="fas fa-sign-in-alt"></i> 进入管理
             </button>
             
+            <!-- Token使用说明 -->
+            <div style="margin-top: 25px; padding: 15px; background: #f8f9fa; border-radius: 8px; font-size: 14px; color: #6c757d;">
+                <p style="margin-bottom: 8px;"><i class="fas fa-info-circle" style="color: #4a6fa5;"></i> <strong>Token 说明：</strong></p>
+                <p style="font-size: 13px; line-height: 1.5;">
+                    1. 前往 <a href="https://github.com/settings/tokens" target="_blank" style="color: #4a6fa5; text-decoration: none;">GitHub Token设置</a> 创建新Token<br>
+                    2. 需要勾选 <code>gist</code> 权限<br>
+                    3. Token格式：<code>ghp_xxxxxxxxxxxx</code><br>
+                    4. Token安全存储，切勿泄露
+                </p>
+            </div>
+            
+            <!-- 历史记录区域 -->
             <div class="history-section" id="historySection" style="display:none;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                     <strong>历史记录</strong>
@@ -262,6 +294,9 @@
                     this.classList.add('selected');
                     selectedModule = this.dataset.module;
                     updateEnterButton();
+                    
+                    // 显示选中模块的描述
+                    highlightSelectedModule();
                 });
             });
             
@@ -282,12 +317,26 @@
                     useHistory(historyId);
                 }
             });
+            
+            // 点击外部取消选中
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.module-card') && !e.target.closest('#enterBtn')) {
+                    document.querySelectorAll('.module-card').forEach(c => c.classList.remove('selected'));
+                    selectedModule = null;
+                    updateEnterButton();
+                }
+            });
         }
         
         function updateEnterButton() {
             const token = document.getElementById('token').value.trim();
             const btn = document.getElementById('enterBtn');
             btn.disabled = !(token && selectedModule);
+        }
+        
+        function highlightSelectedModule() {
+            // 可以在这里添加额外的视觉效果
+            console.log('已选择模块:', selectedModule);
         }
         
         async function validateAndLogin() {
@@ -330,6 +379,9 @@
             sessionStorage.setItem('admin_verified', 'true');
             sessionStorage.setItem('admin_login_time', Date.now().toString());
             
+            // 保存当前选择的模块
+            sessionStorage.setItem('selected_module', selectedModule);
+            
             // 保存历史记录（安全方式）
             const now = new Date().toISOString();
             const historyItem = {
@@ -341,7 +393,27 @@
         }
         
         function navigateToModule(module) {
-            window.location.href = `${module}.html`;
+            // 根据模块名称跳转到对应页面
+            let pageUrl = '';
+            
+            switch(module) {
+                case 'blog':
+                    pageUrl = 'blog.html';
+                    break;
+                case 'portfolio':
+                    pageUrl = 'portfolio.html';
+                    break;
+                case 'contact':
+                    pageUrl = 'contact.html';
+                    break;
+                case 'config':
+                    pageUrl = 'config.html';
+                    break;
+                default:
+                    pageUrl = 'index.html';
+            }
+            
+            window.location.href = pageUrl;
         }
         
         function showModal(title, message, type = 'info', showCancel = false) {
@@ -398,7 +470,7 @@
             let history = JSON.parse(localStorage.getItem('admin_token_history') || '[]');
             history = history.filter(h => h.id !== item.id);
             history.unshift(item);
-            history = history.slice(0, 5);
+            history = history.slice(0, 5); // 只保留最近5条记录
             localStorage.setItem('admin_token_history', JSON.stringify(history));
             loadHistory();
         }
@@ -413,7 +485,7 @@
                 list.innerHTML = history.map(item => `
                     <div class="history-item" data-id="${item.id}">
                         <span>${item.display}</span>
-                        <span>${new Date(item.time).toLocaleString()}</span>
+                        <span style="font-size: 12px; color: #999;">${new Date(item.time).toLocaleDateString()}</span>
                     </div>
                 `).join('');
             } else {
@@ -431,9 +503,42 @@
         }
         
         function clearHistory() {
-            localStorage.removeItem('admin_token_history');
-            loadHistory();
+            if (confirm('确定要清空所有历史记录吗？')) {
+                localStorage.removeItem('admin_token_history');
+                loadHistory();
+                showModal('操作成功', '历史记录已清空', 'success');
+            }
         }
+        
+        // 自动填充上次使用的Token（如果有的话）
+        function autoFillLastToken() {
+            const history = JSON.parse(localStorage.getItem('admin_token_history') || '[]');
+            if (history.length > 0) {
+                // 可以在这里添加自动填充逻辑，但出于安全考虑，我们只显示提示
+                showModal(
+                    '检测到历史记录',
+                    `检测到您有 ${history.length} 条历史记录。\n请从下方历史记录中选择或手动输入新Token。`,
+                    'info'
+                );
+            }
+        }
+        
+        // 页面加载时自动填充上次选择的模块（如果有）
+        function restoreSelectedModule() {
+            const savedModule = sessionStorage.getItem('selected_module');
+            if (savedModule) {
+                const moduleCard = document.querySelector(`.module-card[data-module="${savedModule}"]`);
+                if (moduleCard) {
+                    moduleCard.classList.add('selected');
+                    selectedModule = savedModule;
+                    updateEnterButton();
+                }
+            }
+        }
+        
+        // 初始化时执行
+        restoreSelectedModule();
+        autoFillLastToken();
     </script>
 </body>
 </html>
