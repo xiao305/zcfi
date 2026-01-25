@@ -4,9 +4,74 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>使用条款 | zcfi.cn</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="../favicon/favicon.svg">
+    <link rel="icon" type="image/png" sizes="96x96" href="../favicon/favicon-96x96.png">
+    <link rel="icon" type="image/x-icon" href="../favicon/favicon.ico">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/style.css">
+    
+    <style>
+        /* 保持原有样式 */
+        .terms-container {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        .terms-container h3 {
+            margin: 30px 0 15px;
+            color: var(--dark-color);
+            font-size: 1.3rem;
+        }
+        
+        .terms-container p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        .terms-container ul {
+            margin: 15px 0 20px;
+            padding-left: 20px;
+        }
+        
+        .terms-container li {
+            margin-bottom: 8px;
+        }
+        
+        .terms-container strong {
+            color: var(--dark-color);
+        }
+        
+        .loading-message {
+            text-align: center;
+            color: #777;
+            padding: 40px;
+            font-style: italic;
+        }
+        
+        .error-message {
+            text-align: center;
+            color: #e74c3c;
+            padding: 40px;
+            background: #fdf2f2;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .last-updated {
+            text-align: right;
+            color: #666;
+            font-size: 14px;
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+    </style>
 </head>
 <body>
     <!-- 头部导航 -->
@@ -16,7 +81,7 @@
                 <a href="../index.html" class="logo">zcfi<span>.</span>cn</a>
                 <ul class="nav-links">
                     <li><a href="../index.html">首页</a></li>
-                    <li><a href="../about.html">关于我</a></li>
+                    <!-- 已删除关于我导航 -->
                     <li><a href="../portfolio.html">作品集</a></li>
                     <li><a href="../blog.html">博客</a></li>
                     <li><a href="../contact.html">联系我</a></li>
@@ -31,28 +96,11 @@
     <main style="margin-top: 100px; padding: 80px 0;">
         <div class="container">
             <div class="section-title">
-                <h2>使用条款</h2>
+                <h2 id="pageTitle">使用条款</h2>
+                <p id="pageSubtitle">加载中...</p>
             </div>
-            <div style="background: white; padding: 40px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.08);">
-                <p><strong>最后更新：2026年1月23日</strong></p>
-                
-                <h3 style="margin: 30px 0 15px; color: var(--dark-color);">1. 接受条款</h3>
-                <p>通过访问和使用本网站（zcfi.cn），您同意遵守以下使用条款。如果您不同意这些条款，请立即停止使用本网站。</p>
-                
-                <h3 style="margin: 30px 0 15px; color: var(--dark-color);">2. 网站内容</h3>
-                <p>本网站所有内容（包括但不限于文字、图片、代码、设计）均为原创或已获得合法授权，受版权法保护。未经明确书面许可，不得复制、修改、分发或用于商业用途。</p>
-                
-                <h3 style="margin: 30px 0 15px; color: var(--dark-color);">3. 免责声明</h3>
-                <p>本网站按“现状”提供，不提供任何形式的保证。作者不对网站内容的准确性、完整性或及时性承担责任。使用本网站内容所造成的任何直接或间接损失，作者概不负责。</p>
-                
-                <h3 style="margin: 30px 0 15px; color: var(--dark-color);">4. 外部链接</h3>
-                <p>本网站可能包含指向第三方网站的链接。这些链接仅为方便用户而提供，不代表作者对这些网站的认可。作者不对第三方网站的内容、隐私政策或行为负责。</p>
-                
-                <h3 style="margin: 30px 0 15px; color: var(--dark-color);">5. 条款修改</h3>
-                <p>作者保留随时修改这些使用条款的权利。修改后的条款将在网站上发布后立即生效。继续使用本网站即表示您接受修改后的条款。</p>
-                
-                <h3 style="margin: 30px 0 15px; color: var(--dark-color);">6. 联系信息</h3>
-                <p>如有任何疑问，请通过联系页面与我沟通。</p>
+            <div class="terms-container" id="contentContainer">
+                <div class="loading-message">正在加载使用条款内容...</div>
             </div>
         </div>
     </main>
@@ -66,6 +114,100 @@
         </div>
     </footer>
 
-    <script src="../assets/js/main.js"></script>
+    <script>
+        // 配置Gist信息
+        const CONFIG_GIST_ID = '983bb7371ddb439a2fcbfb4885e34d14';
+        const CONFIG_RAW_URL = `https://gist.githubusercontent.com/xiao305/${CONFIG_GIST_ID}/raw/config.json`;
+        
+        // 页面类型
+        const PAGE_TYPE = 'terms';
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPageContent();
+        });
+        
+        async function loadPageContent() {
+            try {
+                console.log('正在加载使用条款内容...');
+                const timestamp = new Date().getTime();
+                const response = await fetch(`${CONFIG_RAW_URL}?t=${timestamp}`);
+                
+                if (!response.ok) {
+                    showError('无法加载配置数据，请稍后重试');
+                    return;
+                }
+                
+                const configData = await response.json();
+                
+                // 检查使用条款是否启用
+                if (!configData[PAGE_TYPE] || !configData[PAGE_TYPE].enabled) {
+                    showDisabledMessage();
+                    return;
+                }
+                
+                // 更新页面标题
+                document.title = `${configData[PAGE_TYPE].title} | zcfi.cn`;
+                document.getElementById('pageTitle').textContent = configData[PAGE_TYPE].title;
+                
+                // 显示最后更新时间
+                if (configData[PAGE_TYPE].lastUpdated) {
+                    const date = new Date(configData[PAGE_TYPE].lastUpdated);
+                    const dateStr = date.toLocaleDateString('zh-CN', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                    document.getElementById('pageSubtitle').innerHTML = `<i class="fas fa-history"></i> 最后更新: ${dateStr}`;
+                }
+                
+                // 填充内容
+                const contentContainer = document.getElementById('contentContainer');
+                contentContainer.innerHTML = configData[PAGE_TYPE].content || '<p>暂无内容</p>';
+                
+                // 添加最后更新时间戳
+                if (configData[PAGE_TYPE].lastUpdated) {
+                    const lastUpdatedDiv = document.createElement('div');
+                    lastUpdatedDiv.className = 'last-updated';
+                    lastUpdatedDiv.innerHTML = `<p><i class="fas fa-clock"></i> 最后更新时间: ${configData[PAGE_TYPE].lastUpdated}</p>`;
+                    contentContainer.appendChild(lastUpdatedDiv);
+                }
+                
+            } catch (error) {
+                console.error('加载内容失败:', error);
+                showError('加载内容失败，请检查网络连接或稍后重试');
+            }
+        }
+        
+        function showError(message) {
+            document.getElementById('pageTitle').textContent = '加载失败';
+            document.getElementById('pageSubtitle').textContent = '';
+            
+            const contentContainer = document.getElementById('contentContainer');
+            contentContainer.innerHTML = `
+                <div class="error-message">
+                    <p><i class="fas fa-exclamation-triangle"></i> ${message}</p>
+                    <button onclick="loadPageContent()" style="margin-top: 15px; padding: 10px 20px; background: #4a6fa5; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        <i class="fas fa-redo"></i> 重新加载
+                    </button>
+                </div>
+            `;
+        }
+        
+        function showDisabledMessage() {
+            document.getElementById('pageTitle').textContent = '页面不可用';
+            document.getElementById('pageSubtitle').textContent = '';
+            
+            const contentContainer = document.getElementById('contentContainer');
+            contentContainer.innerHTML = `
+                <div class="error-message">
+                    <p><i class="fas fa-eye-slash"></i> 该页面暂时不可用</p>
+                    <p style="margin-top: 10px;">使用条款页面当前已被管理员禁用。</p>
+                    <a href="../index.html" style="display: inline-block; margin-top: 15px; padding: 10px 20px; background: #4a6fa5; color: white; border-radius: 5px; text-decoration: none;">
+                        <i class="fas fa-home"></i> 返回首页
+                    </a>
+                </div>
+            `;
+        }
+    </script>
 </body>
 </html>
