@@ -185,6 +185,7 @@
             margin-top: 30px;
             padding-top: 20px;
             border-top: 1px solid #e9ecef;
+            flex-wrap: wrap;
         }
         
         /* 预览区域 */
@@ -210,14 +211,14 @@
             color: #495057;
         }
         
-        /* 富文本编辑器简化版 */
+        /* 富文本编辑器样式 */
         .editor-toolbar {
             display: flex;
-            gap: 5px;
+            gap: 8px;
             margin-bottom: 10px;
-            padding: 10px;
+            padding: 12px;
             background: #f8f9fa;
-            border-radius: 6px;
+            border-radius: 8px;
             border: 1px solid #e9ecef;
             flex-wrap: wrap;
         }
@@ -225,19 +226,56 @@
         .editor-btn {
             background: white;
             border: 1px solid #dee2e6;
-            border-radius: 4px;
-            padding: 6px 10px;
+            border-radius: 6px;
+            padding: 8px 12px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 13px;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
             transition: all 0.2s;
+            color: #495057;
         }
         
         .editor-btn:hover {
             background: #f8f9fa;
             border-color: #4a6fa5;
+            color: #4a6fa5;
+        }
+        
+        .editor-btn i {
+            font-size: 14px;
+        }
+        
+        /* 快捷标签按钮组 */
+        .quick-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        
+        .tag-btn {
+            background: #e9ecef;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #495057;
+        }
+        
+        .tag-btn:hover {
+            background: #4a6fa5;
+            color: white;
+        }
+        
+        /* 刷新按钮区域 */
+        .refresh-section {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e9ecef;
         }
         
         /* 响应式设计 */
@@ -281,6 +319,15 @@
             .section-actions button {
                 width: 100%;
             }
+            
+            .editor-toolbar {
+                padding: 8px;
+            }
+            
+            .editor-btn {
+                padding: 6px 8px;
+                font-size: 12px;
+            }
         }
     </style>
 </head>
@@ -298,6 +345,18 @@
         </div>
         
         <div class="admin-main-content">
+            <!-- 刷新按钮区域 -->
+            <div class="refresh-section">
+                <div class="admin-button-group">
+                    <button class="admin-btn btn-secondary" id="refreshConfigBtn">
+                        <i class="fas fa-sync-alt"></i> 刷新配置
+                    </button>
+                    <button class="admin-btn btn-info" id="backupConfigBtn">
+                        <i class="fas fa-download"></i> 备份配置
+                    </button>
+                </div>
+            </div>
+            
             <div class="config-layout">
                 <!-- 左侧导航 -->
                 <div class="config-sidebar">
@@ -322,7 +381,7 @@
                     <div style="margin-top: 30px; padding: 15px; background: #e9ecef; border-radius: 8px;">
                         <h4 style="font-size: 14px; margin-bottom: 10px; color: #495057;">配置说明</h4>
                         <p style="font-size: 12px; color: #6c757d; line-height: 1.5;">
-                            所有配置保存到独立的 Gist 中。
+                            所有配置保存到独立的 Gist 中。<br>
                             保存后，前台页面会实时加载更新。
                         </p>
                     </div>
@@ -385,6 +444,18 @@
                                 <input type="text" id="privacyTitle" placeholder="隐私政策">
                             </div>
                             
+                            <!-- 快捷HTML标签 -->
+                            <div class="quick-tags">
+                                <button type="button" class="tag-btn" onclick="insertTag('privacyContent', 'h3')">h3标题</button>
+                                <button type="button" class="tag-btn" onclick="insertTag('privacyContent', 'p')">段落</button>
+                                <button type="button" class="tag-btn" onclick="insertTag('privacyContent', 'strong')">加粗</button>
+                                <button type="button" class="tag-btn" onclick="insertTag('privacyContent', 'em')">斜体</button>
+                                <button type="button" class="tag-btn" onclick="insertTag('privacyContent', 'ul')">列表</button>
+                                <button type="button" class="tag-btn" onclick="insertTag('privacyContent', 'li')">列表项</button>
+                                <button type="button" class="tag-btn" onclick="insertTag('privacyContent', 'a')">链接</button>
+                            </div>
+                            
+                            <!-- 富文本编辑器工具栏 -->
                             <div class="editor-toolbar">
                                 <button type="button" class="editor-btn" onclick="formatText('privacyContent', 'bold')">
                                     <i class="fas fa-bold"></i> 加粗
@@ -392,11 +463,17 @@
                                 <button type="button" class="editor-btn" onclick="formatText('privacyContent', 'italic')">
                                     <i class="fas fa-italic"></i> 斜体
                                 </button>
+                                <button type="button" class="editor-btn" onclick="formatText('privacyContent', 'underline')">
+                                    <i class="fas fa-underline"></i> 下划线
+                                </button>
                                 <button type="button" class="editor-btn" onclick="formatText('privacyContent', 'link')">
                                     <i class="fas fa-link"></i> 链接
                                 </button>
                                 <button type="button" class="editor-btn" onclick="formatText('privacyContent', 'list')">
                                     <i class="fas fa-list"></i> 列表
+                                </button>
+                                <button type="button" class="editor-btn" onclick="formatText('privacyContent', 'quote')">
+                                    <i class="fas fa-quote-right"></i> 引用
                                 </button>
                             </div>
                             
@@ -404,7 +481,7 @@
                                 <label for="privacyContent"><i class="fas fa-file-alt"></i> 政策内容</label>
                                 <textarea id="privacyContent" rows="10" placeholder="在此编辑隐私政策内容..."></textarea>
                                 <div style="font-size: 12px; color: #6c757d; margin-top: 5px;">
-                                    支持 HTML 标签，如 &lt;strong&gt;, &lt;em&gt;, &lt;a&gt;, &lt;ul&gt;, &lt;li&gt; 等
+                                    支持 HTML 标签，如 &lt;h3&gt;, &lt;p&gt;, &lt;strong&gt;, &lt;em&gt;, &lt;a&gt;, &lt;ul&gt;, &lt;li&gt; 等
                                 </div>
                             </div>
                             
@@ -451,6 +528,17 @@
                             <div class="form-group">
                                 <label for="termsTitle"><i class="fas fa-heading"></i> 页面标题</label>
                                 <input type="text" id="termsTitle" placeholder="使用条款">
+                            </div>
+                            
+                            <!-- 快捷HTML标签 -->
+                            <div class="quick-tags">
+                                <button type="button" class="tag-btn" onclick="insertTag('termsContent', 'h3')">h3标题</button>
+                                <button type="button" class="tag-btn" onclick="insertTag('termsContent', 'p')">段落</button>
+                                <button type="button" class="tag-btn" onclick="insertTag('termsContent', 'strong')">加粗</button>
+                                <button type="button" class="tag-btn" onclick="insertTag('termsContent', 'em')">斜体</button>
+                                <button type="button" class="tag-btn" onclick="insertTag('termsContent', 'ul')">列表</button>
+                                <button type="button" class="tag-btn" onclick="insertTag('termsContent', 'li')">列表项</button>
+                                <button type="button" class="tag-btn" onclick="insertTag('termsContent', 'a')">链接</button>
                             </div>
                             
                             <div class="form-group">
@@ -501,6 +589,17 @@
                             <div class="form-group">
                                 <label for="copyrightTitle"><i class="fas fa-heading"></i> 页面标题</label>
                                 <input type="text" id="copyrightTitle" placeholder="版权声明">
+                            </div>
+                            
+                            <!-- 快捷HTML标签 -->
+                            <div class="quick-tags">
+                                <button type="button" class="tag-btn" onclick="insertTag('copyrightContent', 'h3')">h3标题</button>
+                                <button type="button" class="tag-btn" onclick="insertTag('copyrightContent', 'p')">段落</button>
+                                <button type="button" class="tag-btn" onclick="insertTag('copyrightContent', 'strong')">加粗</button>
+                                <button type="button" class="tag-btn" onclick="insertTag('copyrightContent', 'em')">斜体</button>
+                                <button type="button" class="tag-btn" onclick="insertTag('copyrightContent', 'ul')">列表</button>
+                                <button type="button" class="tag-btn" onclick="insertTag('copyrightContent', 'li')">列表项</button>
+                                <button type="button" class="tag-btn" onclick="insertTag('copyrightContent', 'a')">链接</button>
                             </div>
                             
                             <div class="form-group">
@@ -580,6 +679,13 @@
                     </div>
                 </div>
             </div>
+            
+            <div class="admin-footer">
+                <p>© 2026 zcfi.cn 配置管理系统</p>
+                <p style="margin-top: 10px; font-size: 13px; color: #6c757d;">
+                    注意：保存的配置将同步到GitHub Gist，网站前端会实时加载最新配置。
+                </p>
+            </div>
         </div>
     </div>
 
@@ -590,7 +696,7 @@
                 <i class="fas fa-question-circle"></i>
             </div>
             <div class="modal-title">确认保存</div>
-            <div class="modal-message" id="confirmMessage">确定要保存当前配置吗？</div>
+            <div class="modal-message" id="confirmMessage">确定要保存当前配置吗？这将覆盖现有的配置数据。</div>
             <div class="modal-buttons">
                 <button class="modal-btn btn-secondary" id="cancelSaveBtn">取消</button>
                 <button class="modal-btn btn-primary" id="confirmSaveBtn">确认保存</button>
@@ -638,6 +744,9 @@
         
         let currentConfigData = {};
         let currentSection = 'site-info';
+        let isSaving = false; // 防止重复提交
+        let retryCount = 0; // 重试次数
+        const MAX_RETRIES = 3; // 最大重试次数
         
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
@@ -677,6 +786,10 @@
         
         // 初始化事件监听器
         function initEventListeners() {
+            // 主按钮
+            document.getElementById('refreshConfigBtn').addEventListener('click', loadConfigData);
+            document.getElementById('backupConfigBtn').addEventListener('click', backupConfig);
+            
             // 弹窗按钮
             document.getElementById('cancelSaveBtn').addEventListener('click', closeConfirmModal);
             document.getElementById('confirmSaveBtn').addEventListener('click', executeSave);
@@ -720,7 +833,7 @@
         // 加载配置数据
         async function loadConfigData() {
             try {
-                showLoading('正在加载配置数据...');
+                showLoading('正在从服务器获取最新配置...');
                 
                 const timestamp = new Date().getTime();
                 const response = await fetch(`${CONFIG_RAW_URL}?t=${timestamp}`);
@@ -739,6 +852,7 @@
                 currentConfigData = data;
                 populateFormWithConfig(data);
                 hideLoading();
+                showResult('success', '刷新成功', '配置数据已成功加载。');
                 
             } catch (error) {
                 console.error('加载配置失败:', error);
@@ -853,14 +967,27 @@
         
         // 保存当前部分
         function saveCurrentSection(section) {
+            if (isSaving) {
+                showResult('info', '请稍候', '正在保存中，请勿重复提交。');
+                return;
+            }
+            
             // 收集当前部分的数据
             const sectionData = {};
             
             switch(section) {
                 case 'site-info':
+                    const siteName = document.getElementById('siteName').value.trim();
+                    const siteDescription = document.getElementById('siteDescription').value.trim();
+                    
+                    if (!siteName || !siteDescription) {
+                        showResult('error', '输入错误', '请填写网站名称和描述');
+                        return;
+                    }
+                    
                     sectionData.site = {
-                        name: document.getElementById('siteName').value.trim(),
-                        description: document.getElementById('siteDescription').value.trim(),
+                        name: siteName,
+                        description: siteDescription,
                         keywords: document.getElementById('siteKeywords').value.trim(),
                         adminEmail: document.getElementById('adminEmail').value.trim(),
                         lastUpdated: new Date().toISOString()
@@ -868,27 +995,51 @@
                     break;
                     
                 case 'privacy':
+                    const privacyTitle = document.getElementById('privacyTitle').value.trim();
+                    const privacyContent = document.getElementById('privacyContent').value.trim();
+                    
+                    if (!privacyTitle || !privacyContent) {
+                        showResult('error', '输入错误', '请填写页面标题和内容');
+                        return;
+                    }
+                    
                     sectionData.privacy = {
-                        title: document.getElementById('privacyTitle').value.trim(),
-                        content: document.getElementById('privacyContent').value.trim(),
+                        title: privacyTitle,
+                        content: privacyContent,
                         enabled: document.getElementById('privacyEnabled').checked,
                         lastUpdated: new Date().toISOString()
                     };
                     break;
                     
                 case 'terms':
+                    const termsTitle = document.getElementById('termsTitle').value.trim();
+                    const termsContent = document.getElementById('termsContent').value.trim();
+                    
+                    if (!termsTitle || !termsContent) {
+                        showResult('error', '输入错误', '请填写页面标题和内容');
+                        return;
+                    }
+                    
                     sectionData.terms = {
-                        title: document.getElementById('termsTitle').value.trim(),
-                        content: document.getElementById('termsContent').value.trim(),
+                        title: termsTitle,
+                        content: termsContent,
                         enabled: document.getElementById('termsEnabled').checked,
                         lastUpdated: new Date().toISOString()
                     };
                     break;
                     
                 case 'copyright':
+                    const copyrightTitle = document.getElementById('copyrightTitle').value.trim();
+                    const copyrightContent = document.getElementById('copyrightContent').value.trim();
+                    
+                    if (!copyrightTitle || !copyrightContent) {
+                        showResult('error', '输入错误', '请填写页面标题和内容');
+                        return;
+                    }
+                    
                     sectionData.copyright = {
-                        title: document.getElementById('copyrightTitle').value.trim(),
-                        content: document.getElementById('copyrightContent').value.trim(),
+                        title: copyrightTitle,
+                        content: copyrightContent,
                         enabled: document.getElementById('copyrightEnabled').checked,
                         lastUpdated: new Date().toISOString()
                     };
@@ -914,8 +1065,16 @@
         
         // 执行保存
         async function executeSave() {
+            if (isSaving) {
+                showResult('info', '请稍候', '正在保存中，请勿重复提交。');
+                return;
+            }
+            
             const section = this.dataset.section;
             const sectionData = JSON.parse(this.dataset.sectionData);
+            
+            isSaving = true;
+            retryCount = 0;
             
             try {
                 showLoading('正在保存配置...');
@@ -923,8 +1082,8 @@
                 // 更新当前配置数据
                 Object.assign(currentConfigData, sectionData);
                 
-                // 保存到Gist
-                await saveConfigToGist(currentConfigData);
+                // 保存到Gist，带有重试机制
+                await saveConfigToGistWithRetry(currentConfigData);
                 
                 hideLoading();
                 showResult('success', '保存成功', `${getSectionName(section)}已成功保存。`);
@@ -933,14 +1092,40 @@
             } catch (error) {
                 hideLoading();
                 showResult('error', '保存失败', error.message);
+            } finally {
+                isSaving = false;
             }
         }
         
-        // 保存到Gist
+        // 带有重试机制的保存
+        async function saveConfigToGistWithRetry(configData, retry = 0) {
+            try {
+                return await saveConfigToGist(configData);
+            } catch (error) {
+                if (retry < MAX_RETRIES) {
+                    console.log(`保存失败，第${retry + 1}次重试...`);
+                    await delay(1000 * (retry + 1)); // 延迟重试
+                    return await saveConfigToGistWithRetry(configData, retry + 1);
+                } else {
+                    throw error;
+                }
+            }
+        }
+        
+        // 延迟函数
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        
+        // 保存到Gist（修复CORS问题）
         async function saveConfigToGist(configData) {
             try {
+                // 使用代理绕过CORS限制
+                const proxyUrl = 'https://api.allorigins.win/raw?url=';
+                const encodedUrl = encodeURIComponent(CONFIG_GIST_URL);
+                
                 // 首先尝试通过API获取现有Gist
-                const response = await fetch(CONFIG_GIST_URL, {
+                const response = await fetch(proxyUrl + encodedUrl, {
                     headers: {
                         'Authorization': `token ${token}`,
                         'Accept': 'application/vnd.github.v3+json'
@@ -963,7 +1148,7 @@
                 
                 if (gistExists) {
                     // 更新现有Gist
-                    updateResponse = await fetch(CONFIG_GIST_URL, {
+                    updateResponse = await fetch(proxyUrl + encodeURIComponent(CONFIG_GIST_URL), {
                         method: 'PATCH',
                         headers: {
                             'Authorization': `token ${token}`,
@@ -974,7 +1159,7 @@
                     });
                 } else {
                     // 创建新Gist
-                    updateResponse = await fetch('https://api.github.com/gists', {
+                    updateResponse = await fetch(proxyUrl + encodeURIComponent('https://api.github.com/gists'), {
                         method: 'POST',
                         headers: {
                             'Authorization': `token ${token}`,
@@ -986,6 +1171,8 @@
                 }
                 
                 if (!updateResponse.ok) {
+                    const errorText = await updateResponse.text();
+                    console.error('GitHub API错误:', errorText);
                     throw new Error(`保存失败: ${updateResponse.status} ${updateResponse.statusText}`);
                 }
                 
@@ -993,7 +1180,128 @@
                 
             } catch (error) {
                 console.error('保存配置到Gist失败:', error);
+                // 如果代理失败，尝试直接请求（可能会被CORS阻止）
+                if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                    try {
+                        return await saveConfigToGistDirect(configData);
+                    } catch (directError) {
+                        throw new Error('网络错误，请检查Token权限或稍后重试');
+                    }
+                }
                 throw error;
+            }
+        }
+        
+        // 直接保存到Gist（可能被CORS阻止）
+        async function saveConfigToGistDirect(configData) {
+            const response = await fetch(CONFIG_GIST_URL, {
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            
+            let gistExists = response.ok;
+            
+            const updateData = {
+                description: '网站配置数据',
+                files: {
+                    'config.json': {
+                        content: JSON.stringify(configData, null, 2)
+                    }
+                }
+            };
+            
+            let updateResponse;
+            
+            if (gistExists) {
+                updateResponse = await fetch(CONFIG_GIST_URL, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updateData)
+                });
+            } else {
+                updateResponse = await fetch('https://api.github.com/gists', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updateData)
+                });
+            }
+            
+            if (!updateResponse.ok) {
+                throw new Error(`保存失败: ${updateResponse.status} ${updateResponse.statusText}`);
+            }
+            
+            return true;
+        }
+        
+        // 备份配置
+        async function backupConfig() {
+            try {
+                showLoading('正在创建备份...');
+                
+                // 收集当前配置数据
+                const backupData = {
+                    site: {
+                        name: document.getElementById('siteName').value,
+                        description: document.getElementById('siteDescription').value,
+                        keywords: document.getElementById('siteKeywords').value,
+                        adminEmail: document.getElementById('adminEmail').value
+                    },
+                    privacy: {
+                        title: document.getElementById('privacyTitle').value,
+                        content: document.getElementById('privacyContent').value,
+                        enabled: document.getElementById('privacyEnabled').checked
+                    },
+                    terms: {
+                        title: document.getElementById('termsTitle').value,
+                        content: document.getElementById('termsContent').value,
+                        enabled: document.getElementById('termsEnabled').checked
+                    },
+                    copyright: {
+                        title: document.getElementById('copyrightTitle').value,
+                        content: document.getElementById('copyrightContent').value,
+                        enabled: document.getElementById('copyrightEnabled').checked
+                    },
+                    social: {
+                        github: document.getElementById('githubUrl').value,
+                        weibo: document.getElementById('weiboUrl').value,
+                        zhihu: document.getElementById('zhihuUrl').value,
+                        linkedin: document.getElementById('linkedinUrl').value
+                    }
+                };
+                
+                // 创建备份文件
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                const backupBlob = new Blob(
+                    [JSON.stringify(backupData, null, 2)], 
+                    { type: 'application/json' }
+                );
+                
+                // 下载备份文件
+                const backupUrl = URL.createObjectURL(backupBlob);
+                const downloadLink = document.createElement('a');
+                downloadLink.href = backupUrl;
+                downloadLink.download = `config-backup-${timestamp}.json`;
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+                URL.revokeObjectURL(backupUrl);
+                
+                hideLoading();
+                showResult('success', '备份成功', '配置文件已下载到您的设备。');
+                
+            } catch (error) {
+                hideLoading();
+                showResult('error', '备份失败', error.message);
             }
         }
         
@@ -1084,6 +1392,54 @@
             }
         }
         
+        // 插入HTML标签
+        function insertTag(textareaId, tag) {
+            const textarea = document.getElementById(textareaId);
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end);
+            let formattedText = '';
+            
+            switch(tag) {
+                case 'h3':
+                    formattedText = `<h3>${selectedText || '小标题'}</h3>`;
+                    break;
+                case 'p':
+                    formattedText = `<p>${selectedText || '段落内容'}</p>`;
+                    break;
+                case 'strong':
+                    formattedText = `<strong>${selectedText || '加粗文本'}</strong>`;
+                    break;
+                case 'em':
+                    formattedText = `<em>${selectedText || '斜体文本'}</em>`;
+                    break;
+                case 'ul':
+                    formattedText = '<ul>\n  <li>列表项1</li>\n  <li>列表项2</li>\n</ul>';
+                    break;
+                case 'li':
+                    formattedText = '<li>' + (selectedText || '列表项内容') + '</li>';
+                    break;
+                case 'a':
+                    const url = prompt('请输入链接地址:', 'https://');
+                    if (url) {
+                        const linkText = selectedText || '链接文本';
+                        formattedText = `<a href="${url}" target="_blank">${linkText}</a>`;
+                    } else {
+                        return;
+                    }
+                    break;
+            }
+            
+            textarea.value = textarea.value.substring(0, start) + formattedText + textarea.value.substring(end);
+            
+            // 重新聚焦并设置光标位置
+            textarea.focus();
+            textarea.setSelectionRange(start + formattedText.length, start + formattedText.length);
+            
+            // 触发输入事件以更新预览
+            textarea.dispatchEvent(new Event('input'));
+        }
+        
         // 文本格式化工具
         function formatText(textareaId, format) {
             const textarea = document.getElementById(textareaId);
@@ -1099,6 +1455,9 @@
                 case 'italic':
                     formattedText = `<em>${selectedText}</em>`;
                     break;
+                case 'underline':
+                    formattedText = `<u>${selectedText}</u>`;
+                    break;
                 case 'link':
                     const url = prompt('请输入链接地址:', 'https://');
                     if (url) {
@@ -1110,7 +1469,14 @@
                     break;
                 case 'list':
                     const listItems = selectedText.split('\n').filter(item => item.trim());
-                    formattedText = '<ul>\n' + listItems.map(item => `  <li>${item}</li>`).join('\n') + '\n</ul>';
+                    if (listItems.length > 0) {
+                        formattedText = '<ul>\n' + listItems.map(item => `  <li>${item}</li>`).join('\n') + '\n</ul>';
+                    } else {
+                        formattedText = '<ul>\n  <li>列表项1</li>\n  <li>列表项2</li>\n</ul>';
+                    }
+                    break;
+                case 'quote':
+                    formattedText = `<blockquote>${selectedText || '引用内容'}</blockquote>`;
                     break;
             }
             
