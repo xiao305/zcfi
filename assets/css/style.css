@@ -516,4 +516,35 @@ footer {
     .footer-content {
         grid-template-columns: 1fr;
     }
+
+}
+/* 在 style.css 末尾添加 */
+
+/* 组件样式覆盖 */
+#navbar-container header,
+#footer-container footer {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* 确保组件容器不会影响布局 */
+#navbar-container,
+#footer-container {
+    display: block;
+    width: 100%;
+}
+
+/* 修复移动端菜单显示问题 */
+@media (max-width: 768px) {
+    .nav-links {
+        display: none;
+    }
+    
+    .nav-links.active {
+        display: flex;
+    }
 }
