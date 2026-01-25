@@ -278,6 +278,130 @@
             border-bottom: 1px solid #e9ecef;
         }
         
+        /* 新增：导航项表单样式 */
+        .nav-item-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .nav-item-row input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .nav-item-name {
+            min-width: 120px;
+        }
+        
+        .nav-item-url {
+            min-width: 200px;
+        }
+        
+        .btn-sm {
+            padding: 8px 12px !important;
+            font-size: 13px !important;
+        }
+        
+        /* 新增：导航预览样式 */
+        .nav-preview {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .nav-preview-logo {
+            font-weight: bold;
+            color: #4a6fa5;
+            font-size: 18px;
+        }
+        
+        .nav-preview-links {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .nav-preview-link {
+            color: #4a6fa5;
+            text-decoration: none;
+        }
+        
+        .nav-preview-link:hover {
+            text-decoration: underline;
+        }
+        
+        .nav-preview-menu-btn {
+            background: none;
+            border: none;
+            color: #4a6fa5;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        /* 新增：页脚预览样式 */
+        .footer-preview {
+            background: #333344;
+            color: white;
+            padding: 30px;
+            border-radius: 5px;
+        }
+        
+        .footer-preview-content {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .footer-preview-logo {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .footer-preview-desc {
+            color: #aaa;
+            margin-bottom: 15px;
+        }
+        
+        .footer-preview-links h4 {
+            margin-bottom: 10px;
+            color: white;
+        }
+        
+        .footer-preview-links ul {
+            list-style: none;
+            padding: 0;
+            color: #aaa;
+        }
+        
+        .footer-preview-links a {
+            color: #aaa;
+            text-decoration: none;
+        }
+        
+        .footer-preview-links a:hover {
+            color: #4a6fa5;
+        }
+        
+        .footer-preview-copyright {
+            border-top: 1px solid #444;
+            padding-top: 15px;
+            text-align: center;
+            color: #aaa;
+        }
+        
         /* 响应式设计 */
         @media (max-width: 992px) {
             .config-layout {
@@ -328,6 +452,15 @@
                 padding: 6px 8px;
                 font-size: 12px;
             }
+            
+            .nav-item-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .nav-item-row input {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -375,6 +508,13 @@
                         </a></li>
                         <li><a href="#social-links">
                             <i class="fas fa-share-alt"></i> 社交链接
+                        </a></li>
+                        <!-- 新增：导航栏和页脚配置 -->
+                        <li><a href="#navigation">
+                            <i class="fas fa-bars"></i> 导航栏配置
+                        </a></li>
+                        <li><a href="#footer">
+                            <i class="fas fa-shoe-prints"></i> 页脚配置
                         </a></li>
                     </ul>
                     
@@ -677,6 +817,78 @@
                             </button>
                         </div>
                     </div>
+                    
+                    <!-- 新增：导航栏配置 -->
+                    <div class="config-section" id="navigation-section">
+                        <div class="section-header">
+                            <h2><i class="fas fa-bars"></i> 导航栏配置</h2>
+                            <p>管理网站导航菜单项</p>
+                        </div>
+                        
+                        <div class="compact-form">
+                            <div class="form-group">
+                                <label for="navItems"><i class="fas fa-list"></i> 导航菜单项</label>
+                                <div id="navItemsContainer">
+                                    <!-- 动态生成的导航项表单 -->
+                                </div>
+                                <button type="button" class="admin-btn btn-secondary" onclick="addNavItem()" style="margin-top: 10px;">
+                                    <i class="fas fa-plus"></i> 添加菜单项
+                                </button>
+                            </div>
+                            
+                            <div class="preview-area">
+                                <h4>导航栏预览：</h4>
+                                <div class="preview-content" id="navPreview">
+                                    <!-- 预览将通过JavaScript动态生成 -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="section-actions">
+                            <button class="admin-btn btn-primary" onclick="saveCurrentSection('navigation')">
+                                <i class="fas fa-save"></i> 保存导航栏配置
+                            </button>
+                            <button class="admin-btn btn-secondary" onclick="previewNavigation()">
+                                <i class="fas fa-eye"></i> 更新预览
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 新增：页脚配置 -->
+                    <div class="config-section" id="footer-section">
+                        <div class="section-header">
+                            <h2><i class="fas fa-shoe-prints"></i> 页脚配置</h2>
+                            <p>管理网站页脚内容</p>
+                        </div>
+                        
+                        <div class="compact-form">
+                            <div class="form-group">
+                                <label for="footerDescription"><i class="fas fa-align-left"></i> 页脚描述</label>
+                                <textarea id="footerDescription" rows="3" placeholder="在页脚显示的网站描述"></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="footerCopyright"><i class="fas fa-copyright"></i> 版权信息</label>
+                                <input type="text" id="footerCopyright" placeholder="例如：© 2026 zcfi.cn 版权所有">
+                            </div>
+                            
+                            <div class="preview-area">
+                                <h4>页脚预览：</h4>
+                                <div class="preview-content" id="footerPreview">
+                                    <!-- 预览将通过JavaScript动态生成 -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="section-actions">
+                            <button class="admin-btn btn-primary" onclick="saveCurrentSection('footer')">
+                                <i class="fas fa-save"></i> 保存页脚配置
+                            </button>
+                            <button class="admin-btn btn-secondary" onclick="previewFooter()">
+                                <i class="fas fa-eye"></i> 更新预览
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -912,6 +1124,20 @@
                     zhihu: 'https://zhihu.com',
                     linkedin: 'https://linkedin.com',
                     lastUpdated: new Date().toISOString()
+                },
+                navigation: {
+                    items: [
+                        { name: '首页', url: './', order: 1 },
+                        { name: '作品集', url: 'portfolio.html', order: 2 },
+                        { name: '博客', url: 'blog.html', order: 3 },
+                        { name: '联系我', url: 'contact.html', order: 4 }
+                    ],
+                    lastUpdated: new Date().toISOString()
+                },
+                footer: {
+                    description: '个人网站和作品展示平台',
+                    copyright: '© 2026 zcfi.cn 版权所有',
+                    lastUpdated: new Date().toISOString()
                 }
             };
         }
@@ -963,6 +1189,204 @@
                 document.getElementById('zhihuUrl').value = config.social.zhihu || '';
                 document.getElementById('linkedinUrl').value = config.social.linkedin || '';
             }
+            
+            // 导航栏配置
+            if (config.navigation) {
+                populateNavigationForm(config.navigation.items || []);
+                previewNavigation();
+            }
+            
+            // 页脚配置
+            if (config.footer) {
+                document.getElementById('footerDescription').value = config.footer.description || '';
+                document.getElementById('footerCopyright').value = config.footer.copyright || '';
+                previewFooter();
+            }
+        }
+        
+        // 导航栏表单处理函数
+        function populateNavigationForm(items) {
+            const container = document.getElementById('navItemsContainer');
+            container.innerHTML = '';
+            
+            // 按order排序
+            const sortedItems = [...items].sort((a, b) => (a.order || 0) - (b.order || 0));
+            
+            sortedItems.forEach((item, index) => {
+                const itemId = `navItem_${index}`;
+                const itemHtml = `
+                    <div class="nav-item-row" style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                        <input type="hidden" name="navOrder" value="${item.order || index + 1}">
+                        <input type="text" class="nav-item-name" placeholder="菜单名称" 
+                               value="${escapeHtml(item.name || '')}" 
+                               style="flex: 1; padding: 8px;">
+                        <input type="text" class="nav-item-url" placeholder="链接地址" 
+                               value="${escapeHtml(item.url || '')}" 
+                               style="flex: 2; padding: 8px;">
+                        <button type="button" class="admin-btn btn-danger btn-sm" 
+                                onclick="removeNavItem(this)" style="padding: 8px 12px;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        <button type="button" class="admin-btn btn-secondary btn-sm" 
+                                onclick="moveNavItemUp(this)" style="padding: 8px 12px;">
+                            <i class="fas fa-arrow-up"></i>
+                        </button>
+                        <button type="button" class="admin-btn btn-secondary btn-sm" 
+                                onclick="moveNavItemDown(this)" style="padding: 8px 12px;">
+                            <i class="fas fa-arrow-down"></i>
+                        </button>
+                    </div>
+                `;
+                container.innerHTML += itemHtml;
+            });
+        }
+        
+        // 添加导航项
+        function addNavItem() {
+            const container = document.getElementById('navItemsContainer');
+            const items = container.querySelectorAll('.nav-item-row');
+            const nextOrder = items.length + 1;
+            
+            const itemHtml = `
+                <div class="nav-item-row" style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                    <input type="hidden" name="navOrder" value="${nextOrder}">
+                    <input type="text" class="nav-item-name" placeholder="菜单名称" value="" style="flex: 1; padding: 8px;">
+                    <input type="text" class="nav-item-url" placeholder="链接地址" value="" style="flex: 2; padding: 8px;">
+                    <button type="button" class="admin-btn btn-danger btn-sm" 
+                            onclick="removeNavItem(this)" style="padding: 8px 12px;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    <button type="button" class="admin-btn btn-secondary btn-sm" 
+                            onclick="moveNavItemUp(this)" style="padding: 8px 12px;">
+                        <i class="fas fa-arrow-up"></i>
+                    </button>
+                    <button type="button" class="admin-btn btn-secondary btn-sm" 
+                            onclick="moveNavItemDown(this)" style="padding: 8px 12px;">
+                        <i class="fas fa-arrow-down"></i>
+                    </button>
+                </div>
+            `;
+            container.innerHTML += itemHtml;
+            previewNavigation();
+        }
+        
+        // 移除导航项
+        function removeNavItem(button) {
+            const row = button.closest('.nav-item-row');
+            row.remove();
+            updateNavItemOrders();
+            previewNavigation();
+        }
+        
+        // 上移导航项
+        function moveNavItemUp(button) {
+            const row = button.closest('.nav-item-row');
+            const prevRow = row.previousElementSibling;
+            
+            if (prevRow && prevRow.classList.contains('nav-item-row')) {
+                row.parentNode.insertBefore(row, prevRow);
+                updateNavItemOrders();
+                previewNavigation();
+            }
+        }
+        
+        // 下移导航项
+        function moveNavItemDown(button) {
+            const row = button.closest('.nav-item-row');
+            const nextRow = row.nextElementSibling;
+            
+            if (nextRow && nextRow.classList.contains('nav-item-row')) {
+                row.parentNode.insertBefore(nextRow, row);
+                updateNavItemOrders();
+                previewNavigation();
+            }
+        }
+        
+        // 更新导航项顺序
+        function updateNavItemOrders() {
+            const items = document.querySelectorAll('.nav-item-row');
+            items.forEach((item, index) => {
+                const orderInput = item.querySelector('input[name="navOrder"]');
+                if (orderInput) {
+                    orderInput.value = index + 1;
+                }
+            });
+        }
+        
+        // 预览导航栏
+        function previewNavigation() {
+            const previewElement = document.getElementById('navPreview');
+            const items = [];
+            
+            document.querySelectorAll('.nav-item-row').forEach(row => {
+                const nameInput = row.querySelector('.nav-item-name');
+                const urlInput = row.querySelector('.nav-item-url');
+                const orderInput = row.querySelector('input[name="navOrder"]');
+                
+                if (nameInput && urlInput && nameInput.value && urlInput.value) {
+                    items.push({
+                        name: nameInput.value,
+                        url: urlInput.value,
+                        order: parseInt(orderInput?.value || '0')
+                    });
+                }
+            });
+            
+            // 按order排序
+            const sortedItems = [...items].sort((a, b) => a.order - b.order);
+            
+            if (sortedItems.length === 0) {
+                previewElement.innerHTML = '<p style="color: #999;">暂无导航菜单项</p>';
+                return;
+            }
+            
+            const previewHtml = sortedItems.map(item => 
+                `<a href="${escapeHtml(item.url)}" style="display: inline-block; margin-right: 15px; color: #4a6fa5; text-decoration: none;">${escapeHtml(item.name)}</a>`
+            ).join('');
+            
+            previewElement.innerHTML = `
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 5px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <span style="font-weight: bold; color: #4a6fa5;">zcfi.cn</span>
+                        <div style="display: flex; gap: 15px;">
+                            ${previewHtml}
+                        </div>
+                        <button style="background: none; border: none; color: #4a6fa5; font-size: 20px; cursor: pointer;">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // 预览页脚
+        function previewFooter() {
+            const previewElement = document.getElementById('footerPreview');
+            const description = document.getElementById('footerDescription').value || '';
+            const copyright = document.getElementById('footerCopyright').value || '';
+            
+            previewElement.innerHTML = `
+                <div style="background: #333344; color: white; padding: 30px; border-radius: 5px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                        <div>
+                            <div style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">zcfi.cn</div>
+                            <p style="color: #aaa;">${description || '网站描述'}</p>
+                        </div>
+                        <div>
+                            <h4 style="margin-bottom: 10px;">快速链接</h4>
+                            <ul style="list-style: none; padding: 0; color: #aaa;">
+                                <li><a href="./" style="color: #aaa; text-decoration: none;">首页</a></li>
+                                <li><a href="portfolio.html" style="color: #aaa; text-decoration: none;">作品集</a></li>
+                                <li><a href="blog.html" style="color: #aaa; text-decoration: none;">博客</a></li>
+                                <li><a href="contact.html" style="color: #aaa; text-decoration: none;">联系我</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div style="border-top: 1px solid #444; padding-top: 15px; text-align: center; color: #aaa;">
+                        ${copyright || '© 2026 zcfi.cn 版权所有'}
+                    </div>
+                </div>
+            `;
         }
         
         // 保存当前部分
@@ -1051,6 +1475,49 @@
                         weibo: document.getElementById('weiboUrl').value.trim(),
                         zhihu: document.getElementById('zhihuUrl').value.trim(),
                         linkedin: document.getElementById('linkedinUrl').value.trim(),
+                        lastUpdated: new Date().toISOString()
+                    };
+                    break;
+                    
+                case 'navigation':
+                    const navItems = [];
+                    document.querySelectorAll('.nav-item-row').forEach(row => {
+                        const nameInput = row.querySelector('.nav-item-name');
+                        const urlInput = row.querySelector('.nav-item-url');
+                        const orderInput = row.querySelector('input[name="navOrder"]');
+                        
+                        if (nameInput && urlInput && nameInput.value && urlInput.value) {
+                            navItems.push({
+                                name: nameInput.value,
+                                url: urlInput.value,
+                                order: parseInt(orderInput?.value || '0')
+                            });
+                        }
+                    });
+                    
+                    if (navItems.length === 0) {
+                        showResult('error', '输入错误', '请至少添加一个导航菜单项');
+                        return;
+                    }
+                    
+                    sectionData.navigation = {
+                        items: navItems,
+                        lastUpdated: new Date().toISOString()
+                    };
+                    break;
+                    
+                case 'footer':
+                    const footerDescription = document.getElementById('footerDescription').value.trim();
+                    const footerCopyright = document.getElementById('footerCopyright').value.trim();
+                    
+                    if (!footerDescription || !footerCopyright) {
+                        showResult('error', '输入错误', '请填写页脚描述和版权信息');
+                        return;
+                    }
+                    
+                    sectionData.footer = {
+                        description: footerDescription,
+                        copyright: footerCopyright,
                         lastUpdated: new Date().toISOString()
                     };
                     break;
@@ -1276,8 +1743,30 @@
                         weibo: document.getElementById('weiboUrl').value,
                         zhihu: document.getElementById('zhihuUrl').value,
                         linkedin: document.getElementById('linkedinUrl').value
+                    },
+                    navigation: {
+                        items: []
+                    },
+                    footer: {
+                        description: document.getElementById('footerDescription').value,
+                        copyright: document.getElementById('footerCopyright').value
                     }
                 };
+                
+                // 收集导航项
+                document.querySelectorAll('.nav-item-row').forEach(row => {
+                    const nameInput = row.querySelector('.nav-item-name');
+                    const urlInput = row.querySelector('.nav-item-url');
+                    const orderInput = row.querySelector('input[name="navOrder"]');
+                    
+                    if (nameInput && urlInput && nameInput.value && urlInput.value) {
+                        backupData.navigation.items.push({
+                            name: nameInput.value,
+                            url: urlInput.value,
+                            order: parseInt(orderInput?.value || '0')
+                        });
+                    }
+                });
                 
                 // 创建备份文件
                 const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -1358,6 +1847,21 @@
                         document.getElementById('weiboUrl').value = currentConfigData.social.weibo || '';
                         document.getElementById('zhihuUrl').value = currentConfigData.social.zhihu || '';
                         document.getElementById('linkedinUrl').value = currentConfigData.social.linkedin || '';
+                    }
+                    break;
+                    
+                case 'navigation':
+                    if (currentConfigData.navigation) {
+                        populateNavigationForm(currentConfigData.navigation.items || []);
+                        previewNavigation();
+                    }
+                    break;
+                    
+                case 'footer':
+                    if (currentConfigData.footer) {
+                        document.getElementById('footerDescription').value = currentConfigData.footer.description || '';
+                        document.getElementById('footerCopyright').value = currentConfigData.footer.copyright || '';
+                        previewFooter();
                     }
                     break;
             }
@@ -1497,7 +2001,9 @@
                 'privacy': '隐私政策',
                 'terms': '使用条款',
                 'copyright': '版权声明',
-                'social': '社交链接'
+                'social': '社交链接',
+                'navigation': '导航栏配置',
+                'footer': '页脚配置'
             };
             return names[section] || '配置';
         }
@@ -1545,6 +2051,13 @@
             document.getElementById('resultTitle').textContent = title;
             document.getElementById('resultMessage').textContent = message;
             showModal('resultModal');
+        }
+        
+        // HTML转义辅助函数
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
         
         // 页面卸载时清除敏感信息
