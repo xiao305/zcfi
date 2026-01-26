@@ -1,5 +1,5 @@
 // assets/js/config-loader.js
-// 网站配置加载器 - 用于前端页面
+// 增强版网站配置加载器 - 用于前端页面
 
 class SiteConfigLoader {
     constructor() {
@@ -96,6 +96,23 @@ class SiteConfigLoader {
             },
             footer: {
                 description: '个人网站和作品展示平台',
+                quickLinks: [
+                    { name: '首页', url: './' },
+                    { name: '作品集', url: 'portfolio.html' },
+                    { name: '博客', url: 'blog.html' },
+                    { name: '联系我', url: 'contact.html' }
+                ],
+                legalLinks: [
+                    { name: '隐私政策', url: 'privacy.html' },
+                    { name: '使用条款', url: 'terms.html' },
+                    { name: '版权声明', url: 'copyright.html' }
+                ],
+                social: {
+                    github: 'https://github.com',
+                    weibo: 'https://weibo.com',
+                    zhihu: 'https://zhihu.com',
+                    linkedin: 'https://linkedin.com'
+                },
                 copyright: '© 2026 zcfi.cn 版权所有',
                 lastUpdated: new Date().toISOString()
             }
@@ -142,9 +159,9 @@ class SiteConfigLoader {
 
     // 更新社交链接
     updateSocialLinks() {
-        if (!this.configData || !this.configData.social) return;
+        if (!this.configData || !this.configData.footer || !this.configData.footer.social) return;
         
-        const socialLinks = this.configData.social;
+        const socialLinks = this.configData.footer.social;
         const socialContainers = document.querySelectorAll('.social-links');
         
         if (!socialContainers.length) return;
@@ -179,88 +196,7 @@ class SiteConfigLoader {
         });
     }
 
-    // 更新网站名称
-    updateSiteName() {
-        if (!this.configData || !this.configData.site || !this.configData.site.name) return;
-        
-        const siteName = this.configData.site.name;
-        
-        // 更新logo中的网站名称
-        const logoElements = document.querySelectorAll('.logo, .footer-logo');
-        logoElements.forEach(element => {
-            const span = element.querySelector('span');
-            if (span) {
-                element.innerHTML = `${siteName}<span>.</span>cn`;
-            }
-        });
-        
-        // 更新版权信息
-        const copyrightElements = document.querySelectorAll('#copyrightText');
-        copyrightElements.forEach(element => {
-            element.textContent = `© 2026 ${siteName} 版权所有`;
-        });
-    }
-
-    // 更新网站描述
-    updateSiteDescription() {
-        if (!this.configData || !this.configData.site || !this.configData.site.description) return;
-        
-        const siteDescription = this.configData.site.description;
-        const descElements = document.querySelectorAll('#siteDescriptionFooter');
-        
-        descElements.forEach(element => {
-            element.textContent = siteDescription;
-        });
-    }
-
-    // 更新导航栏
-    updateNavigation() {
-        if (!this.configData || !this.configData.navigation || !this.configData.navigation.items) return;
-        
-        const navigation = this.configData.navigation.items;
-        
-        // 更新主导航
-        const mainNavLinks = document.getElementById('mainNavLinks');
-        if (mainNavLinks) {
-            // 按order排序
-            const sortedNav = [...navigation].sort((a, b) => (a.order || 0) - (b.order || 0));
-            
-            mainNavLinks.innerHTML = sortedNav.map(item => `
-                <li><a href="${item.url}" class="nav-link">${item.name}</a></li>
-            `).join('');
-        }
-        
-        // 更新页脚快速链接
-        const footerQuickLinks = document.getElementById('footerQuickLinks');
-        if (footerQuickLinks) {
-            const sortedFooterNav = [...navigation].sort((a, b) => (a.order || 0) - (b.order || 0));
-            
-            footerQuickLinks.innerHTML = sortedFooterNav.map(item => `
-                <li><a href="${item.url}">${item.name}</a></li>
-            `).join('');
-        }
-    }
-
-    // 更新页脚内容
-    updateFooterContent() {
-        if (!this.configData || !this.configData.footer) return;
-        
-        const footer = this.configData.footer;
-        
-        // 更新页脚描述
-        const footerDescElement = document.getElementById('siteDescriptionFooter');
-        if (footerDescElement && footer.description) {
-            footerDescElement.textContent = footer.description;
-        }
-        
-        // 更新版权信息
-        const copyrightElement = document.getElementById('copyrightText');
-        if (copyrightElement && footer.copyright) {
-            copyrightElement.textContent = footer.copyright;
-        }
-    }
-
-    // 获取特定页面内容（用于privacy、terms、copyright页面）
+    // 获取特定页面内容
     getPageContent(pageType) {
         if (!this.configData || !this.configData[pageType]) {
             return null;
