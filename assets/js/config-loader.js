@@ -1,5 +1,4 @@
-// assets/js/config-loader.js
-// 增强版网站配置加载器 - 用于前端页面
+// 网站配置加载器 - 完整版（包含所有更新函数）
 
 class SiteConfigLoader {
     constructor() {
@@ -78,13 +77,6 @@ class SiteConfigLoader {
                 enabled: true,
                 lastUpdated: new Date().toISOString()
             },
-            social: {
-                github: 'https://github.com',
-                weibo: 'https://weibo.com',
-                zhihu: 'https://zhihu.com',
-                linkedin: 'https://linkedin.com',
-                lastUpdated: new Date().toISOString()
-            },
             navigation: {
                 items: [
                     { name: '首页', url: './', order: 1 },
@@ -134,7 +126,6 @@ class SiteConfigLoader {
             const pageName = currentTitle.split(' - ')[0].trim();
             document.title = `${pageName} | ${site.name}`;
         } else {
-            // 如果标题中没有分隔符，直接添加网站名称
             document.title = `${currentTitle} | ${site.name}`;
         }
         
@@ -167,10 +158,8 @@ class SiteConfigLoader {
         if (!socialContainers.length) return;
         
         socialContainers.forEach(socialContainer => {
-            // 清空现有内容
             socialContainer.innerHTML = '';
             
-            // 社交平台配置
             const platforms = [
                 { key: 'github', icon: 'fab fa-github', label: 'GitHub', color: '#333' },
                 { key: 'weibo', icon: 'fab fa-weibo', label: '微博', color: '#e6162d' },
@@ -194,6 +183,110 @@ class SiteConfigLoader {
                 }
             });
         });
+    }
+
+    // 更新网站名称（新添加）
+    updateSiteName() {
+        if (!this.configData || !this.configData.site || !this.configData.site.name) return;
+        
+        const siteName = this.configData.site.name;
+        
+        // 更新logo中的网站名称
+        const logoElements = document.querySelectorAll('.logo, .footer-logo');
+        logoElements.forEach(element => {
+            const span = element.querySelector('span');
+            if (span) {
+                element.innerHTML = `${siteName}<span>.</span>cn`;
+            }
+        });
+        
+        // 更新版权信息
+        const copyrightElements = document.querySelectorAll('#copyrightText');
+        copyrightElements.forEach(element => {
+            element.textContent = `© 2026 ${siteName} 版权所有`;
+        });
+    }
+
+    // 更新网站描述（新添加）
+    updateSiteDescription() {
+        if (!this.configData || !this.configData.site || !this.configData.site.description) return;
+        
+        const siteDescription = this.configData.site.description;
+        const descElements = document.querySelectorAll('#siteDescriptionFooter');
+        
+        descElements.forEach(element => {
+            element.textContent = siteDescription;
+        });
+    }
+
+    // 更新导航栏（新添加）
+    updateNavigation() {
+        if (!this.configData || !this.configData.navigation || !this.configData.navigation.items) return;
+        
+        const navigation = this.configData.navigation.items;
+        
+        // 更新主导航
+        const mainNavLinks = document.getElementById('mainNavLinks');
+        if (mainNavLinks) {
+            const sortedNav = [...navigation].sort((a, b) => (a.order || 0) - (b.order || 0));
+            
+            mainNavLinks.innerHTML = sortedNav.map(item => `
+                <li><a href="${item.url}" class="nav-link">${item.name}</a></li>
+            `).join('');
+        }
+        
+        // 更新页脚快速链接
+        const footerQuickLinks = document.getElementById('footerQuickLinks');
+        if (footerQuickLinks) {
+            const sortedFooterNav = [...navigation].sort((a, b) => (a.order || 0) - (b.order || 0));
+            
+            footerQuickLinks.innerHTML = sortedFooterNav.map(item => `
+                <li><a href="${item.url}">${item.name}</a></li>
+            `).join('');
+        }
+    }
+
+    // 更新页脚内容（新添加）
+    updateFooterContent() {
+        if (!this.configData || !this.configData.footer) return;
+        
+        const footer = this.configData.footer;
+        
+        // 更新页脚描述
+        const footerDescElement = document.getElementById('siteDescriptionFooter');
+        if (footerDescElement && footer.description) {
+            footerDescElement.textContent = footer.description;
+        }
+        
+        // 更新版权信息
+        const copyrightElement = document.getElementById('copyrightText');
+        if (copyrightElement && footer.copyright) {
+            copyrightElement.textContent = footer.copyright;
+        }
+        
+        // 更新快速链接
+        const quickLinksElement = document.getElementById('footerQuickLinks');
+        if (quickLinksElement && footer.quickLinks) {
+            quickLinksElement.innerHTML = footer.quickLinks.map(link => 
+                `<li><a href="${link.url}">${link.name}</a></li>`
+            ).join('');
+        }
+        
+        // 更新法律声明链接
+        const legalLinksElement = document.getElementById('footerLegalLinks');
+        if (legalLinksElement && footer.legalLinks) {
+            legalLinksElement.innerHTML = footer.legalLinks.map(link => 
+                `<li><a href="${link.url}">${link.name}</a></li>`
+            ).join('');
+        }
+        
+        // 更新合规声明链接
+        const complianceLinksElement = document.getElementById('complianceLinks');
+        if (complianceLinksElement && footer.legalLinks) {
+            complianceLinksElement.innerHTML = footer.legalLinks.map(link => 
+                `<a href="${link.url}">${link.name}</a>`
+            ).join('');
+        }
     }
 
     // 获取特定页面内容
