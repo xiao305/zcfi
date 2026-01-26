@@ -38,61 +38,15 @@ class SiteComponents {
         // 标记组件已加载
         container.classList.add('component-loaded');
         
-        // 初始化组件交互
-        this.initComponent(componentName);
-    }
-
-    // 初始化组件交互
-    initComponent(componentName) {
-        if (componentName === 'navbar') {
-            this.initNavbar();
+        // 确保配置已加载
+        if (typeof window.siteConfig === 'undefined') {
+            const script = document.createElement('script');
+            script.src = '../assets/js/config-loader.js';
+            script.onload = function() {
+                // 组件内部的脚本会在DOM加载完成后执行
+            };
+            document.head.appendChild(script);
         }
-    }
-
-    // 初始化导航栏交互
-    initNavbar() {
-        // 高亮当前页面导航项
-        const currentPage = window.location.pathname.split('/').pop();
-        const navLinks = document.querySelectorAll('.nav-link');
-        
-        navLinks.forEach(link => {
-            const linkHref = link.getAttribute('href');
-            if (linkHref === currentPage || 
-                (currentPage === '' && linkHref === 'index.html')) {
-                link.classList.add('active');
-            }
-        });
-        
-        // 初始化移动端菜单
-        this.initMobileMenu();
-    }
-
-    // 初始化移动端菜单
-    initMobileMenu() {
-        const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
-        const navLinks = document.querySelector('.nav-links');
-        
-        if (!mobileMenuBtn || !navLinks) return;
-        
-        mobileMenuBtn.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
-            const icon = mobileMenuBtn.querySelector('i');
-            if (navLinks.classList.contains('active')) {
-                icon.className = 'fas fa-times';
-            } else {
-                icon.className = 'fas fa-bars';
-            }
-        });
-        
-        // 点击导航链接关闭菜单
-        const navItems = navLinks.querySelectorAll('a');
-        navItems.forEach(item => {
-            item.addEventListener('click', () => {
-                navLinks.classList.remove('active');
-                const icon = mobileMenuBtn.querySelector('i');
-                icon.className = 'fas fa-bars';
-            });
-        });
     }
 
     // 加载所有公共组件
@@ -113,6 +67,11 @@ window.siteComponents = new SiteComponents();
 
 // 页面初始化
 document.addEventListener('DOMContentLoaded', async function() {
+    // 确保配置加载器可用
+    if (typeof window.siteConfig === 'undefined') {
+        await loadConfigLoader();
+    }
+    
     // 加载所有组件
     await window.siteComponents.loadAllComponents();
     
@@ -129,3 +88,13 @@ document.addEventListener('DOMContentLoaded', async function() {
         window.siteConfig.updateSocialLinks();
     }
 });
+
+// 加载配置加载器
+async function loadConfigLoader() {
+    return new Promise((resolve) => {
+        const script = document.createElement('script');
+        script.src = '../assets/js/config-loader.js';
+        script.onload = resolve;
+        document.head.appendChild(script);
+    });
+}
