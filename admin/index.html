@@ -261,13 +261,13 @@ width: 100%;
 </form>
 <!-- Token使用说明 -->
 <div style="margin-top: 25px; padding: 15px; background: #f8f9fa; border-radius: 8px; font-size: 14px; color: #6c757d;">
-<p style="margin-bottom: 8px;"><i class="fas fa-info-circle" style="color: #4a6fa5;"></i> <strong>Token 说明：</strong></p>
+<p style="margin-bottom: 8px;"><i class="fas fa-info-circle" style="color: #4a6fa5;"></i> <strong>Token 安全说明：</strong></p>
 <p style="font-size: 13px; line-height: 1.5;">
-1. 前往 <a href="https://github.com/settings/tokens" target="_blank" style="color: #4a6fa5; text-decoration: none;">GitHub Token设置</a> 创建新Token<br>
-2. 基础功能需要勾选 <code>gist</code> 权限<br>
-3. 高级功能（如自动生成博客页面）需要额外勾选 <code>repo</code> 权限<br>
-4. Token格式：<code>ghp_xxxxxxxxxxxx</code><br>
-5. <strong>安全提示：</strong> 建议为Token设置合理的有效期，定期更换
+1. 每次登录都需要<strong>重新输入</strong>Token，系统不会保存您的Token<br>
+2. 前往 <a href="https://github.com/settings/tokens" target="_blank" style="color: #4a6fa5; text-decoration: none;">GitHub Token设置</a> 创建新Token<br>
+3. 基础功能需要勾选 <code>gist</code> 权限<br>
+4. 高级功能（如自动生成博客页面）需要额外勾选 <code>repo</code> 权限<br>
+5. <strong>安全提示：</strong> 为Token设置合理的有效期，使用后立即从GitHub删除
 </p>
 </div>
 </div>
@@ -307,24 +307,40 @@ width: 100%;
 Token 当前有效，可以正常使用所有授权功能。
 </p>
 </div>
-<p style="margin-top: 15px; font-weight: 500;">请注意：</p>
+<p style="margin-top: 15px; font-weight: 500;">安全提醒：</p>
 <ul style="text-align: left; margin-top: 10px; margin-bottom: 20px;">
+<li>系统<strong>不会保存</strong>您的Token，关闭页面后需要重新输入</li>
 <li>缺少<span style="color: #dc3545; font-weight: 600;">gist</span>权限将无法使用任何后台功能</li>
 <li>缺少<span style="color: #4a6fa5; font-weight: 600;">repo</span>权限将无法使用<span style="color: #4a6fa5;">自动生成博客页面</span>等高级功能</li>
-<li>Token 过期后需要重新生成并登录，<strong>建议定期更换 Token 以确保安全</strong></li>
+<li>使用完毕后，建议立即从 <a href="https://github.com/settings/tokens" target="_blank" style="color: #4a6fa5; text-decoration: none;">GitHub Token设置</a> 删除此Token</li>
 </ul>
-<p style="text-align: left; margin-top: 10px;">
-您可以在 <a href="https://github.com/settings/tokens" target="_blank" style="color: #4a6fa5; text-decoration: none;">GitHub Token设置页面</a> 
-查看Token有效期、修改权限或创建新Token。系统不会存储您的Token，每次登录都需要重新输入。
-</p>
 </div>
 <div class="modal-buttons">
-<button class="modal-btn btn-secondary" id="permissionsCancelBtn">返回修改</button>
+<button class="modal-btn btn-secondary" id="permissionsCancelBtn">返回</button>
 <button class="modal-btn btn-primary" id="permissionsConfirmBtn">确认并继续</button>
 </div>
 </div>
 </div>
 <script>
+// 安全清理：页面加载时立即清除所有可能的敏感数据
+(function() {
+// 清除所有 sessionStorage 数据
+sessionStorage.clear();
+// 清除所有 localStorage 数据
+Object.keys(localStorage).forEach(key => {
+if (key.toLowerCase().includes('token') || 
+key.toLowerCase().includes('admin') || 
+key.toLowerCase().includes('auth')) {
+localStorage.removeItem(key);
+}
+});
+// 清除输入框
+setTimeout(() => {
+if (document.getElementById('token')) {
+document.getElementById('token').value = '';
+}
+}, 100);
+})();
 let selectedModule = null;
 const BLOG_GIST_ID = '73cc78400c25eb9effed665e2c89843d';
 const GIST_URL = `https://api.github.com/gists/${BLOG_GIST_ID}`;
@@ -332,6 +348,9 @@ const SCOPE_CHECK_URL = 'https://api.github.com';
 // 页面加载
 document.addEventListener('DOMContentLoaded', () => {
 setupEventListeners();
+// 确保页面加载时没有残留的token
+document.getElementById('token').value = '';
+updateEnterButton();
 });
 // 初始化事件监听器
 function setupEventListeners() {
@@ -361,6 +380,8 @@ document.getElementById('modalCancelBtn').addEventListener('click', closeModal);
 // 权限弹窗按钮
 document.getElementById('permissionsCancelBtn').addEventListener('click', closePermissionsModal);
 document.getElementById('permissionsConfirmBtn').addEventListener('click', confirmPermissionsAndNavigate);
+// 禁用浏览器自动填充
+document.getElementById('token').setAttribute('autocomplete', 'off');
 }
 // 更新按钮状态
 function updateEnterButton() {
@@ -375,11 +396,15 @@ gist: false,
 repo: false
 };
 try {
-// 1. 检查gist权限
-const gistResponse = await fetch(GIST_URL, {
+// 1. 检查gist权限 - 添加随机参数防止缓存
+const timestamp = new Date().getTime();
+const gistResponse = await fetch(`${GIST_URL}?t=${timestamp}`, {
 headers: {
 'Authorization': `token ${token}`,
-'Accept': 'application/vnd.github.v3+json'
+'Accept': 'application/vnd.github.v3+json',
+'Cache-Control': 'no-cache, no-store, must-revalidate',
+'Pragma': 'no-cache',
+'Expires': '0'
 }
 });
 if (gistResponse.ok) {
@@ -390,10 +415,13 @@ console.error('检查gist权限失败:', error);
 }
 try {
 // 2. 检查repo权限 - 从响应头获取scope信息
-const scopeResponse = await fetch(SCOPE_CHECK_URL, {
+const scopeResponse = await fetch(`${SCOPE_CHECK_URL}?t=${timestamp}`, {
 headers: {
 'Authorization': `token ${token}`,
-'Accept': 'application/vnd.github.v3+json'
+'Accept': 'application/vnd.github.v3+json',
+'Cache-Control': 'no-cache, no-store, must-revalidate',
+'Pragma': 'no-cache',
+'Expires': '0'
 }
 });
 if (scopeResponse.ok) {
@@ -417,10 +445,14 @@ return permissions;
 async function checkTokenStatus(token) {
 try {
 // 尝试获取用户信息来验证token状态
-const response = await fetch('https://api.github.com/user', {
+const timestamp = new Date().getTime();
+const response = await fetch(`https://api.github.com/user?t=${timestamp}`, {
 headers: {
 'Authorization': `token ${token}`,
-'Accept': 'application/vnd.github.v3+json'
+'Accept': 'application/vnd.github.v3+json',
+'Cache-Control': 'no-cache, no-store, must-revalidate',
+'Pragma': 'no-cache',
+'Expires': '0'
 }
 });
 if (!response.ok) {
@@ -496,10 +528,14 @@ return;
 showLoadingModal('正在验证 Token...');
 try {
 // 首先验证Token基本有效性
-const response = await fetch(GIST_URL, {
+const timestamp = new Date().getTime();
+const response = await fetch(`${GIST_URL}?t=${timestamp}`, {
 headers: {
 'Authorization': `token ${token}`,
-'Accept': 'application/vnd.github.v3+json'
+'Accept': 'application/vnd.github.v3+json',
+'Cache-Control': 'no-cache, no-store, must-revalidate',
+'Pragma': 'no-cache',
+'Expires': '0'
 }
 });
 if (!response.ok) {
@@ -514,10 +550,12 @@ const statusInfo = await checkTokenStatus(token);
 closeModal();
 // 显示权限检查结果
 showPermissionsModal(permissions, statusInfo);
-// 保存token和选择的模块，等待用户确认
-sessionStorage.setItem('pending_admin_token', token);
-sessionStorage.setItem('pending_selected_module', selectedModule);
-sessionStorage.setItem('token_permissions', JSON.stringify(permissions));
+// 不再存储token，只临时保存在内存中
+window.tempTokenData = {
+token: token,
+selectedModule: selectedModule,
+permissions: permissions
+};
 } catch (error) {
 console.error('Token 验证失败:', error);
 showModal('验证失败', `Token 无效或无权限访问 Gist\n错误: ${error.message}`, 'error');
@@ -551,37 +589,43 @@ document.getElementById('permissionsModal').classList.remove('show');
 }
 function confirmPermissionsAndNavigate() {
 closePermissionsModal();
-const token = sessionStorage.getItem('pending_admin_token');
-const module = sessionStorage.getItem('pending_selected_module');
-const permissions = JSON.parse(sessionStorage.getItem('token_permissions') || '{}');
-// 保存验证信息
+if (!window.tempTokenData) {
+showModal('错误', 'Token 数据已丢失，请重新登录', 'error');
+return;
+}
+const token = window.tempTokenData.token;
+const module = window.tempTokenData.selectedModule;
+const permissions = window.tempTokenData.permissions;
+// 导航到选择的模块，携带token参数
+navigateToModule(module, token, permissions);
+// 清除临时数据
+window.tempTokenData = null;
+}
+function navigateToModule(module, token, permissions) {
+// 在目标页面，token将通过URL参数或sessionStorage临时传递
+// 但不会持久化存储
+const pageMap = {
+'blog': 'blog.html',
+'portfolio': 'portfolio.html',
+'contact': 'contact.html',
+'config': 'config.html'
+};
+const pageUrl = pageMap[module] || 'index.html';
+// 创建临时sessionStorage数据，但设置超时自动清除
+const now = Date.now();
 sessionStorage.setItem('admin_token', token);
 sessionStorage.setItem('admin_verified', 'true');
-sessionStorage.setItem('admin_login_time', Date.now().toString());
+sessionStorage.setItem('admin_login_time', now.toString());
 sessionStorage.setItem('admin_permissions', JSON.stringify(permissions));
 sessionStorage.setItem('selected_module', module);
-// 导航到选择的模块
-navigateToModule(module);
-}
-function navigateToModule(module) {
-// 根据模块名称跳转到对应页面
-let pageUrl = '';
-switch(module) {
-case 'blog':
-pageUrl = 'blog.html';
-break;
-case 'portfolio':
-pageUrl = 'portfolio.html';
-break;
-case 'contact':
-pageUrl = 'contact.html';
-break;
-case 'config':
-pageUrl = 'config.html';
-break;
-default:
-pageUrl = 'index.html';
-}
+// 设置自动清除计时器
+setTimeout(() => {
+sessionStorage.removeItem('admin_token');
+sessionStorage.removeItem('admin_verified');
+sessionStorage.removeItem('admin_login_time');
+sessionStorage.removeItem('admin_permissions');
+sessionStorage.removeItem('selected_module');
+}, 300000); // 5分钟后自动清除
 window.location.href = pageUrl;
 }
 function showModal(title, message, type = 'info', showCancel = false) {
@@ -625,25 +669,33 @@ cancelBtn.style.display = 'none';
 function closeModal() {
 document.getElementById('customModal').classList.remove('show');
 }
-// 安全增强：页面卸载时清除敏感信息
+// 安全增强：页面卸载时彻底清除所有痕迹
 window.addEventListener('beforeunload', () => {
-// 清除所有可能的敏感信息
-sessionStorage.removeItem('pending_admin_token');
-sessionStorage.removeItem('pending_selected_module');
-sessionStorage.removeItem('token_permissions');
-sessionStorage.removeItem('admin_token');
-sessionStorage.removeItem('admin_verified');
-sessionStorage.removeItem('admin_permissions');
-sessionStorage.removeItem('selected_module');
+// 清除所有 sessionStorage
+sessionStorage.clear();
+// 清除临时内存数据
+window.tempTokenData = null;
 // 清除输入框
 if (document.getElementById('token')) {
 document.getElementById('token').value = '';
 }
+// 清除可能的缓存
+if (window.caches) {
+caches.keys().then(cacheNames => {
+cacheNames.forEach(cacheName => {
+caches.delete(cacheName);
 });
-// 页面加载时清空输入框
-window.addEventListener('load', () => {
-if (document.getElementById('token')) {
-document.getElementById('token').value = '';
+});
+}
+});
+// 禁用浏览器缓存
+document.addEventListener('DOMContentLoaded', () => {
+if ('serviceWorker' in navigator) {
+navigator.serviceWorker.getRegistrations().then(registrations => {
+registrations.forEach(registration => {
+registration.unregister();
+});
+});
 }
 });
 </script>
