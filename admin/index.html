@@ -201,9 +201,6 @@ color: #dc3545;
 .modules-grid {
 grid-template-columns: 1fr;
 }
-.login-container {
-padding: 30px 20px;
-}
 }
 /* 修正：表单容器 */
 .login-form {
@@ -467,6 +464,10 @@ const statusSection = document.getElementById('tokenStatusSection');
 const statusTitle = document.getElementById('statusTitle');
 const statusMessage = document.getElementById('statusMessage');
 const statusIcon = statusSection.querySelector('.fa-check-circle');
+if (!statusSection || !statusTitle || !statusMessage || !statusIcon) {
+console.error('无法找到Token状态元素，跳过渲染');
+return;
+}
 if (statusInfo.status === 'good') {
 statusSection.className = 'token-status-section';
 statusTitle.innerHTML = '<i class="fas fa-check-circle status-good"></i> Token 状态: 正常';
@@ -487,9 +488,12 @@ statusMessage.innerHTML = statusInfo.message;
 statusIcon.className = 'fas fa-times-circle status-bad';
 }
 }
+// 验证和登录
 async function validateAndLogin() {
 const token = document.getElementById('token').value.trim();
 if (!token.startsWith('ghp_')) {
+// 确保在显示错误前关闭加载弹窗
+closeModal();
 // 使用权限弹窗显示错误
 showPermissionsModal({
 gist: false,
@@ -528,6 +532,8 @@ sessionStorage.setItem('pending_selected_module', selectedModule);
 sessionStorage.setItem('token_permissions', JSON.stringify(permissions));
 } catch (error) {
 console.error('Token 验证失败:', error);
+// 关键修复：确保在catch块中也关闭加载弹窗
+closeModal();
 // 使用权限弹窗显示错误
 showPermissionsModal({
 gist: false,
@@ -596,6 +602,8 @@ document.getElementById('permissionsModal').classList.add('show');
 }
 function closePermissionsModal() {
 document.getElementById('permissionsModal').classList.remove('show');
+// 确保同时关闭加载弹窗
+closeModal();
 }
 function confirmPermissionsAndNavigate() {
 closePermissionsModal();
