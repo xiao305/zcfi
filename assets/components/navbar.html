@@ -1,10 +1,11 @@
 <header>
-    <div class="container" id="navbar-container">
+    <div class="container">
         <nav class="navbar">
             <!-- 网站Logo将通过配置动态生成 -->
             <a href="./" class="logo" id="siteLogo">zcfi<span>.</span>cn</a>
             <!-- 导航菜单将通过配置动态生成 -->
             <ul class="nav-links" id="mainNavLinks">
+                <!-- 默认内容，会被配置覆盖 -->
                 <li><a href="./" class="nav-link">首页</a></li>
                 <li><a href="portfolio.html" class="nav-link">作品集</a></li>
                 <li><a href="blog.html" class="nav-link">博客</a></li>
@@ -17,86 +18,122 @@
     </div>
 </header>
 
+<!-- 导航栏自己的配置加载和渲染逻辑 -->
 <script>
-// 在DOM加载完成后初始化导航栏
-document.addEventListener('DOMContentLoaded', function() {
-    // 检查是否已定义siteConfigLoader，如果没有则加载它
-    if (typeof window.siteConfig === 'undefined') {
-        const script = document.createElement('script');
-        script.src = '../assets/js/config-loader.js';
-        script.onload = function() {
-            initNavbar();
-        };
-        document.head.appendChild(script);
-    } else {
-        initNavbar();
+// 导航栏自治逻辑 - 自己负责从Gist获取配置并渲染自己
+(function() {
+    const CONFIG_GIST_ID = '983bb7371ddb439a2fcbfb4885e34d14';
+    const CONFIG_RAW_URL = `https://gist.githubusercontent.com/xiao305/${CONFIG_GIST_ID}/raw/config.json`;
+    
+    // 等待DOM加载完成
+    document.addEventListener('DOMContentLoaded', function() {
+        // 延迟加载，确保页面稳定
+        setTimeout(loadAndRenderNavbar, 100);
+    });
+    
+    async function loadAndRenderNavbar() {
+        console.log('导航栏开始加载配置...');
+        
+        try {
+            // 1. 从Gist加载网站配置
+            const timestamp = new Date().getTime();
+            const response = await fetch(`${CONFIG_RAW_URL}?t=${timestamp}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const configData = await response.json();
+            console.log('导航栏配置加载成功:', configData);
+            
+            // 2. 渲染导航栏
+            renderNavbar(configData);
+            
+            // 3. 初始化移动端菜单
+            initMobileMenu();
+            
+        } catch (error) {
+            console.error('导航栏配置加载失败:', error);
+            // 保持默认导航栏
+        }
     }
-});
-
-function initNavbar() {
-    // 加载网站配置
-    window.siteConfig.loadConfig().then(config => {
+    
+    // 渲染导航栏
+    function renderNavbar(configData) {
         // 更新Logo
         const siteLogo = document.getElementById('siteLogo');
-        if (siteLogo && config.site) {
-            siteLogo.innerHTML = `${config.site.name}<span>.</span>cn`;
+        if (siteLogo && configData.site && configData.site.name) {
+            siteLogo.innerHTML = `${configData.site.name}<span>.</span>cn`;
         }
         
         // 更新导航菜单
         const navLinksContainer = document.getElementById('mainNavLinks');
-        if (navLinksContainer && config.navigation && config.navigation.items) {
+        if (navLinksContainer && configData.navigation && configData.navigation.items) {
+            // 获取当前页面路径
+            const currentPath = window.location.pathname;
+            const currentPage = currentPath.split('/').pop() || 'index.html';
+            
             // 按order排序
-            const sortedNav = [...config.navigation.items].sort((a, b) => (a.order || 0) - (b.order || 0));
+            const sortedNav = [...configData.navigation.items].sort((a, b) => (a.order || 0) - (b.order || 0));
             
             // 生成导航链接
             const navLinksHTML = sortedNav.map(item => {
-                // 获取当前页面路径
-                const currentPage = window.location.pathname.split('/').pop();
-                const isCurrentPage = currentPage === '' || currentPage === 'index.html' 
-                    ? item.url === './' || item.url === 'index.html' 
-                    : item.url.includes(currentPage);
-                    
-                const activeClass = isCurrentPage ? 'active' : '';
-                return `<li><a href="${item.url}" class="nav-link ${activeClass}">${item.name}</a></li>`;
+                // 判断是否为当前页面
+                let isActive = false;
+                const itemUrl = item.url || './';
+                
+                if (itemUrl === './' || itemUrl === 'index.html') {
+                    // 首页
+                    isActive = currentPage === 'index.html' || currentPage === '';
+                } else if (currentPage === itemUrl || currentPage.includes(itemUrl.replace('.html', ''))) {
+                    // 其他页面
+                    isActive = true;
+                }
+                
+                const activeClass = isActive ? 'active' : '';
+                return `<li><a href="${escapeHtml(itemUrl)}" class="nav-link ${activeClass}">${escapeHtml(item.name || '未命名')}</a></li>`;
             }).join('');
             
             // 更新DOM
             navLinksContainer.innerHTML = navLinksHTML;
+            
+            console.log('导航栏渲染完成');
         }
-    }).catch(error => {
-        console.error('加载导航配置失败:', error);
-        // 保持默认导航
-    });
+    }
     
     // 初始化移动端菜单
-    initMobileMenu();
-}
-
-// 初始化移动端菜单
-function initMobileMenu() {
-    const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
-    const navLinks = document.querySelector('.nav-links');
-    
-    if (!mobileMenuBtn || !navLinks) return;
-    
-    mobileMenuBtn.addEventListener('click', () => {
-        navLinks.classList.toggle('active');
-        const icon = mobileMenuBtn.querySelector('i');
-        if (navLinks.classList.contains('active')) {
-            icon.className = 'fas fa-times';
-        } else {
-            icon.className = 'fas fa-bars';
-        }
-    });
-    
-    // 点击导航链接关闭菜单
-    const navItems = navLinks.querySelectorAll('a');
-    navItems.forEach(item => {
-        item.addEventListener('click', () => {
-            navLinks.classList.remove('active');
-            const icon = mobileMenuBtn.querySelector('i');
-            icon.className = 'fas fa-bars';
+    function initMobileMenu() {
+        const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+        const navLinks = document.querySelector('.nav-links');
+        
+        if (!mobileMenuBtn || !navLinks) return;
+        
+        mobileMenuBtn.addEventListener('click', function() {
+            navLinks.classList.toggle('active');
+            const icon = this.querySelector('i');
+            if (navLinks.classList.contains('active')) {
+                icon.className = 'fas fa-times';
+            } else {
+                icon.className = 'fas fa-bars';
+            }
         });
-    });
-}
+        
+        // 点击导航链接关闭菜单
+        navLinks.addEventListener('click', function(e) {
+            if (e.target.tagName === 'A') {
+                navLinks.classList.remove('active');
+                const icon = mobileMenuBtn.querySelector('i');
+                if (icon) icon.className = 'fas fa-bars';
+            }
+        });
+    }
+    
+    // HTML转义函数
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+})();
 </script>
