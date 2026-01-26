@@ -1,15 +1,26 @@
-// assets/js/components.js
-// 前端公共组件加载器
+// 前端公共组件加载器 - 已修复路径问题
 
 class SiteComponents {
     constructor() {
         this.components = {};
+        this.basePath = this.detectBasePath();
+    }
+
+    // 检测基础路径（处理前台/后台路径差异）
+    detectBasePath() {
+        const path = window.location.pathname;
+        // 如果是在 admin 目录下
+        if (path.includes('/admin/')) {
+            return '../';
+        }
+        // 前台页面
+        return './';
     }
 
     // 加载组件
     async loadComponent(componentName) {
         try {
-            const response = await fetch(`assets/components/${componentName}.html`);
+            const response = await fetch(`${this.basePath}assets/components/${componentName}.html`);
             if (!response.ok) {
                 throw new Error(`组件 ${componentName} 加载失败`);
             }
@@ -37,28 +48,44 @@ class SiteComponents {
         
         // 标记组件已加载
         container.classList.add('component-loaded');
-        
-        // 确保配置已加载
-        if (typeof window.siteConfig === 'undefined') {
-            const script = document.createElement('script');
-            script.src = '../assets/js/config-loader.js';
-            script.onload = function() {
-                // 组件内部的脚本会在DOM加载完成后执行
-            };
-            document.head.appendChild(script);
-        }
     }
 
     // 加载所有公共组件
     async loadAllComponents() {
         const components = ['navbar', 'footer'];
         
-        for (const component of components) {
+        // 并行加载所有组件
+        const loadPromises = components.map(component => {
             const containerId = `${component}-container`;
             if (document.getElementById(containerId)) {
-                await this.renderComponent(component, containerId);
+                return this.renderComponent(component, containerId);
             }
+            return Promise.resolve();
+        });
+        
+        await Promise.all(loadPromises);
+        
+        // 确保配置加载器可用
+        await this.ensureConfigLoader();
+    }
+
+    // 确保配置加载器可用
+    async ensureConfigLoader() {
+        if (typeof window.siteConfig === 'undefined') {
+            const script = document.createElement('script');
+            script.src = `${this.basePath}assets/js/config-loader.js`;
+            script.async = true;
+            
+            return new Promise((resolve) => {
+                script.onload = resolve;
+                script.onerror = () => {
+                    console.warn('配置加载器加载失败，将继续使用默认配置');
+                    resolve();
+                };
+                document.head.appendChild(script);
+            });
         }
+        return Promise.resolve();
     }
 }
 
@@ -67,34 +94,41 @@ window.siteComponents = new SiteComponents();
 
 // 页面初始化
 document.addEventListener('DOMContentLoaded', async function() {
-    // 确保配置加载器可用
-    if (typeof window.siteConfig === 'undefined') {
-        await loadConfigLoader();
-    }
-    
-    // 加载所有组件
-    await window.siteComponents.loadAllComponents();
-    
-    // 加载并应用网站配置
-    if (window.siteConfig) {
-        const config = await window.siteConfig.loadConfig();
+    try {
+        // 加载所有组件
+        await window.siteComponents.loadAllComponents();
         
-        // 更新页面元数据
-        window.siteConfig.updatePageMetadata();
-        
-        // 更新网站信息
-        window.siteConfig.updateSiteName();
-        window.siteConfig.updateSiteDescription();
-        window.siteConfig.updateSocialLinks();
+        // 如果配置加载器可用，加载并应用配置
+        if (window.siteConfig && typeof window.siteConfig.loadConfig === 'function') {
+            try {
+                const config = await window.siteConfig.loadConfig();
+                
+                // 更新页面元数据
+                if (window.siteConfig.updatePageMetadata) {
+                    window.siteConfig.updatePageMetadata();
+                }
+                
+                // 更新网站信息（这些函数将在config-loader.js中添加）
+                if (window.siteConfig.updateSiteName) {
+                    window.siteConfig.updateSiteName();
+                }
+                if (window.siteConfig.updateSiteDescription) {
+                    window.siteConfig.updateSiteDescription();
+                }
+                if (window.siteConfig.updateSocialLinks) {
+                    window.siteConfig.updateSocialLinks();
+                }
+                if (window.siteConfig.updateNavigation) {
+                    window.siteConfig.updateNavigation();
+                }
+                if (window.siteConfig.updateFooterContent) {
+                    window.siteConfig.updateFooterContent();
+                }
+            } catch (configError) {
+                console.error('配置应用失败:', configError);
+            }
+        }
+    } catch (error) {
+        console.error('组件加载失败:', error);
     }
 });
-
-// 加载配置加载器
-async function loadConfigLoader() {
-    return new Promise((resolve) => {
-        const script = document.createElement('script');
-        script.src = '../assets/js/config-loader.js';
-        script.onload = resolve;
-        document.head.appendChild(script);
-    });
-}
