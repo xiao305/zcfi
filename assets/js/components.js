@@ -1,35 +1,33 @@
-// 前端公共组件加载器 - 支持组件自治
+// assets/js/components.js
+// 前端公共组件加载器 - 完全无硬代码
 
 class SiteComponents {
     constructor() {
-        this.components = {};
         this.basePath = this.detectBasePath();
     }
 
-    // 检测基础路径（处理前台/后台路径差异）
+    // 检测基础路径
     detectBasePath() {
         const path = window.location.pathname;
-        // 如果是在 admin 目录下
-        if (path.includes('/admin/')) {
-            return '../';
-        }
-        // 前台页面
-        return './';
+        return path.includes('/admin/') ? '../' : './';
     }
 
-    // 加载组件
+    // 加载组件HTML
     async loadComponent(componentName) {
         try {
-            const response = await fetch(`${this.basePath}assets/components/${componentName}.html`);
+            const response = await fetch(
+                `${this.basePath}assets/components/${componentName}.html?t=${Date.now()}`
+            );
+            
             if (!response.ok) {
                 throw new Error(`组件 ${componentName} 加载失败: ${response.status}`);
             }
+            
             return await response.text();
         } catch (error) {
             console.error('加载组件失败:', error);
-            // 返回包含错误信息的HTML
             return `
-                <div class="component-error" style="color: #dc3545; padding: 20px; border: 1px solid #dc3545; border-radius: 8px; margin: 10px;">
+                <div class="component-error">
                     <strong>${componentName} 组件加载失败</strong>: ${error.message}
                 </div>
             `;
@@ -44,15 +42,10 @@ class SiteComponents {
             return;
         }
 
-        // 显示加载状态
-        container.innerHTML = '<div class="component-loading" style="text-align: center; padding: 30px; color: #666;">加载中...</div>';
-        
         try {
             // 加载组件HTML
             const html = await this.loadComponent(componentName);
             container.innerHTML = html;
-            
-            // 标记组件已加载
             container.classList.add('component-loaded');
             
             console.log(`组件 ${componentName} 加载完成`);
@@ -60,7 +53,7 @@ class SiteComponents {
         } catch (error) {
             console.error(`渲染组件 ${componentName} 失败:`, error);
             container.innerHTML = `
-                <div class="component-error" style="color: #dc3545; padding: 20px; border: 1px solid #dc3545; border-radius: 8px; margin: 10px;">
+                <div class="component-error">
                     <strong>${componentName} 组件渲染失败</strong>: ${error.message}
                 </div>
             `;
@@ -69,13 +62,15 @@ class SiteComponents {
 
     // 加载所有公共组件
     async loadAllComponents() {
-        const components = ['navbar', 'footer'];
+        const components = [
+            { name: 'navbar', container: 'navbar-container' },
+            { name: 'footer', container: 'footer-container' }
+        ];
         
         // 并行加载所有组件
-        const loadPromises = components.map(component => {
-            const containerId = `${component}-container`;
-            if (document.getElementById(containerId)) {
-                return this.renderComponent(component, containerId);
+        const loadPromises = components.map(({ name, container }) => {
+            if (document.getElementById(container)) {
+                return this.renderComponent(name, container);
             }
             return Promise.resolve();
         });
