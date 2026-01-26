@@ -1,4 +1,4 @@
-// 前端公共组件加载器 - 已修复路径问题
+// 前端公共组件加载器 - 支持组件自治
 
 class SiteComponents {
     constructor() {
@@ -22,12 +22,17 @@ class SiteComponents {
         try {
             const response = await fetch(`${this.basePath}assets/components/${componentName}.html`);
             if (!response.ok) {
-                throw new Error(`组件 ${componentName} 加载失败`);
+                throw new Error(`组件 ${componentName} 加载失败: ${response.status}`);
             }
             return await response.text();
         } catch (error) {
             console.error('加载组件失败:', error);
-            return `<div class="component-error">${componentName} 组件加载失败: ${error.message}</div>`;
+            // 返回包含错误信息的HTML
+            return `
+                <div class="component-error" style="color: #dc3545; padding: 20px; border: 1px solid #dc3545; border-radius: 8px; margin: 10px;">
+                    <strong>${componentName} 组件加载失败</strong>: ${error.message}
+                </div>
+            `;
         }
     }
 
@@ -40,14 +45,26 @@ class SiteComponents {
         }
 
         // 显示加载状态
-        container.innerHTML = '<div class="component-loading">加载中...</div>';
+        container.innerHTML = '<div class="component-loading" style="text-align: center; padding: 30px; color: #666;">加载中...</div>';
         
-        // 加载组件
-        const html = await this.loadComponent(componentName);
-        container.innerHTML = html;
-        
-        // 标记组件已加载
-        container.classList.add('component-loaded');
+        try {
+            // 加载组件HTML
+            const html = await this.loadComponent(componentName);
+            container.innerHTML = html;
+            
+            // 标记组件已加载
+            container.classList.add('component-loaded');
+            
+            console.log(`组件 ${componentName} 加载完成`);
+            
+        } catch (error) {
+            console.error(`渲染组件 ${componentName} 失败:`, error);
+            container.innerHTML = `
+                <div class="component-error" style="color: #dc3545; padding: 20px; border: 1px solid #dc3545; border-radius: 8px; margin: 10px;">
+                    <strong>${componentName} 组件渲染失败</strong>: ${error.message}
+                </div>
+            `;
+        }
     }
 
     // 加载所有公共组件
@@ -64,28 +81,7 @@ class SiteComponents {
         });
         
         await Promise.all(loadPromises);
-        
-        // 确保配置加载器可用
-        await this.ensureConfigLoader();
-    }
-
-    // 确保配置加载器可用
-    async ensureConfigLoader() {
-        if (typeof window.siteConfig === 'undefined') {
-            const script = document.createElement('script');
-            script.src = `${this.basePath}assets/js/config-loader.js`;
-            script.async = true;
-            
-            return new Promise((resolve) => {
-                script.onload = resolve;
-                script.onerror = () => {
-                    console.warn('配置加载器加载失败，将继续使用默认配置');
-                    resolve();
-                };
-                document.head.appendChild(script);
-            });
-        }
-        return Promise.resolve();
+        console.log('所有公共组件加载完成');
     }
 }
 
@@ -95,40 +91,13 @@ window.siteComponents = new SiteComponents();
 // 页面初始化
 document.addEventListener('DOMContentLoaded', async function() {
     try {
-        // 加载所有组件
+        console.log('页面开始初始化...');
+        
+        // 加载所有公共组件（导航栏和页脚）
         await window.siteComponents.loadAllComponents();
         
-        // 如果配置加载器可用，加载并应用配置
-        if (window.siteConfig && typeof window.siteConfig.loadConfig === 'function') {
-            try {
-                const config = await window.siteConfig.loadConfig();
-                
-                // 更新页面元数据
-                if (window.siteConfig.updatePageMetadata) {
-                    window.siteConfig.updatePageMetadata();
-                }
-                
-                // 更新网站信息（这些函数将在config-loader.js中添加）
-                if (window.siteConfig.updateSiteName) {
-                    window.siteConfig.updateSiteName();
-                }
-                if (window.siteConfig.updateSiteDescription) {
-                    window.siteConfig.updateSiteDescription();
-                }
-                if (window.siteConfig.updateSocialLinks) {
-                    window.siteConfig.updateSocialLinks();
-                }
-                if (window.siteConfig.updateNavigation) {
-                    window.siteConfig.updateNavigation();
-                }
-                if (window.siteConfig.updateFooterContent) {
-                    window.siteConfig.updateFooterContent();
-                }
-            } catch (configError) {
-                console.error('配置应用失败:', configError);
-            }
-        }
+        console.log('页面初始化完成');
     } catch (error) {
-        console.error('组件加载失败:', error);
+        console.error('页面初始化失败:', error);
     }
 });
