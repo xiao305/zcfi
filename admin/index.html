@@ -267,7 +267,7 @@ width: 100%;
 2. 基础功能需要勾选 <code>gist</code> 权限<br>
 3. 高级功能（如自动生成博客页面）需要额外勾选 <code>repo</code> 权限<br>
 4. Token格式：<code>ghp_xxxxxxxxxxxx</code><br>
-5. <strong>安全提示：</strong> 建议为Token设置合理的有效期，定期更换
+5. Token安全存储，切勿泄露
 </p>
 </div>
 </div>
@@ -292,9 +292,9 @@ width: 100%;
 <div class="modal-header">
 <i class="fas fa-shield-alt"></i>
 </div>
-<div class="modal-title">权限验证结果</div>
+<div class="modal-title" id="permissionsModalTitle">权限验证结果</div>
 <div class="modal-message">
-<p>您的Token权限验证已完成，以下是详细信息：</p>
+<p id="permissionsModalMessage">您的Token权限验证已完成，以下是详细信息：</p>
 <div class="permissions-section" id="permissionsList">
 <!-- 权限列表将在这里动态生成 -->
 </div>
@@ -311,11 +311,11 @@ Token 当前有效，可以正常使用所有授权功能。
 <ul style="text-align: left; margin-top: 10px; margin-bottom: 20px;">
 <li>缺少<span style="color: #dc3545; font-weight: 600;">gist</span>权限将无法使用任何后台功能</li>
 <li>缺少<span style="color: #4a6fa5; font-weight: 600;">repo</span>权限将无法使用<span style="color: #4a6fa5;">自动生成博客页面</span>等高级功能</li>
-<li>Token 过期后需要重新生成并登录，<strong>建议定期更换 Token 以确保安全</strong></li>
+<li>Token 过期后需要重新生成并登录，建议定期更换 Token 以确保安全</li>
 </ul>
 <p style="text-align: left; margin-top: 10px;">
 您可以在 <a href="https://github.com/settings/tokens" target="_blank" style="color: #4a6fa5; text-decoration: none;">GitHub Token设置页面</a> 
-查看Token有效期、修改权限或创建新Token。系统不会存储您的Token，每次登录都需要重新输入。
+查看Token有效期、修改权限或创建新Token。
 </p>
 </div>
 <div class="modal-buttons">
@@ -490,7 +490,15 @@ statusIcon.className = 'fas fa-times-circle status-bad';
 async function validateAndLogin() {
 const token = document.getElementById('token').value.trim();
 if (!token.startsWith('ghp_')) {
-showModal('错误', 'Token 必须以 "ghp_" 开头', 'error');
+// 使用权限弹窗显示错误
+showPermissionsModal({
+gist: false,
+repo: false
+}, {
+isValid: false,
+status: 'invalid',
+message: 'Token 必须以 "ghp_" 开头'
+});
 return;
 }
 showLoadingModal('正在验证 Token...');
@@ -520,11 +528,28 @@ sessionStorage.setItem('pending_selected_module', selectedModule);
 sessionStorage.setItem('token_permissions', JSON.stringify(permissions));
 } catch (error) {
 console.error('Token 验证失败:', error);
-showModal('验证失败', `Token 无效或无权限访问 Gist\n错误: ${error.message}`, 'error');
+// 使用权限弹窗显示错误
+showPermissionsModal({
+gist: false,
+repo: false
+}, {
+isValid: false,
+status: 'invalid',
+message: `Token 无效或无权限访问 Gist\n错误: ${error.message}`
+});
 }
 }
+// 显示权限弹窗
 function showPermissionsModal(permissions, statusInfo) {
 const permissionsList = document.getElementById('permissionsList');
+const modalTitle = document.getElementById('permissionsModalTitle');
+const modalMessage = document.getElementById('permissionsModalMessage');
+const confirmBtn = document.getElementById('permissionsConfirmBtn');
+if (statusInfo.isValid) {
+// 验证成功
+modalTitle.textContent = '权限验证结果';
+modalMessage.textContent = '您的Token权限验证已完成，以下是详细信息：';
+confirmBtn.style.display = 'inline-block';
 permissionsList.innerHTML = `
 <div class="permission-item">
 <div class="permission-icon ${permissions.gist ? 'permission-granted' : 'permission-denied'}">
@@ -542,6 +567,29 @@ ${permissions.repo ? '✓' : '✗'}
 提示：权限检查基于 GitHub API 返回的 Token 作用域信息。
 </p>
 `;
+} else {
+// 验证失败
+modalTitle.textContent = '验证失败';
+modalMessage.textContent = '无法验证您的Token，请检查以下信息：';
+confirmBtn.style.display = 'none';
+permissionsList.innerHTML = `
+<div class="permission-item token-status-alert">
+<div class="permission-icon permission-denied">
+<i class="fas fa-exclamation-circle"></i>
+</div>
+<div class="permission-name">${statusInfo.message}</div>
+</div>
+<p style="margin-top: 15px; color: #6c757d;">
+可能的原因：
+<ul style="margin-left: 20px; margin-top: 10px;">
+<li>Token 格式不正确或已过期</li>
+<li>网络连接问题</li>
+<li>GitHub API 临时限制</li>
+<li>请确保在 <span style="color: #4a6fa5">https://zcfi.cn</span> 域名下访问</li>
+</ul>
+</p>
+`;
+}
 // 渲染Token状态信息
 renderTokenStatusInfo(statusInfo);
 document.getElementById('permissionsModal').classList.add('show');
@@ -625,26 +673,11 @@ cancelBtn.style.display = 'none';
 function closeModal() {
 document.getElementById('customModal').classList.remove('show');
 }
-// 安全增强：页面卸载时清除敏感信息
+// 安全增强：页面卸载时清除临时存储
 window.addEventListener('beforeunload', () => {
-// 清除所有可能的敏感信息
 sessionStorage.removeItem('pending_admin_token');
 sessionStorage.removeItem('pending_selected_module');
 sessionStorage.removeItem('token_permissions');
-sessionStorage.removeItem('admin_token');
-sessionStorage.removeItem('admin_verified');
-sessionStorage.removeItem('admin_permissions');
-sessionStorage.removeItem('selected_module');
-// 清除输入框
-if (document.getElementById('token')) {
-document.getElementById('token').value = '';
-}
-});
-// 页面加载时清空输入框
-window.addEventListener('load', () => {
-if (document.getElementById('token')) {
-document.getElementById('token').value = '';
-}
 });
 </script>
 </body>
