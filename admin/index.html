@@ -8,8 +8,55 @@
 <link rel="icon" type="image/svg+xml" href="../favicon/favicon.svg">
 <link rel="icon" type="image/png" sizes="96x96" href="../favicon/favicon-96x96.png">
 <link rel="icon" type="image/x-icon" href="../favicon/favicon.ico">
-<!-- Font Awesome -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- 内联 Font Awesome 替代 CDN (避免跟踪阻止问题) -->
+<style>
+/* 简化的 Font Awesome 替代方案 */
+.fas, .fab {
+font-family: 'Font Awesome 5 Free';
+font-weight: 900;
+font-style: normal;
+display: inline-block;
+font-variant: normal;
+text-rendering: auto;
+-webkit-font-smoothing: antialiased;
+line-height: 1;
+}
+.fas.fa-check-circle:before { content: "✓"; color: #28a745; }
+.fas.fa-exclamation-circle:before { content: "!"; color: #dc3545; }
+.fas.fa-times-circle:before { content: "✗"; color: #dc3545; }
+.fas.fa-info-circle:before { content: "i"; color: #4a6fa5; }
+.fas.fa-exclamation-triangle:before { content: "⚠"; color: #ffc107; }
+.fas.fa-eye:before { content: "👁"; }
+.fas.fa-eye-slash:before { content: "👁‍🗨"; }
+.fas.fa-spinner:before { content: "↻"; animation: spin 1s linear infinite; }
+.fas.fa-arrow-left:before { content: "←"; }
+.fas.fa-sign-in-alt:before { content: "→"; }
+.fas.fa-lock:before { content: "🔒"; }
+.fas.fa-check:before { content: "✓"; }
+.fas.fa-times:before { content: "✗"; }
+.fab.fa-github:before { content: "G"; }
+.fab.fa-weibo:before { content: "W"; }
+.fab.fa-zhihu:before { content: "Z"; }
+.fab.fa-linkedin:before { content: "L"; }
+.fas.fa-blog:before { content: "📝"; }
+.fas.fa-briefcase:before { content: "💼"; }
+.fas.fa-comments:before { content: "💬"; }
+.fas.fa-cog:before { content: "⚙"; }
+.fas.fa-sync-alt:before { content: "🔄"; }
+.fas.fa-download:before { content: "↓"; }
+.fas.fa-arrow-up:before { content: "↑"; }
+.fas.fa-arrow-down:before { content: "↓"; }
+.fas.fa-trash:before { content: "🗑"; }
+.fas.fa-edit:before { content: "✎"; }
+.fas.fa-question-circle:before { content: "?"; }
+.fas.fa-history:before { content: "🕒"; }
+.fas.fa-clock:before { content: "⏰"; }
+.fas.fa-expand:before { content: "⤢"; }
+@keyframes spin {
+0% { transform: rotate(0deg); }
+100% { transform: rotate(360deg); }
+}
+</style>
 <!-- 后台公共CSS -->
 <link rel="stylesheet" href="assets/css/admin-common.css">
 <style>
@@ -345,7 +392,6 @@ let selectedModule = null;
 const BLOG_GIST_ID = '73cc78400c25eb9effed665e2c89843d';
 const GIST_URL = `https://api.github.com/gists/${BLOG_GIST_ID}`;
 const SCOPE_CHECK_URL = 'https://api.github.com';
-const PROXY_URL = 'https://corsproxy.io/?'; // 使用代理解决CORS问题
 // 页面加载
 document.addEventListener('DOMContentLoaded', () => {
 setupEventListeners();
@@ -390,11 +436,7 @@ const token = document.getElementById('token').value.trim();
 const btn = document.getElementById('enterBtn');
 btn.disabled = !(token && selectedModule);
 }
-// 使用代理获取URL
-function getProxiedUrl(url) {
-return `${PROXY_URL}${encodeURIComponent(url)}`;
-}
-// 检查Token权限（使用代理）
+// 检查Token权限
 async function checkTokenPermissions(token) {
 const permissions = {
 gist: false,
@@ -403,7 +445,7 @@ repo: false
 try {
 // 1. 检查gist权限
 const timestamp = new Date().getTime();
-const gistResponse = await fetch(getProxiedUrl(`${GIST_URL}?t=${timestamp}`), {
+const gistResponse = await fetch(`${GIST_URL}?t=${timestamp}`, {
 headers: {
 'Authorization': `token ${token}`,
 'Accept': 'application/vnd.github.v3+json'
@@ -417,7 +459,7 @@ console.error('检查gist权限失败:', error);
 }
 try {
 // 2. 检查repo权限
-const scopeResponse = await fetch(getProxiedUrl(`${SCOPE_CHECK_URL}?t=${timestamp}`), {
+const scopeResponse = await fetch(`${SCOPE_CHECK_URL}?t=${timestamp}`, {
 headers: {
 'Authorization': `token ${token}`,
 'Accept': 'application/vnd.github.v3+json'
@@ -440,17 +482,19 @@ console.error('检查repo权限失败:', error);
 }
 return permissions;
 }
-// 检查Token状态（使用代理）
+// 检查Token状态（是否有效）
 async function checkTokenStatus(token) {
 try {
+// 尝试获取用户信息来验证token状态
 const timestamp = new Date().getTime();
-const response = await fetch(getProxiedUrl(`https://api.github.com/user?t=${timestamp}`), {
+const response = await fetch(`https://api.github.com/user?t=${timestamp}`, {
 headers: {
 'Authorization': `token ${token}`,
 'Accept': 'application/vnd.github.v3+json'
 }
 });
 if (!response.ok) {
+// Token无效或权限不足
 return {
 isValid: false,
 status: 'invalid',
@@ -472,6 +516,7 @@ message: `Token当前被速率限制，将在约${minutesUntilReset}分钟后恢
 };
 }
 }
+// Token状态良好
 return {
 isValid: true,
 status: 'good',
@@ -491,7 +536,11 @@ function renderTokenStatusInfo(statusInfo) {
 const statusSection = document.getElementById('tokenStatusSection');
 const statusTitle = document.getElementById('statusTitle');
 const statusMessage = document.getElementById('statusMessage');
-const statusIcon = statusSection.querySelector('.fa-check-circle');
+const statusIcon = document.querySelector('.status-label i');
+if (!statusSection || !statusTitle || !statusMessage || !statusIcon) {
+console.error('无法找到Token状态元素，跳过渲染');
+return;
+}
 if (statusInfo.status === 'good') {
 statusSection.className = 'token-status-section';
 statusTitle.innerHTML = '<i class="fas fa-check-circle status-good"></i> Token 状态: 正常';
@@ -530,8 +579,8 @@ return;
 showLoadingModal('正在验证 Token...');
 try {
 const timestamp = new Date().getTime();
-// 使用代理验证Token
-const response = await fetch(getProxiedUrl(`${GIST_URL}?t=${timestamp}`), {
+// 验证Token
+const response = await fetch(`${GIST_URL}?t=${timestamp}`, {
 headers: {
 'Authorization': `token ${token}`,
 'Accept': 'application/vnd.github.v3+json'
@@ -556,6 +605,18 @@ permissions: permissions
 };
 } catch (error) {
 console.error('Token 验证失败:', error);
+// 检查是否是CORS问题
+if (error.message.includes('CORS') || error.message.includes('跨域')) {
+// 尝试使用JSONP或代理
+showPermissionsModal({
+gist: false,
+repo: false
+}, {
+isValid: false,
+status: 'error',
+message: 'CORS限制：请确保在GitHub Pages上访问此页面，或使用Chrome浏览器。'
+});
+} else {
 // 统一使用权限弹窗显示错误
 showPermissionsModal({
 gist: false,
@@ -565,6 +626,7 @@ isValid: false,
 status: 'invalid',
 message: `验证失败: ${error.message || '无法连接到GitHub API，请检查网络连接'}`
 });
+}
 }
 }
 // 显示权限弹窗
@@ -613,6 +675,7 @@ permissionsList.innerHTML = `
 <li>Token 格式不正确或已过期</li>
 <li>网络连接问题</li>
 <li>GitHub API 临时限制</li>
+<li>请确保在 <span style="color: #4a6fa5">https://zcfi.cn</span> 域名下访问</li>
 </ul>
 </p>
 `;
