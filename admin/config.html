@@ -172,6 +172,19 @@
     font-size: 16px;
     font-weight: 600;
 }
+.fullscreen-btn {
+    background: none;
+    border: none;
+    color: #4a6fa5;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+.fullscreen-btn:hover {
+    background: #e9ecef;
+}
 .preview-content {
     padding: 20px;
     background: white;
@@ -972,9 +985,9 @@
 <a href="https://zcfi.cn" class="preview-logo">zcfi<span>.</span>cn</a>
 <ul class="preview-nav-links" id="navPreviewLinks">
 <li><a href="https://zcfi.cn">首页</a></li>
-<li><a href="https://zcfi.cn/portfolio.html">作品集</a></li>
-<li><a href="https://zcfi.cn/blog.html">博客</a></li>
-<li><a href="https://zcfi.cn/contact.html">联系我</a></li>
+<li><a href="../portfolio.html">作品集</a></li>
+<li><a href="../blog.html">博客</a></li>
+<li><a href="../contact.html">联系我</a></li>
 </ul>
 <div class="preview-mobile-menu-btn">
 <i class="fas fa-bars"></i>
@@ -993,7 +1006,7 @@
 </button>
 </div>
 </div>
-<!-- 页脚配置 - 完整重构 -->
+<!-- 页脚配置 - 重构 -->
 <div class="config-section" id="footer-section">
 <div class="section-header">
 <h2><i class="fas fa-shoe-prints"></i> 页脚配置</h2>
@@ -1014,7 +1027,7 @@
 <i class="fab fa-github"></i>
 </div>
 <div class="social-link-input">
-<input type="url" id="githubUrl" placeholder="https://github.com/yourusername (完整 URL，以 http:// 或 https:// 开头)" class="form-control" oninput="validateUrl(this)">
+<input type="url" id="githubUrl" placeholder="https://github.com/yourusername (完整 URL，以 http:// 或 https:// 开头)" class="form-control">
 <div class="url-validation">
 <i class="fas fa-check-circle url-valid" style="display:none;"></i>
 <i class="fas fa-exclamation-circle url-invalid" style="display:none;"></i>
@@ -1027,7 +1040,7 @@
 <i class="fab fa-weibo"></i>
 </div>
 <div class="social-link-input">
-<input type="url" id="weiboUrl" placeholder="https://weibo.com/yourprofile (完整 URL，以 http:// 或 https:// 开头)" class="form-control" oninput="validateUrl(this)">
+<input type="url" id="weiboUrl" placeholder="https://weibo.com/yourprofile (完整 URL，以 http:// 或 https:// 开头)" class="form-control">
 <div class="url-validation">
 <i class="fas fa-check-circle url-valid" style="display:none;"></i>
 <i class="fas fa-exclamation-circle url-invalid" style="display:none;"></i>
@@ -1040,7 +1053,7 @@
 <i class="fab fa-zhihu"></i>
 </div>
 <div class="social-link-input">
-<input type="url" id="zhihuUrl" placeholder="https://www.zhihu.com/people/yourprofile (完整 URL，以 http:// 或 https:// 开头)" class="form-control" oninput="validateUrl(this)">
+<input type="url" id="zhihuUrl" placeholder="https://www.zhihu.com/people/yourprofile (完整 URL，以 http:// 或 https:// 开头)" class="form-control">
 <div class="url-validation">
 <i class="fas fa-check-circle url-valid" style="display:none;"></i>
 <i class="fas fa-exclamation-circle url-invalid" style="display:none;"></i>
@@ -1053,7 +1066,7 @@
 <i class="fab fa-linkedin"></i>
 </div>
 <div class="social-link-input">
-<input type="url" id="linkedinUrl" placeholder="https://linkedin.com/in/yourprofile (完整 URL，以 http:// 或 https:// 开头)" class="form-control" oninput="validateUrl(this)">
+<input type="url" id="linkedinUrl" placeholder="https://linkedin.com/in/yourprofile (完整 URL，以 http:// 或 https:// 开头)" class="form-control">
 <div class="url-validation">
 <i class="fas fa-check-circle url-valid" style="display:none;"></i>
 <i class="fas fa-exclamation-circle url-invalid" style="display:none;"></i>
@@ -1072,7 +1085,7 @@
 <div class="footer-links-container" id="quickLinksContainer">
 <div class="footer-link-item">
 <input type="text" class="quick-link-name" placeholder="链接名称 (例如：首页)">
-<input type="url" class="quick-link-url" placeholder="https://zcfi.cn (完整 URL，以 http:// 或 https:// 开头)" oninput="validateUrl(this)">
+<input type="url" class="quick-link-url" placeholder="https://zcfi.cn (完整 URL，以 http:// 或 https:// 开头)">
 <div class="url-validation">
 <i class="fas fa-check-circle url-valid" style="display:none;"></i>
 <i class="fas fa-exclamation-circle url-invalid" style="display:none;"></i>
@@ -1084,7 +1097,7 @@
 </div>
 <div class="footer-link-item">
 <input type="text" class="quick-link-name" placeholder="链接名称 (例如：作品集)">
-<input type="url" class="quick-link-url" placeholder="https://zcfi.cn/portfolio.html (完整 URL，以 http:// 或 https:// 开头)" oninput="validateUrl(this)">
+<input type="url" class="quick-link-url" placeholder="https://zcfi.cn/portfolio.html (完整 URL，以 http:// 或 https:// 开头)">
 <div class="url-validation">
 <i class="fas fa-check-circle url-valid" style="display:none;"></i>
 <i class="fas fa-exclamation-circle url-invalid" style="display:none;"></i>
@@ -1096,7 +1109,7 @@
 </div>
 <div class="footer-link-item">
 <input type="text" class="quick-link-name" placeholder="链接名称 (例如：博客)">
-<input type="url" class="quick-link-url" placeholder="https://zcfi.cn/blog.html (完整 URL，以 http:// 或 https:// 开头)" oninput="validateUrl(this)">
+<input type="url" class="quick-link-url" placeholder="https://zcfi.cn/blog.html (完整 URL，以 http:// 或 https:// 开头)">
 <div class="url-validation">
 <i class="fas fa-check-circle url-valid" style="display:none;"></i>
 <i class="fas fa-exclamation-circle url-invalid" style="display:none;"></i>
@@ -1108,7 +1121,7 @@
 </div>
 <div class="footer-link-item">
 <input type="text" class="quick-link-name" placeholder="链接名称 (例如：联系我)">
-<input type="url" class="quick-link-url" placeholder="https://zcfi.cn/contact.html (完整 URL，以 http:// 或 https:// 开头)" oninput="validateUrl(this)">
+<input type="url" class="quick-link-url" placeholder="https://zcfi.cn/contact.html (完整 URL，以 http:// 或 https:// 开头)">
 <div class="url-validation">
 <i class="fas fa-check-circle url-valid" style="display:none;"></i>
 <i class="fas fa-exclamation-circle url-invalid" style="display:none;"></i>
@@ -1127,7 +1140,42 @@
 <div class="form-group">
 <label><i class="fas fa-scale-balanced"></i> 法律声明链接</label>
 <div class="footer-links-container" id="legalLinksContainer">
-<!-- 动态生成的法律声明链接项 -->
+<div class="footer-link-item">
+<input type="text" class="legal-link-name" placeholder="链接名称 (例如：隐私政策)">
+<input type="url" class="legal-link-url" placeholder="https://zcfi.cn/privacy.html (完整 URL，以 http:// 或 https:// 开头)">
+<div class="url-validation">
+<i class="fas fa-check-circle url-valid" style="display:none;"></i>
+<i class="fas fa-exclamation-circle url-invalid" style="display:none;"></i>
+<span></span>
+</div>
+<button type="button" class="admin-btn btn-danger btn-sm remove-link-btn">
+<i class="fas fa-trash"></i>
+</button>
+</div>
+<div class="footer-link-item">
+<input type="text" class="legal-link-name" placeholder="链接名称 (例如：使用条款)">
+<input type="url" class="legal-link-url" placeholder="https://zcfi.cn/terms.html (完整 URL，以 http:// 或 https:// 开头)">
+<div class="url-validation">
+<i class="fas fa-check-circle url-valid" style="display:none;"></i>
+<i class="fas fa-exclamation-circle url-invalid" style="display:none;"></i>
+<span></span>
+</div>
+<button type="button" class="admin-btn btn-danger btn-sm remove-link-btn">
+<i class="fas fa-trash"></i>
+</button>
+</div>
+<div class="footer-link-item">
+<input type="text" class="legal-link-name" placeholder="链接名称 (例如：版权声明)">
+<input type="url" class="legal-link-url" placeholder="https://zcfi.cn/copyright.html (完整 URL，以 http:// 或 https:// 开头)">
+<div class="url-validation">
+<i class="fas fa-check-circle url-valid" style="display:none;"></i>
+<i class="fas fa-exclamation-circle url-invalid" style="display:none;"></i>
+<span></span>
+</div>
+<button type="button" class="admin-btn btn-danger btn-sm remove-link-btn">
+<i class="fas fa-trash"></i>
+</button>
+</div>
 </div>
 <button type="button" class="admin-btn btn-secondary" onclick="addLegalLink()" style="margin-top: 10px;">
 <i class="fas fa-plus"></i> 添加法律声明链接
@@ -1288,16 +1336,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initNavigation();
     initEventListeners();
     initToggleSwitches();
-    initFooterConfig();
     loadConfigData();
-    // 初始化法律声明链接为默认值
-    setTimeout(() => {
-        populateLegalLinks([
-            { name: '隐私政策', url: 'https://zcfi.cn/privacy.html' },
-            { name: '使用条款', url: 'https://zcfi.cn/terms.html' },
-            { name: '版权声明', url: 'https://zcfi.cn/copyright.html' }
-        ]);
-    }, 100);
 });
 
 // 初始化导航
@@ -1315,7 +1354,7 @@ function initNavigation() {
                 section.classList.remove('active');
             });
             // 显示目标部分
-            const targetSection = document.getElementById(`${targetId}-section`);
+            const targetSection = document.querySelector(`#${targetId}-section`);
             if (targetSection) {
                 targetSection.classList.add('active');
                 currentSection = targetId;
@@ -1327,115 +1366,126 @@ function initNavigation() {
 // 初始化事件监听器
 function initEventListeners() {
     // 主按钮
-    document.getElementById('refreshConfigBtn').addEventListener('click', loadConfigData);
-    document.getElementById('backupConfigBtn').addEventListener('click', backupConfig);
+    const refreshBtn = document.getElementById('refreshConfigBtn');
+    const backupBtn = document.getElementById('backupConfigBtn');
+    const cancelSaveBtn = document.getElementById('cancelSaveBtn');
+    const confirmSaveBtn = document.getElementById('confirmSaveBtn');
+    const closeResultBtn = document.getElementById('closeResultBtn');
     
-    // 弹窗按钮
-    document.getElementById('cancelSaveBtn').addEventListener('click', closeConfirmModal);
-    document.getElementById('confirmSaveBtn').addEventListener('click', executeSave);
-    document.getElementById('closeResultBtn').addEventListener('click', closeResultModal);
+    if (refreshBtn) refreshBtn.addEventListener('click', loadConfigData);
+    if (backupBtn) backupBtn.addEventListener('click', backupConfig);
+    if (cancelSaveBtn) cancelSaveBtn.addEventListener('click', closeConfirmModal);
+    if (confirmSaveBtn) confirmSaveBtn.addEventListener('click', executeSave);
+    if (closeResultBtn) closeResultBtn.addEventListener('click', closeResultModal);
     
     // 实时预览
-    document.getElementById('privacyContent').addEventListener('input', function() {
-        previewContent('privacy');
-    });
-    document.getElementById('termsContent').addEventListener('input', function() {
-        previewContent('terms');
-    });
-    document.getElementById('copyrightContent').addEventListener('input', function() {
-        previewContent('copyright');
-    });
-    document.getElementById('footerDescription').addEventListener('input', function() {
-        document.getElementById('previewFooterDescription').textContent = this.value || '个人网站和作品展示平台';
-    });
-    document.getElementById('footerCopyright').addEventListener('input', function() {
-        document.getElementById('previewCopyright').innerHTML = this.value || '© 2026 zcfi.cn 版权所有';
-    });
+    const privacyContent = document.getElementById('privacyContent');
+    const termsContent = document.getElementById('termsContent');
+    const copyrightContent = document.getElementById('copyrightContent');
+    const footerDescription = document.getElementById('footerDescription');
+    const footerCopyright = document.getElementById('footerCopyright');
+    
+    if (privacyContent) {
+        privacyContent.addEventListener('input', function() {
+            previewContent('privacy');
+        });
+    }
+    if (termsContent) {
+        termsContent.addEventListener('input', function() {
+            previewContent('terms');
+        });
+    }
+    if (copyrightContent) {
+        copyrightContent.addEventListener('input', function() {
+            previewContent('copyright');
+        });
+    }
+    if (footerDescription) {
+        footerDescription.addEventListener('input', function() {
+            const previewDesc = document.getElementById('previewFooterDescription');
+            if (previewDesc) {
+                previewDesc.textContent = this.value || '个人网站和作品展示平台';
+            }
+        });
+    }
+    if (footerCopyright) {
+        footerCopyright.addEventListener('input', function() {
+            const previewCopyright = document.getElementById('previewCopyright');
+            if (previewCopyright) {
+                previewCopyright.innerHTML = this.value || '© 2026 zcfi.cn 版权所有';
+            }
+        });
+    }
     
     // 社交链接预览
-    document.getElementById('githubUrl').addEventListener('input', function() {
-        validateUrl(this);
-        previewFooter();
-    });
-    document.getElementById('weiboUrl').addEventListener('input', function() {
-        validateUrl(this);
-        previewFooter();
-    });
-    document.getElementById('zhihuUrl').addEventListener('input', function() {
-        validateUrl(this);
-        previewFooter();
-    });
-    document.getElementById('linkedinUrl').addEventListener('input', function() {
-        validateUrl(this);
-        previewFooter();
+    const githubUrl = document.getElementById('githubUrl');
+    const weiboUrl = document.getElementById('weiboUrl');
+    const zhihuUrl = document.getElementById('zhihuUrl');
+    const linkedinUrl = document.getElementById('linkedinUrl');
+    
+    if (githubUrl) githubUrl.addEventListener('input', previewFooter);
+    if (weiboUrl) weiboUrl.addEventListener('input', previewFooter);
+    if (zhihuUrl) zhihuUrl.addEventListener('input', previewFooter);
+    if (linkedinUrl) linkedinUrl.addEventListener('input', previewFooter);
+    
+    // URL验证
+    document.querySelectorAll('input[type="url"]').forEach(input => {
+        input.addEventListener('blur', function() {
+            validateUrl(this);
+        });
+        input.addEventListener('input', function() {
+            validateUrl(this);
+        });
     });
 }
 
 // 初始化开关
 function initToggleSwitches() {
     // 隐私政策开关
-    document.getElementById('privacyEnabled').addEventListener('change', function() {
-        document.getElementById('privacyStatusLabel').textContent =
-            this.checked ? '已启用 (公开访问)' : '已禁用 (隐藏页面)';
-    });
-    // 使用条款开关
-    document.getElementById('termsEnabled').addEventListener('change', function() {
-        document.getElementById('termsStatusLabel').textContent =
-            this.checked ? '已启用 (公开访问)' : '已禁用 (隐藏页面)';
-    });
-    // 版权声明开关
-    document.getElementById('copyrightEnabled').addEventListener('change', function() {
-        document.getElementById('copyrightStatusLabel').textContent =
-            this.checked ? '已启用 (公开访问)' : '已禁用 (隐藏页面)';
-    });
-}
-
-// 初始化页脚配置
-function initFooterConfig() {
-    // 快速链接动态操作
-    document.querySelectorAll('.remove-link-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            this.closest('.footer-link-item').remove();
-            previewFooter();
+    const privacyEnabled = document.getElementById('privacyEnabled');
+    if (privacyEnabled) {
+        privacyEnabled.addEventListener('change', function() {
+            const label = document.getElementById('privacyStatusLabel');
+            if (label) {
+                label.textContent = this.checked ? '已启用 (公开访问)' : '已禁用 (隐藏页面)';
+            }
         });
-    });
+    }
     
-    // 为现有的输入框添加事件监听
-    document.querySelectorAll('.quick-link-name, .quick-link-url, .legal-link-name, .legal-link-url').forEach(input => {
-        input.addEventListener('input', previewFooter);
-    });
+    // 使用条款开关
+    const termsEnabled = document.getElementById('termsEnabled');
+    if (termsEnabled) {
+        termsEnabled.addEventListener('change', function() {
+            const label = document.getElementById('termsStatusLabel');
+            if (label) {
+                label.textContent = this.checked ? '已启用 (公开访问)' : '已禁用 (隐藏页面)';
+            }
+        });
+    }
+    
+    // 版权声明开关
+    const copyrightEnabled = document.getElementById('copyrightEnabled');
+    if (copyrightEnabled) {
+        copyrightEnabled.addEventListener('change', function() {
+            const label = document.getElementById('copyrightStatusLabel');
+            if (label) {
+                label.textContent = this.checked ? '已启用 (公开访问)' : '已禁用 (隐藏页面)';
+            }
+        });
+    }
 }
 
-// 验证URL格式
+// URL验证函数
 function validateUrl(inputElement) {
+    if (!inputElement) return true;
+    
     const url = inputElement.value.trim();
-    const validationElement = inputElement.closest('.footer-link-item, .social-links-config').querySelector('.url-validation');
-    const validIcon = validationElement.querySelector('.url-valid');
-    const invalidIcon = validationElement.querySelector('.url-invalid');
-    
-    if (!url) {
-        validIcon.style.display = 'none';
-        invalidIcon.style.display = 'none';
-        return true;
-    }
-    
-    // 检查是否是完整URL
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        validIcon.style.display = 'none';
-        invalidIcon.style.display = 'inline-block';
-        invalidIcon.title = 'URL必须以http://或https://开头';
-        return false;
-    }
+    if (!url) return true;
     
     try {
         new URL(url);
-        validIcon.style.display = 'inline-block';
-        invalidIcon.style.display = 'none';
         return true;
     } catch (e) {
-        validIcon.style.display = 'none';
-        invalidIcon.style.display = 'inline-block';
-        invalidIcon.title = e.message;
         return false;
     }
 }
@@ -1444,20 +1494,19 @@ function validateUrl(inputElement) {
 async function loadConfigData() {
     try {
         showLoading('正在从服务器获取最新配置...');
+        
+        // 添加时间戳防止缓存
         const timestamp = new Date().getTime();
         const response = await fetch(`${CONFIG_RAW_URL}?t=${timestamp}`);
+        
         if (!response.ok) {
-            // 如果Gist不存在或为空，使用默认配置
-            console.warn('配置Gist不存在或为空，使用默认配置');
-            currentConfigData = getDefaultConfig();
-            populateFormWithConfig(currentConfigData);
-            hideLoading();
-            showResult('info', '提示', '使用默认配置，请保存以创建配置文件。');
-            return;
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
+        
         const data = await response.json();
         currentConfigData = data;
         populateFormWithConfig(data);
+        
         hideLoading();
         showResult('success', '刷新成功', '配置数据已成功加载。');
     } catch (error) {
@@ -1513,7 +1562,7 @@ function getDefaultConfig() {
             lastUpdated: new Date().toISOString()
         },
         social: {
-            github: '',
+            github: 'https://github.com',
             weibo: '',
             zhihu: '',
             linkedin: '',
@@ -1554,39 +1603,62 @@ function getDefaultConfig() {
 function populateFormWithConfig(config) {
     // 网站信息
     if (config.site) {
-        document.getElementById('siteName').value = config.site.name || '';
-        document.getElementById('siteDescription').value = config.site.description || '';
-        document.getElementById('siteKeywords').value = config.site.keywords || '';
-        document.getElementById('adminEmail').value = config.site.adminEmail || '';
+        const siteName = document.getElementById('siteName');
+        const siteDescription = document.getElementById('siteDescription');
+        const siteKeywords = document.getElementById('siteKeywords');
+        const adminEmail = document.getElementById('adminEmail');
+        
+        if (siteName) siteName.value = config.site.name || '';
+        if (siteDescription) siteDescription.value = config.site.description || '';
+        if (siteKeywords) siteKeywords.value = config.site.keywords || '';
+        if (adminEmail) adminEmail.value = config.site.adminEmail || '';
     }
     
     // 隐私政策
     if (config.privacy) {
-        document.getElementById('privacyTitle').value = config.privacy.title || '';
-        document.getElementById('privacyContent').value = config.privacy.content || '';
-        document.getElementById('privacyEnabled').checked = config.privacy.enabled !== false;
-        document.getElementById('privacyStatusLabel').textContent =
-            config.privacy.enabled !== false ? '已启用 (公开访问)' : '已禁用 (隐藏页面)';
+        const privacyTitle = document.getElementById('privacyTitle');
+        const privacyContent = document.getElementById('privacyContent');
+        const privacyEnabled = document.getElementById('privacyEnabled');
+        const privacyStatusLabel = document.getElementById('privacyStatusLabel');
+        
+        if (privacyTitle) privacyTitle.value = config.privacy.title || '';
+        if (privacyContent) privacyContent.value = config.privacy.content || '';
+        if (privacyEnabled) privacyEnabled.checked = config.privacy.enabled !== false;
+        if (privacyStatusLabel) {
+            privacyStatusLabel.textContent = config.privacy.enabled !== false ? '已启用 (公开访问)' : '已禁用 (隐藏页面)';
+        }
         previewContent('privacy');
     }
     
     // 使用条款
     if (config.terms) {
-        document.getElementById('termsTitle').value = config.terms.title || '';
-        document.getElementById('termsContent').value = config.terms.content || '';
-        document.getElementById('termsEnabled').checked = config.terms.enabled !== false;
-        document.getElementById('termsStatusLabel').textContent =
-            config.terms.enabled !== false ? '已启用 (公开访问)' : '已禁用 (隐藏页面)';
+        const termsTitle = document.getElementById('termsTitle');
+        const termsContent = document.getElementById('termsContent');
+        const termsEnabled = document.getElementById('termsEnabled');
+        const termsStatusLabel = document.getElementById('termsStatusLabel');
+        
+        if (termsTitle) termsTitle.value = config.terms.title || '';
+        if (termsContent) termsContent.value = config.terms.content || '';
+        if (termsEnabled) termsEnabled.checked = config.terms.enabled !== false;
+        if (termsStatusLabel) {
+            termsStatusLabel.textContent = config.terms.enabled !== false ? '已启用 (公开访问)' : '已禁用 (隐藏页面)';
+        }
         previewContent('terms');
     }
     
     // 版权声明
     if (config.copyright) {
-        document.getElementById('copyrightTitle').value = config.copyright.title || '';
-        document.getElementById('copyrightContent').value = config.copyright.content || '';
-        document.getElementById('copyrightEnabled').checked = config.copyright.enabled !== false;
-        document.getElementById('copyrightStatusLabel').textContent =
-            config.copyright.enabled !== false ? '已启用 (公开访问)' : '已禁用 (隐藏页面)';
+        const copyrightTitle = document.getElementById('copyrightTitle');
+        const copyrightContent = document.getElementById('copyrightContent');
+        const copyrightEnabled = document.getElementById('copyrightEnabled');
+        const copyrightStatusLabel = document.getElementById('copyrightStatusLabel');
+        
+        if (copyrightTitle) copyrightTitle.value = config.copyright.title || '';
+        if (copyrightContent) copyrightContent.value = config.copyright.content || '';
+        if (copyrightEnabled) copyrightEnabled.checked = config.copyright.enabled !== false;
+        if (copyrightStatusLabel) {
+            copyrightStatusLabel.textContent = config.copyright.enabled !== false ? '已启用 (公开访问)' : '已禁用 (隐藏页面)';
+        }
         previewContent('copyright');
     }
     
@@ -1599,23 +1671,38 @@ function populateFormWithConfig(config) {
     // 页脚配置（完整整合）
     if (config.footer) {
         // 页脚描述
-        document.getElementById('footerDescription').value = config.footer.description || '';
+        const footerDescription = document.getElementById('footerDescription');
+        if (footerDescription) {
+            footerDescription.value = config.footer.description || '';
+        }
         
         // 社交链接
         const social = config.footer.social || config.social || {};
-        document.getElementById('githubUrl').value = social.github || '';
-        document.getElementById('weiboUrl').value = social.weibo || '';
-        document.getElementById('zhihuUrl').value = social.zhihu || '';
-        document.getElementById('linkedinUrl').value = social.linkedin || '';
+        const githubUrl = document.getElementById('githubUrl');
+        const weiboUrl = document.getElementById('weiboUrl');
+        const zhihuUrl = document.getElementById('zhihuUrl');
+        const linkedinUrl = document.getElementById('linkedinUrl');
+        
+        if (githubUrl) githubUrl.value = social.github || '';
+        if (weiboUrl) weiboUrl.value = social.weibo || '';
+        if (zhihuUrl) zhihuUrl.value = social.zhihu || '';
+        if (linkedinUrl) linkedinUrl.value = social.linkedin || '';
         
         // 快速链接
         populateQuickLinks(config.footer.quickLinks || []);
         
         // 法律声明链接
-        populateLegalLinks(config.footer.legalLinks || []);
+        populateLegalLinks(config.footer.legalLinks || [
+            { name: '隐私政策', url: 'https://zcfi.cn/privacy.html' },
+            { name: '使用条款', url: 'https://zcfi.cn/terms.html' },
+            { name: '版权声明', url: 'https://zcfi.cn/copyright.html' }
+        ]);
         
         // 版权信息
-        document.getElementById('footerCopyright').value = config.footer.copyright || '© 2026 zcfi.cn 版权所有';
+        const footerCopyright = document.getElementById('footerCopyright');
+        if (footerCopyright) {
+            footerCopyright.value = config.footer.copyright || '© 2026 zcfi.cn 版权所有';
+        }
         
         // 预览
         previewFooter();
@@ -1625,20 +1712,39 @@ function populateFormWithConfig(config) {
 // 填充导航项表单
 function populateNavigationForm(items) {
     const container = document.getElementById('navItemsContainer');
+    if (!container) return;
+    
     container.innerHTML = '';
-    // 按order排序
-    const sortedItems = [...items].sort((a, b) => (a.order || 0) - (b.order || 0));
+    
+    // 确保首页项始终存在
+    const hasHomePage = items.some(item => item.fixed);
+    if (!hasHomePage) {
+        items.unshift({
+            name: '首页',
+            url: HOME_PAGE_URL,
+            order: 1,
+            fixed: true
+        });
+    }
+    
+    // 按order排序，固定项优先
+    const sortedItems = [...items].sort((a, b) => {
+        if (a.fixed && !b.fixed) return -1;
+        if (!a.fixed && b.fixed) return 1;
+        return (a.order || 0) - (b.order || 0);
+    });
+    
     sortedItems.forEach((item, index) => {
         const isFixed = item.fixed || (item.name === '首页' && item.url === HOME_PAGE_URL);
         const itemHtml = `
         <div class="nav-item-row ${isFixed ? 'homepage-item' : ''}">
             <input type="hidden" name="navOrder" value="${item.order || index + 1}">
             <input type="text" class="nav-item-name" placeholder="菜单名称" value="${escapeHtml(item.name || '')}" ${isFixed ? 'readonly' : ''}>
-            <input type="url" class="nav-item-url" placeholder="https://example.com/subpage (完整URL)" value="${escapeHtml(item.url || '')}" oninput="validateUrl(this)" ${isFixed ? 'readonly' : ''}>
+            <input type="url" class="nav-item-url" placeholder="https://example.com/subpage (完整URL)" value="${escapeHtml(item.url || '')}" ${isFixed ? 'readonly' : ''}>
             <button type="button" class="admin-btn btn-danger btn-sm" onclick="removeNavItem(this)" ${isFixed ? 'disabled' : ''}>
                 <i class="fas fa-trash"></i>
             </button>
-            <button type="button" class="admin-btn btn-secondary btn-sm" onclick="moveNavItemUp(this)" ${index === 0 ? 'disabled' : ''}>
+            <button type="button" class="admin-btn btn-secondary btn-sm" onclick="moveNavItemUp(this)" ${isFixed || index === 0 ? 'disabled' : ''}>
                 <i class="fas fa-arrow-up"></i>
             </button>
             <button type="button" class="admin-btn btn-secondary btn-sm" onclick="moveNavItemDown(this)" ${isFixed ? 'disabled' : ''}>
@@ -1650,7 +1756,7 @@ function populateNavigationForm(items) {
     });
     
     // 为URL输入框添加验证
-    container.querySelectorAll('input.nav-item-url').forEach(input => {
+    container.querySelectorAll('input[type="url"]').forEach(input => {
         input.addEventListener('blur', function() {
             validateUrl(this);
         });
@@ -1660,13 +1766,15 @@ function populateNavigationForm(items) {
 // 添加导航项
 function addNavItem() {
     const container = document.getElementById('navItemsContainer');
+    if (!container) return;
+    
     const items = container.querySelectorAll('.nav-item-row');
     const nextOrder = items.length + 1;
     const itemHtml = `
     <div class="nav-item-row">
         <input type="hidden" name="navOrder" value="${nextOrder}">
         <input type="text" class="nav-item-name" placeholder="菜单名称" value="">
-        <input type="url" class="nav-item-url" placeholder="https://example.com/subpage (完整URL)" value="" oninput="validateUrl(this)">
+        <input type="url" class="nav-item-url" placeholder="https://example.com/subpage (完整URL)" value="">
         <button type="button" class="admin-btn btn-danger btn-sm" onclick="removeNavItem(this)">
             <i class="fas fa-trash"></i>
         </button>
@@ -1685,9 +1793,11 @@ function addNavItem() {
 // 移除导航项
 function removeNavItem(button) {
     const row = button.closest('.nav-item-row');
+    if (!row) return;
+    
     // 检查是否是首页项
-    const nameInput = row.querySelector('.nav-item-name');
-    if (nameInput && nameInput.value === '首页' && nameInput.readOnly) {
+    const urlInput = row.querySelector('.nav-item-url');
+    if (urlInput && urlInput.value === HOME_PAGE_URL && urlInput.readOnly) {
         showResult('info', '操作受限', '首页项不可删除');
         return;
     }
@@ -1699,11 +1809,19 @@ function removeNavItem(button) {
 // 上移导航项
 function moveNavItemUp(button) {
     const row = button.closest('.nav-item-row');
+    if (!row) return;
+    
+    // 检查是否是首页项
+    const urlInput = row.querySelector('.nav-item-url');
+    if (urlInput && urlInput.value === HOME_PAGE_URL && urlInput.readOnly) {
+        showResult('info', '操作受限', '首页项位置固定');
+        return;
+    }
     const prevRow = row.previousElementSibling;
     if (prevRow && prevRow.classList.contains('nav-item-row')) {
         // 检查上一项是否是首页项
-        const prevNameInput = prevRow.querySelector('.nav-item-name');
-        if (prevNameInput && prevNameInput.value === '首页' && prevNameInput.readOnly) {
+        const prevUrlInput = prevRow.querySelector('.nav-item-url');
+        if (prevUrlInput && prevUrlInput.value === HOME_PAGE_URL && prevUrlInput.readOnly) {
             showResult('info', '操作受限', '首页项必须在最前面');
             return;
         }
@@ -1716,6 +1834,14 @@ function moveNavItemUp(button) {
 // 下移导航项
 function moveNavItemDown(button) {
     const row = button.closest('.nav-item-row');
+    if (!row) return;
+    
+    // 检查是否是首页项
+    const urlInput = row.querySelector('.nav-item-url');
+    if (urlInput && urlInput.value === HOME_PAGE_URL && urlInput.readOnly) {
+        showResult('info', '操作受限', '首页项位置固定');
+        return;
+    }
     const nextRow = row.nextElementSibling;
     if (nextRow && nextRow.classList.contains('nav-item-row')) {
         row.parentNode.insertBefore(nextRow, row);
@@ -1727,10 +1853,19 @@ function moveNavItemDown(button) {
 // 更新导航项顺序
 function updateNavItemOrders() {
     const items = document.querySelectorAll('.nav-item-row');
+    let nonFixedIndex = 1;
+    
     items.forEach((item, index) => {
         const orderInput = item.querySelector('input[name="navOrder"]');
+        const urlInput = item.querySelector('.nav-item-url');
         if (orderInput) {
-            orderInput.value = index + 1;
+            // 确保首页项始终为第一项
+            if (urlInput && urlInput.value === HOME_PAGE_URL && urlInput.readOnly) {
+                orderInput.value = 1;
+            } else {
+                orderInput.value = 10 + nonFixedIndex; // 从10开始，确保固定项在前
+                nonFixedIndex++;
+            }
         }
     });
 }
@@ -1738,8 +1873,20 @@ function updateNavItemOrders() {
 // 预览导航栏
 function previewNavigation() {
     const previewElement = document.getElementById('navPreviewLinks');
+    if (!previewElement) return;
+    
     const items = [];
-    document.querySelectorAll('.nav-item-row').forEach(row => {
+    
+    // 添加固定首页项
+    items.push({
+        name: '首页',
+        url: HOME_PAGE_URL,
+        order: 1,
+        fixed: true
+    });
+    
+    // 添加其他项
+    document.querySelectorAll('.nav-item-row:not(.homepage-item)').forEach(row => {
         const nameInput = row.querySelector('.nav-item-name');
         const urlInput = row.querySelector('.nav-item-url');
         const orderInput = row.querySelector('input[name="navOrder"]');
@@ -1751,17 +1898,9 @@ function previewNavigation() {
             });
         }
     });
+    
     // 按order排序
     const sortedItems = [...items].sort((a, b) => a.order - b.order);
-    
-    // 确保首页项始终是第一项
-    if (!sortedItems.some(item => item.name === '首页')) {
-        sortedItems.unshift({
-            name: '首页',
-            url: HOME_PAGE_URL,
-            order: 1
-        });
-    }
     
     previewElement.innerHTML = sortedItems.map(item => 
         `<li><a href="${escapeHtml(item.url)}">${escapeHtml(item.name)}</a></li>`
@@ -1771,12 +1910,19 @@ function previewNavigation() {
 // 填充快速链接
 function populateQuickLinks(links) {
     const container = document.getElementById('quickLinksContainer');
+    if (!container) return;
+    
+    // 确保至少有一个链接
+    if (links.length === 0) {
+        links = [{ name: '首页', url: HOME_PAGE_URL }];
+    }
+    
     container.innerHTML = '';
     links.forEach(link => {
         container.innerHTML += `
         <div class="footer-link-item">
             <input type="text" class="quick-link-name" placeholder="链接名称" value="${escapeHtml(link.name || '')}">
-            <input type="url" class="quick-link-url" placeholder="https://example.com/subpage (完整URL)" value="${escapeHtml(link.url || '')}" oninput="validateUrl(this)">
+            <input type="url" class="quick-link-url" placeholder="https://example.com/subpage (完整URL)" value="${escapeHtml(link.url || '')}">
             <div class="url-validation">
                 <i class="fas fa-check-circle url-valid" style="display:none;"></i>
                 <i class="fas fa-exclamation-circle url-invalid" style="display:none;"></i>
@@ -1788,16 +1934,21 @@ function populateQuickLinks(links) {
         </div>
         `;
     });
+    
     // 为新添加的删除按钮添加事件监听
     document.querySelectorAll('.remove-link-btn').forEach(btn => {
-        btn.removeEventListener('click', removeLinkItem);
-        btn.addEventListener('click', removeLinkItem);
+        btn.addEventListener('click', function() {
+            this.closest('.footer-link-item').remove();
+            previewFooter();
+        });
     });
 }
 
 // 填充法律声明链接
 function populateLegalLinks(links) {
     const container = document.getElementById('legalLinksContainer');
+    if (!container) return;
+    
     container.innerHTML = '';
     
     // 确保至少有默认的三个法律声明链接
@@ -1813,7 +1964,7 @@ function populateLegalLinks(links) {
         container.innerHTML += `
         <div class="footer-link-item">
             <input type="text" class="legal-link-name" placeholder="链接名称" value="${escapeHtml(link.name || '')}">
-            <input type="url" class="legal-link-url" placeholder="https://example.com/page.html (完整URL)" value="${escapeHtml(link.url || '')}" oninput="validateUrl(this)">
+            <input type="url" class="legal-link-url" placeholder="https://example.com/page.html (完整URL)" value="${escapeHtml(link.url || '')}">
             <div class="url-validation">
                 <i class="fas fa-check-circle url-valid" style="display:none;"></i>
                 <i class="fas fa-exclamation-circle url-invalid" style="display:none;"></i>
@@ -1828,168 +1979,117 @@ function populateLegalLinks(links) {
     
     // 为新添加的删除按钮添加事件监听
     document.querySelectorAll('.remove-link-btn').forEach(btn => {
-        btn.removeEventListener('click', removeLinkItem);
-        btn.addEventListener('click', removeLinkItem);
-    });
-}
-
-// 移除链接项
-function removeLinkItem() {
-    const item = this.closest('.footer-link-item');
-    // 检查是否是必须的法律声明链接
-    const linkNameInput = item.querySelector('.legal-link-name, .quick-link-name');
-    if (linkNameInput && 
-        ['首页', '隐私政策', '使用条款', '版权声明'].includes(linkNameInput.value) &&
-        document.querySelectorAll('.footer-link-item').length <= (linkNameInput.classList.contains('legal-link-name') ? 3 : 1)) {
-        showResult('info', '操作受限', '至少需要保留此链接');
-        return;
-    }
-    item.remove();
-    previewFooter();
-}
-
-// 添加快速链接
-function addQuickLink() {
-    const container = document.getElementById('quickLinksContainer');
-    const itemHtml = `
-    <div class="footer-link-item">
-        <input type="text" class="quick-link-name" placeholder="链接名称" value="">
-        <input type="url" class="quick-link-url" placeholder="https://example.com/subpage (完整URL)" value="" oninput="validateUrl(this)">
-        <div class="url-validation">
-            <i class="fas fa-check-circle url-valid" style="display:none;"></i>
-            <i class="fas fa-exclamation-circle url-invalid" style="display:none;"></i>
-            <span></span>
-        </div>
-        <button type="button" class="admin-btn btn-danger btn-sm remove-link-btn">
-            <i class="fas fa-trash"></i>
-        </button>
-    </div>
-    `;
-    container.innerHTML += itemHtml;
-    // 为新添加的删除按钮添加事件监听
-    container.lastElementChild.querySelector('.remove-link-btn').addEventListener('click', removeLinkItem);
-    // 为新添加的URL输入框添加验证
-    container.lastElementChild.querySelector('.quick-link-url').addEventListener('blur', function() {
-        validateUrl(this);
-    });
-}
-
-// 添加法律声明链接
-function addLegalLink() {
-    const container = document.getElementById('legalLinksContainer');
-    const itemHtml = `
-    <div class="footer-link-item">
-        <input type="text" class="legal-link-name" placeholder="链接名称" value="">
-        <input type="url" class="legal-link-url" placeholder="https://example.com/page.html (完整URL)" value="" oninput="validateUrl(this)">
-        <div class="url-validation">
-            <i class="fas fa-check-circle url-valid" style="display:none;"></i>
-            <i class="fas fa-exclamation-circle url-invalid" style="display:none;"></i>
-            <span></span>
-        </div>
-        <button type="button" class="admin-btn btn-danger btn-sm remove-link-btn">
-            <i class="fas fa-trash"></i>
-        </button>
-    </div>
-    `;
-    container.innerHTML += itemHtml;
-    // 为新添加的删除按钮添加事件监听
-    container.lastElementChild.querySelector('.remove-link-btn').addEventListener('click', removeLinkItem);
-    // 为新添加的URL输入框添加验证
-    container.lastElementChild.querySelector('.legal-link-url').addEventListener('blur', function() {
-        validateUrl(this);
+        btn.addEventListener('click', function() {
+            this.closest('.footer-link-item').remove();
+            previewFooter();
+        });
     });
 }
 
 // 预览页脚 - 完全按照前端样式
 function previewFooter() {
     // 1. 页脚描述
-    const footerDesc = document.getElementById('footerDescription').value.trim() || '个人网站和作品展示平台';
-    document.getElementById('previewFooterDescription').textContent = footerDesc;
+    const footerDesc = document.getElementById('footerDescription')?.value.trim() || '个人网站和作品展示平台';
+    const previewFooterDesc = document.getElementById('previewFooterDescription');
+    if (previewFooterDesc) {
+        previewFooterDesc.textContent = footerDesc;
+    }
     
     // 2. 社交链接
     const socialLinksContainer = document.getElementById('previewSocialLinks');
-    socialLinksContainer.innerHTML = '';
-    
-    const socialLinks = [
-        { id: 'githubUrl', icon: 'fab fa-github', platform: 'GitHub' },
-        { id: 'weiboUrl', icon: 'fab fa-weibo', platform: '微博' },
-        { id: 'zhihuUrl', icon: 'fab fa-zhihu', platform: '知乎' },
-        { id: 'linkedinUrl', icon: 'fab fa-linkedin', platform: 'LinkedIn' }
-    ];
-    
-    socialLinks.forEach(link => {
-        const url = document.getElementById(link.id).value.trim();
-        if (url && url !== 'https://example.com') {
-            const a = document.createElement('a');
-            a.href = url;
-            a.target = '_blank';
-            a.rel = 'noopener noreferrer';
-            a.title = link.platform;
-            
-            const i = document.createElement('i');
-            i.className = link.icon;
-            
-            a.appendChild(i);
-            socialLinksContainer.appendChild(a);
-        }
-    });
+    if (socialLinksContainer) {
+        socialLinksContainer.innerHTML = '';
+        
+        const socialLinks = [
+            { id: 'githubUrl', icon: 'fab fa-github', platform: 'GitHub' },
+            { id: 'weiboUrl', icon: 'fab fa-weibo', platform: '微博' },
+            { id: 'zhihuUrl', icon: 'fab fa-zhihu', platform: '知乎' },
+            { id: 'linkedinUrl', icon: 'fab fa-linkedin', platform: 'LinkedIn' }
+        ];
+        
+        socialLinks.forEach(link => {
+            const url = document.getElementById(link.id)?.value.trim();
+            if (url && url !== 'https://example.com' && url !== '') {
+                const a = document.createElement('a');
+                a.href = url;
+                a.target = '_blank';
+                a.rel = 'noopener noreferrer';
+                a.title = link.platform;
+                
+                const i = document.createElement('i');
+                i.className = link.icon;
+                
+                a.appendChild(i);
+                socialLinksContainer.appendChild(a);
+            }
+        });
+    }
     
     // 3. 快速链接
     const quickLinksContainer = document.getElementById('previewQuickLinks');
-    quickLinksContainer.innerHTML = '';
-    
-    document.querySelectorAll('#quickLinksContainer .footer-link-item').forEach(item => {
-        const nameInput = item.querySelector('.quick-link-name');
-        const urlInput = item.querySelector('.quick-link-url');
-        if (nameInput && urlInput && nameInput.value && urlInput.value) {
-            const li = document.createElement('li');
-            const a = document.createElement('a');
-            a.href = urlInput.value.trim();
-            a.target = '_blank';
-            a.textContent = nameInput.value.trim();
-            li.appendChild(a);
-            quickLinksContainer.appendChild(li);
-        }
-    });
+    if (quickLinksContainer) {
+        quickLinksContainer.innerHTML = '';
+        
+        document.querySelectorAll('#quickLinksContainer .footer-link-item').forEach(item => {
+            const nameInput = item.querySelector('.quick-link-name');
+            const urlInput = item.querySelector('.quick-link-url');
+            if (nameInput && urlInput && nameInput.value && urlInput.value) {
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.href = urlInput.value.trim();
+                a.target = '_blank';
+                a.textContent = nameInput.value.trim();
+                li.appendChild(a);
+                quickLinksContainer.appendChild(li);
+            }
+        });
+    }
     
     // 4. 法律声明链接
     const legalLinksContainer = document.getElementById('previewLegalLinks');
-    legalLinksContainer.innerHTML = '';
-    
-    document.querySelectorAll('#legalLinksContainer .footer-link-item').forEach(item => {
-        const nameInput = item.querySelector('.legal-link-name');
-        const urlInput = item.querySelector('.legal-link-url');
-        if (nameInput && urlInput && nameInput.value && urlInput.value) {
-            const li = document.createElement('li');
-            const a = document.createElement('a');
-            a.href = urlInput.value.trim();
-            a.target = '_blank';
-            a.textContent = nameInput.value.trim();
-            li.appendChild(a);
-            legalLinksContainer.appendChild(li);
-        }
-    });
+    if (legalLinksContainer) {
+        legalLinksContainer.innerHTML = '';
+        
+        document.querySelectorAll('#legalLinksContainer .footer-link-item').forEach(item => {
+            const nameInput = item.querySelector('.legal-link-name');
+            const urlInput = item.querySelector('.legal-link-url');
+            if (nameInput && urlInput && nameInput.value && urlInput.value) {
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.href = urlInput.value.trim();
+                a.target = '_blank';
+                a.textContent = nameInput.value.trim();
+                li.appendChild(a);
+                legalLinksContainer.appendChild(li);
+            }
+        });
+    }
     
     // 5. 合规声明链接
     const complianceLinksContainer = document.getElementById('previewComplianceLinks');
-    complianceLinksContainer.innerHTML = '';
-    
-    // 复用法律声明链接
-    document.querySelectorAll('#legalLinksContainer .footer-link-item').forEach(item => {
-        const nameInput = item.querySelector('.legal-link-name');
-        const urlInput = item.querySelector('.legal-link-url');
-        if (nameInput && urlInput && nameInput.value && urlInput.value) {
-            const a = document.createElement('a');
-            a.href = urlInput.value.trim();
-            a.target = '_blank';
-            a.textContent = nameInput.value.trim();
-            complianceLinksContainer.appendChild(a);
-        }
-    });
+    if (complianceLinksContainer) {
+        complianceLinksContainer.innerHTML = '';
+        
+        // 复用法律声明链接
+        document.querySelectorAll('#legalLinksContainer .footer-link-item').forEach(item => {
+            const nameInput = item.querySelector('.legal-link-name');
+            const urlInput = item.querySelector('.legal-link-url');
+            if (nameInput && urlInput && nameInput.value && urlInput.value) {
+                const a = document.createElement('a');
+                a.href = urlInput.value.trim();
+                a.target = '_blank';
+                a.textContent = nameInput.value.trim();
+                complianceLinksContainer.appendChild(a);
+            }
+        });
+    }
     
     // 6. 版权信息
-    const copyrightText = document.getElementById('footerCopyright').value.trim() || '© 2026 zcfi.cn 版权所有';
-    document.getElementById('previewCopyright').innerHTML = copyrightText;
+    const copyrightText = document.getElementById('footerCopyright')?.value.trim() || '© 2026 zcfi.cn 版权所有';
+    const previewCopyright = document.getElementById('previewCopyright');
+    if (previewCopyright) {
+        previewCopyright.innerHTML = copyrightText;
+    }
 }
 
 // 全屏预览
@@ -2004,26 +2104,26 @@ function openFullscreenPreview(type) {
     switch(type) {
         case 'privacy':
             previewHtml = `<div style="padding: 20px; background: white;">
-                <h2>${escapeHtml(document.getElementById('privacyTitle').value || '隐私政策')}</h2>
-                <div>${document.getElementById('privacyContent').value || '<p>暂无内容</p>'}</div>
+                <h2>${escapeHtml(document.getElementById('privacyTitle')?.value || '隐私政策')}</h2>
+                <div>${document.getElementById('privacyContent')?.value || '<p>暂无内容</p>'}</div>
             </div>`;
             break;
         case 'terms':
             previewHtml = `<div style="padding: 20px; background: white;">
-                <h2>${escapeHtml(document.getElementById('termsTitle').value || '使用条款')}</h2>
-                <div>${document.getElementById('termsContent').value || '<p>暂无内容</p>'}</div>
+                <h2>${escapeHtml(document.getElementById('termsTitle')?.value || '使用条款')}</h2>
+                <div>${document.getElementById('termsContent')?.value || '<p>暂无内容</p>'}</div>
             </div>`;
             break;
         case 'copyright':
             previewHtml = `<div style="padding: 20px; background: white;">
-                <h2>${escapeHtml(document.getElementById('copyrightTitle').value || '版权声明')}</h2>
-                <div>${document.getElementById('copyrightContent').value || '<p>暂无内容</p>'}</div>
+                <h2>${escapeHtml(document.getElementById('copyrightTitle')?.value || '版权声明')}</h2>
+                <div>${document.getElementById('copyrightContent')?.value || '<p>暂无内容</p>'}</div>
             </div>`;
             break;
         case 'footer':
             previewHtml = `
             <div style="padding: 20px;">
-                ${document.querySelector('.preview-footer').outerHTML}
+                ${document.querySelector('.preview-footer')?.outerHTML || ''}
             </div>
             `;
             break;
@@ -2031,15 +2131,10 @@ function openFullscreenPreview(type) {
     
     content.innerHTML = previewHtml;
     modal.classList.add('show');
-    
-    // 初始化预览中的交互
-    if (type === 'footer') {
-        // 页脚预览不需要特殊交互
-    }
 }
 
 function closeFullscreenPreview() {
-    document.getElementById('fullscreenPreviewModal').classList.remove('show');
+    document.getElementById('fullscreenPreviewModal')?.classList.remove('show');
 }
 
 function getFullscreenPreviewTitle(type) {
@@ -2063,8 +2158,8 @@ function saveCurrentSection(section) {
     const sectionData = {};
     switch(section) {
         case 'site-info':
-            const siteName = document.getElementById('siteName').value.trim();
-            const siteDescription = document.getElementById('siteDescription').value.trim();
+            const siteName = document.getElementById('siteName')?.value.trim();
+            const siteDescription = document.getElementById('siteDescription')?.value.trim();
             if (!siteName || !siteDescription) {
                 showResult('error', '输入错误', '请填写网站名称和描述');
                 return;
@@ -2072,15 +2167,15 @@ function saveCurrentSection(section) {
             sectionData.site = {
                 name: siteName,
                 description: siteDescription,
-                keywords: document.getElementById('siteKeywords').value.trim(),
-                adminEmail: document.getElementById('adminEmail').value.trim(),
+                keywords: document.getElementById('siteKeywords')?.value.trim() || '',
+                adminEmail: document.getElementById('adminEmail')?.value.trim() || '',
                 lastUpdated: new Date().toISOString()
             };
             break;
             
         case 'privacy':
-            const privacyTitle = document.getElementById('privacyTitle').value.trim();
-            const privacyContent = document.getElementById('privacyContent').value.trim();
+            const privacyTitle = document.getElementById('privacyTitle')?.value.trim();
+            const privacyContent = document.getElementById('privacyContent')?.value.trim();
             if (!privacyTitle || !privacyContent) {
                 showResult('error', '输入错误', '请填写页面标题和内容');
                 return;
@@ -2088,14 +2183,14 @@ function saveCurrentSection(section) {
             sectionData.privacy = {
                 title: privacyTitle,
                 content: privacyContent,
-                enabled: document.getElementById('privacyEnabled').checked,
+                enabled: document.getElementById('privacyEnabled')?.checked !== false,
                 lastUpdated: new Date().toISOString()
             };
             break;
             
         case 'terms':
-            const termsTitle = document.getElementById('termsTitle').value.trim();
-            const termsContent = document.getElementById('termsContent').value.trim();
+            const termsTitle = document.getElementById('termsTitle')?.value.trim();
+            const termsContent = document.getElementById('termsContent')?.value.trim();
             if (!termsTitle || !termsContent) {
                 showResult('error', '输入错误', '请填写页面标题和内容');
                 return;
@@ -2103,14 +2198,14 @@ function saveCurrentSection(section) {
             sectionData.terms = {
                 title: termsTitle,
                 content: termsContent,
-                enabled: document.getElementById('termsEnabled').checked,
+                enabled: document.getElementById('termsEnabled')?.checked !== false,
                 lastUpdated: new Date().toISOString()
             };
             break;
             
         case 'copyright':
-            const copyrightTitle = document.getElementById('copyrightTitle').value.trim();
-            const copyrightContent = document.getElementById('copyrightContent').value.trim();
+            const copyrightTitle = document.getElementById('copyrightTitle')?.value.trim();
+            const copyrightContent = document.getElementById('copyrightContent')?.value.trim();
             if (!copyrightTitle || !copyrightContent) {
                 showResult('error', '输入错误', '请填写页面标题和内容');
                 return;
@@ -2118,7 +2213,7 @@ function saveCurrentSection(section) {
             sectionData.copyright = {
                 title: copyrightTitle,
                 content: copyrightContent,
-                enabled: document.getElementById('copyrightEnabled').checked,
+                enabled: document.getElementById('copyrightEnabled')?.checked !== false,
                 lastUpdated: new Date().toISOString()
             };
             break;
@@ -2166,8 +2261,8 @@ function saveCurrentSection(section) {
             
         case 'footer':
             // 收集完整的页脚配置
-            const footerDesc = document.getElementById('footerDescription').value.trim();
-            const copyrightText = document.getElementById('footerCopyright').value.trim();
+            const footerDesc = document.getElementById('footerDescription')?.value.trim();
+            const copyrightText = document.getElementById('footerCopyright')?.value.trim();
             
             if (!footerDesc || !copyrightText) {
                 showResult('error', '输入错误', '请填写页脚描述和版权信息');
@@ -2214,19 +2309,11 @@ function saveCurrentSection(section) {
             
             // 收集社交链接
             const socialLinks = {
-                github: document.getElementById('githubUrl').value.trim(),
-                weibo: document.getElementById('weiboUrl').value.trim(),
-                zhihu: document.getElementById('zhihuUrl').value.trim(),
-                linkedin: document.getElementById('linkedinUrl').value.trim()
+                github: document.getElementById('githubUrl')?.value.trim() || '',
+                weibo: document.getElementById('weiboUrl')?.value.trim() || '',
+                zhihu: document.getElementById('zhihuUrl')?.value.trim() || '',
+                linkedin: document.getElementById('linkedinUrl')?.value.trim() || ''
             };
-            
-            // 验证非空的社交链接
-            ['github', 'weibo', 'zhihu', 'linkedin'].forEach(socialKey => {
-                if (socialLinks[socialKey] && !validateUrl({value: socialLinks[socialKey]})) {
-                    showResult('error', 'URL无效', `社交媒体链接 "${socialKey}" 无效`);
-                    throw new Error('无效URL');
-                }
-            });
             
             sectionData.footer = {
                 description: footerDesc,
@@ -2240,10 +2327,17 @@ function saveCurrentSection(section) {
     }
     
     // 显示确认弹窗
-    document.getElementById('confirmMessage').textContent = `确定要保存${getSectionName(section)}吗？`;
-    document.getElementById('confirmSaveBtn').dataset.section = section;
-    document.getElementById('confirmSaveBtn').dataset.sectionData = JSON.stringify(sectionData);
-    showModal('confirmModal');
+    const confirmMessage = document.getElementById('confirmMessage');
+    if (confirmMessage) {
+        confirmMessage.textContent = `确定要保存${getSectionName(section)}吗？`;
+    }
+    
+    const confirmSaveBtn = document.getElementById('confirmSaveBtn');
+    if (confirmSaveBtn) {
+        confirmSaveBtn.dataset.section = section;
+        confirmSaveBtn.dataset.sectionData = JSON.stringify(sectionData);
+        showModal('confirmModal');
+    }
 }
 
 // 执行保存
@@ -2253,15 +2347,20 @@ async function executeSave() {
         return;
     }
     
-    const section = this.dataset.section;
-    const sectionData = JSON.parse(this.dataset.sectionData);
+    const button = this;
+    const section = button.dataset.section;
+    if (!section) return;
+    
+    const sectionData = button.dataset.sectionData;
+    if (!sectionData) return;
+    
     isSaving = true;
     retryCount = 0;
     
     try {
         showLoading('正在保存配置...');
         // 更新当前配置数据
-        Object.assign(currentConfigData, sectionData);
+        Object.assign(currentConfigData, JSON.parse(sectionData));
         // 保存到Gist，带有重试机制
         await saveConfigToGistWithRetry(currentConfigData);
         hideLoading();
@@ -2295,22 +2394,13 @@ function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// 保存到Gist（使用代理绕过CORS限制）
+// 保存到Gist
 async function saveConfigToGist(configData) {
     try {
-        // 使用新的 CORS 代理
+        // 使用可靠的CORS代理
         const proxyUrl = 'https://corsproxy.io/?';
-        const encodedUrl = encodeURIComponent(CONFIG_GIST_URL);
-        
-        // 先获取现有Gist信息
-        const gistResponse = await fetch(`${proxyUrl}${encodedUrl}`, {
-            headers: {
-                'Authorization': `token ${token}`,
-                'Accept': 'application/vnd.github.v3+json'
-            }
-        });
-        
-        let gistExists = gistResponse.ok;
+        const cleanUrl = CONFIG_GIST_URL.trim();
+        const encodedUrl = encodeURIComponent(cleanUrl);
         
         // 准备Gist数据
         const gistData = {
@@ -2323,42 +2413,19 @@ async function saveConfigToGist(configData) {
         };
         
         // 发送请求
-        let updateResponse;
-        if (gistExists) {
-            // 更新现有Gist
-            updateResponse = await fetch(`${proxyUrl}${encodedUrl}`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `token ${token}`,
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(gistData)
-            });
-        } else {
-            // 创建新Gist
-            const createResponse = await fetch(`${proxyUrl}https%3A%2F%2Fapi.github.com%2Fgists`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `token ${token}`,
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(gistData)
-            });
-            
-            if (!createResponse.ok) {
-                const errorText = await createResponse.text();
-                console.error('GitHub API错误:', errorText);
-                throw new Error(`创建失败: ${createResponse.status} ${createResponse.statusText}`);
-            }
-            return true;
-        }
+        const response = await fetch(`${proxyUrl}${encodedUrl}`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `token ${token.trim()}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(gistData)
+        });
         
-        if (!updateResponse.ok) {
-            const errorText = await updateResponse.text();
-            console.error('GitHub API错误:', errorText);
-            throw new Error(`保存失败: ${updateResponse.status} ${updateResponse.statusText}`);
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`保存失败: ${response.status} ${response.statusText} - ${errorText}`);
         }
         
         return true;
@@ -2376,40 +2443,40 @@ async function backupConfig() {
         // 收集当前所有配置数据
         const backupData = {
             site: {
-                name: document.getElementById('siteName').value.trim(),
-                description: document.getElementById('siteDescription').value.trim(),
-                keywords: document.getElementById('siteKeywords').value.trim(),
-                adminEmail: document.getElementById('adminEmail').value.trim()
+                name: document.getElementById('siteName')?.value.trim() || '',
+                description: document.getElementById('siteDescription')?.value.trim() || '',
+                keywords: document.getElementById('siteKeywords')?.value.trim() || '',
+                adminEmail: document.getElementById('adminEmail')?.value.trim() || ''
             },
             privacy: {
-                title: document.getElementById('privacyTitle').value.trim(),
-                content: document.getElementById('privacyContent').value.trim(),
-                enabled: document.getElementById('privacyEnabled').checked
+                title: document.getElementById('privacyTitle')?.value.trim() || '',
+                content: document.getElementById('privacyContent')?.value.trim() || '',
+                enabled: document.getElementById('privacyEnabled')?.checked || false
             },
             terms: {
-                title: document.getElementById('termsTitle').value.trim(),
-                content: document.getElementById('termsContent').value.trim(),
-                enabled: document.getElementById('termsEnabled').checked
+                title: document.getElementById('termsTitle')?.value.trim() || '',
+                content: document.getElementById('termsContent')?.value.trim() || '',
+                enabled: document.getElementById('termsEnabled')?.checked || false
             },
             copyright: {
-                title: document.getElementById('copyrightTitle').value.trim(),
-                content: document.getElementById('copyrightContent').value.trim(),
-                enabled: document.getElementById('copyrightEnabled').checked
+                title: document.getElementById('copyrightTitle')?.value.trim() || '',
+                content: document.getElementById('copyrightContent')?.value.trim() || '',
+                enabled: document.getElementById('copyrightEnabled')?.checked || false
             },
             navigation: {
                 items: []
             },
             footer: {
-                description: document.getElementById('footerDescription').value.trim(),
+                description: document.getElementById('footerDescription')?.value.trim() || '',
                 quickLinks: [],
                 legalLinks: [],
                 social: {
-                    github: document.getElementById('githubUrl').value.trim(),
-                    weibo: document.getElementById('weiboUrl').value.trim(),
-                    zhihu: document.getElementById('zhihuUrl').value.trim(),
-                    linkedin: document.getElementById('linkedinUrl').value.trim()
+                    github: document.getElementById('githubUrl')?.value.trim() || '',
+                    weibo: document.getElementById('weiboUrl')?.value.trim() || '',
+                    zhihu: document.getElementById('zhihuUrl')?.value.trim() || '',
+                    linkedin: document.getElementById('linkedinUrl')?.value.trim() || ''
                 },
-                copyright: document.getElementById('footerCopyright').value.trim()
+                copyright: document.getElementById('footerCopyright')?.value.trim() || ''
             }
         };
         
@@ -2545,18 +2612,18 @@ function previewContent(type) {
     let title = '';
     switch(type) {
         case 'privacy':
-            content = document.getElementById('privacyContent').value;
-            title = document.getElementById('privacyTitle').value || '隐私政策';
+            content = document.getElementById('privacyContent')?.value;
+            title = document.getElementById('privacyTitle')?.value || '隐私政策';
             break;
             
         case 'terms':
-            content = document.getElementById('termsContent').value;
-            title = document.getElementById('termsTitle').value || '使用条款';
+            content = document.getElementById('termsContent')?.value;
+            title = document.getElementById('termsTitle')?.value || '使用条款';
             break;
             
         case 'copyright':
-            content = document.getElementById('copyrightContent').value;
-            title = document.getElementById('copyrightTitle').value || '版权声明';
+            content = document.getElementById('copyrightContent')?.value;
+            title = document.getElementById('copyrightTitle')?.value || '版权声明';
             break;
     }
     
@@ -2572,6 +2639,8 @@ function previewContent(type) {
 // 插入HTML标签
 function insertTag(textareaId, tag) {
     const textarea = document.getElementById(textareaId);
+    if (!textarea) return;
+    
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const selectedText = textarea.value.substring(start, end);
@@ -2621,6 +2690,8 @@ function insertTag(textareaId, tag) {
 // 文本格式化工具
 function formatText(textareaId, format) {
     const textarea = document.getElementById(textareaId);
+    if (!textarea) return;
+    
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const selectedText = textarea.value.substring(start, end);
@@ -2684,11 +2755,17 @@ function getSectionName(section) {
 
 // 弹窗控制函数
 function showModal(modalId) {
-    document.getElementById(modalId).classList.add('show');
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.add('show');
+    }
 }
 
 function hideModal(modalId) {
-    document.getElementById(modalId).classList.remove('show');
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('show');
+    }
 }
 
 function closeConfirmModal() {
@@ -2700,7 +2777,10 @@ function closeResultModal() {
 }
 
 function showLoading(message = '正在处理您的请求，请稍候...') {
-    document.getElementById('loadingMessage').textContent = message;
+    const loadingMessage = document.getElementById('loadingMessage');
+    if (loadingMessage) {
+        loadingMessage.textContent = message;
+    }
     showModal('loadingModal');
 }
 
@@ -2709,24 +2789,32 @@ function hideLoading() {
 }
 
 function showResult(type, title, message) {
-    const icon = document.getElementById('resultIcon');
-    if (type === 'success') {
-        icon.className = 'fas fa-check-circle';
-        icon.style.color = '#28a745';
-    } else if (type === 'error') {
-        icon.className = 'fas fa-exclamation-circle';
-        icon.style.color = '#dc3545';
-    } else {
-        icon.className = 'fas fa-info-circle';
-        icon.style.color = '#4a6fa5';
+    const resultIcon = document.getElementById('resultIcon');
+    const resultTitle = document.getElementById('resultTitle');
+    const resultMessage = document.getElementById('resultMessage');
+    
+    if (resultIcon) {
+        if (type === 'success') {
+            resultIcon.className = 'fas fa-check-circle';
+            resultIcon.style.color = '#28a745';
+        } else if (type === 'error') {
+            resultIcon.className = 'fas fa-exclamation-circle';
+            resultIcon.style.color = '#dc3545';
+        } else {
+            resultIcon.className = 'fas fa-info-circle';
+            resultIcon.style.color = '#4a6fa5';
+        }
     }
-    document.getElementById('resultTitle').textContent = title;
-    document.getElementById('resultMessage').textContent = message;
+    
+    if (resultTitle) resultTitle.textContent = title;
+    if (resultMessage) resultMessage.textContent = message;
+    
     showModal('resultModal');
 }
 
 // HTML转义辅助函数
 function escapeHtml(text) {
+    if (!text) return '';
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
