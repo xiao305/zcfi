@@ -1,4 +1,6 @@
-# zcfi
+# zcfi.cn/
+
+```
 zcfi.cn/
 ├── favicon/                     # 网站图标资源
 │   ├── favicon.svg
@@ -38,3 +40,4 @@ zcfi.cn/
 ├── privacy.html                 # ✅ 隐私政策页（需要更新，使用gist-renderer.js）
 ├── terms.html                   # ✅ 使用条款页（需要更新，使用gist-renderer.js）
 └── copyright.html               # ✅ 版权声明页（需要更新，使用gist-renderer.js）
+```
