@@ -26,6 +26,7 @@
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/components.css">
     
     <style>
         /* 首页特定样式 */
@@ -130,23 +131,8 @@
     </style>
 </head>
 <body>
-    <!-- 头部导航 -->
-    <header>
-        <div class="container">
-            <nav class="navbar">
-                <a href="/" class="logo">zcfi<span>.</span>cn</a>
-                <ul class="nav-links">
-                    <li><a href="/">首页</a></li>
-                    <li><a href="/portfolio">作品集</a></li>
-                    <li><a href="/blog">博客</a></li>
-                    <li><a href="/contact">联系我</a></li>
-                </ul>
-                <div class="mobile-menu-btn">
-                    <i class="fas fa-bars"></i>
-                </div>
-            </nav>
-        </div>
-    </header>
+    <!-- 头部导航容器，用于动态加载导航栏 -->
+    <div id="navbar-container"></div>
 
     <!-- 主内容 -->
     <main>
@@ -155,7 +141,7 @@
             <div class="container">
                 <h1>你好，我是<span style="color: var(--primary-color);">网站所有者</span></h1>
                 <p>欢迎来到我的个人空间。这里将展示我的作品、分享我的思考，记录我的学习与成长历程。</p>
-                <a href="/contact" class="cta-button">联系我</a>
+                <a href="https://zcfi.cn/contact.html" class="cta-button">联系我</a>
             </div>
         </section>
 
@@ -170,7 +156,7 @@
                     <div class="loading-message">加载精选作品中...</div>
                 </div>
                 <div style="text-align: center; margin-top: 40px;">
-                    <a href="/portfolio" class="cta-button">查看更多作品</a>
+                    <a href="https://zcfi.cn/portfolio.html" class="cta-button">查看更多作品</a>
                 </div>
             </div>
         </section>
@@ -186,61 +172,19 @@
                     <div class="loading-message">加载最新博客中...</div>
                 </div>
                 <div style="text-align: center; margin-top: 40px;">
-                    <a href="/blog" class="cta-button">查看更多文章</a>
+                    <a href="https://zcfi.cn/blog.html" class="cta-button">查看更多文章</a>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- 页脚 -->
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-about">
-                    <a href="/" class="footer-logo">zcfi<span>.</span>cn</a>
-                    <p>这是我的个人网站，用于展示作品、分享知识和记录成长。网站正在持续完善中，感谢您的访问。</p>
-                    <div class="social-links">
-                        <a href="https://github.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
-                        <a href="https://weibo.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-weibo"></i></a>
-                        <a href="https://zhihu.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-zhihu"></i></a>
-                        <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin"></i></a>
-                    </div>
-                </div>
-                <div class="footer-links">
-                    <h3 class="footer-heading">快速链接</h3>
-                    <ul>
-                        <li><a href="/">首页</a></li>
-                        <li><a href="/portfolio">作品集</a></li>
-                        <li><a href="/blog">博客</a></li>
-                        <li><a href="/contact">联系我</a></li>
-                    </ul>
-                </div>
-                <div class="footer-links">
-                    <h3 class="footer-heading">法律声明</h3>
-                    <ul>
-                        <li><a href="/privacy">隐私政策</a></li>
-                        <li><a href="/terms">使用条款</a></li>
-                        <li><a href="/copyright">版权声明</a></li>
-                    </ul>
-                </div>
-            </div>
-            
-            <!-- 合规声明区域 -->
-            <div class="compliance">
-                <p>© 2026 zcfi.cn 版权所有</p>
-                <p>本网站仅为个人作品展示与知识分享平台，所有内容均为个人观点，不代表任何组织立场。</p>
-                <div class="compliance-links">
-                    <a href="/privacy">隐私政策</a>
-                    <a href="/terms">使用条款</a>
-                    <a href="/copyright">版权声明</a>
-                    <a href="#">网站地图</a>
-                </div>
-            </div>
-        </div>
-    </footer>
+    <!-- 页脚容器，用于动态加载页脚 -->
+    <div id="footer-container"></div>
 
     <!-- JavaScript -->
     <script src="assets/js/main.js"></script>
+    <script src="assets/js/config-loader.js"></script>
+    <script src="assets/js/components.js"></script>
     
     <!-- 动态内容加载脚本 -->
     <script>
@@ -263,7 +207,23 @@
         };
         
         document.addEventListener('DOMContentLoaded', function() {
-            loadHomepageContent();
+            // 初始化组件加载
+            window.siteComponents.loadAllComponents().then(() => {
+                // 加载首页内容
+                loadHomepageContent();
+            }).catch(error => {
+                console.error('加载组件失败:', error);
+                // 即使组件加载失败，也尝试加载首页内容
+                loadHomepageContent();
+            });
+            
+            // 初始化网站配置
+            if (window.siteConfig) {
+                window.siteConfig.loadConfig().then(config => {
+                    // 更新页面元数据
+                    window.siteConfig.updatePageMetadata();
+                });
+            }
         });
         
         // 加载首页所有内容
@@ -313,7 +273,7 @@
                         <div class="blog-content">
                             <h3>${escapeHtml(post.title || '未命名文章')}</h3>
                             <p>${escapeHtml(post.excerpt || '文章摘要')}</p>
-                            <a href="${post.customUrl || `/blog/${post.id || ''}`}" class="read-more">阅读更多 →</a>
+                            <a href="${post.customUrl || `https://zcfi.cn/blog/${post.id || ''}`}" class="read-more">阅读更多 →</a>
                         </div>
                     </div>
                 `).join('');
