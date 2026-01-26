@@ -6,17 +6,17 @@
     <title>个人主页 | zcfi.cn</title>
     
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
-    <link rel="icon" type="image/png" sizes="96x96" href="favicon/favicon-96x96.png">
-    <link rel="icon" type="image/x-icon" href="favicon/favicon.ico">
-    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/svg+xml" href="./favicon/favicon.svg">
+    <link rel="icon" type="image/png" sizes="96x96" href="./favicon/favicon-96x96.png">
+    <link rel="icon" type="image/x-icon" href="./favicon/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="./favicon/apple-touch-icon.png">
     
     <!-- Web App Manifest -->
-    <link rel="manifest" href="favicon/site.webmanifest">
+    <link rel="manifest" href="./favicon/site.webmanifest">
     
     <!-- Web App Icons -->
-    <link rel="apple-touch-icon" sizes="192x192" href="favicon/web-app-manifest-192x192.png">
-    <link rel="apple-touch-icon" sizes="512x512" href="favicon/web-app-manifest-512x512.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="./favicon/web-app-manifest-192x192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="./favicon/web-app-manifest-512x512.png">
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -131,7 +131,7 @@
     </style>
 </head>
 <body>
-    <!-- 头部导航容器，用于动态加载导航栏 -->
+    <!-- 头部导航容器 -->
     <div id="navbar-container"></div>
 
     <!-- 主内容 -->
@@ -139,8 +139,8 @@
         <!-- 英雄区域 -->
         <section class="hero">
             <div class="container">
-                <h1>你好，我是<span style="color: var(--primary-color);">网站所有者</span></h1>
-                <p>欢迎来到我的个人空间。这里将展示我的作品、分享我的思考，记录我的学习与成长历程。</p>
+                <h1>你好，我是<span style="color: var(--primary-color);" id="siteOwnerName">网站所有者</span></h1>
+                <p id="siteDescriptionHero">欢迎来到我的个人空间。这里将展示我的作品、分享我的思考，记录我的学习与成长历程。</p>
                 <a href="contact.html" class="cta-button">联系我</a>
             </div>
         </section>
@@ -149,8 +149,8 @@
         <section style="background-color: #f9fafc; padding: 80px 0;">
             <div class="container">
                 <div class="section-title">
-                    <h2>精选作品</h2>
-                    <p>我的网页设计、开发项目和其他创作</p>
+                    <h2 id="portfolioTitle">精选作品</h2>
+                    <p id="portfolioDescription">我的网页设计、开发项目和其他创作</p>
                 </div>
                 <div id="featured-portfolio-container" class="featured-grid">
                     <div class="loading-message">加载精选作品中...</div>
@@ -165,8 +165,8 @@
         <section style="padding: 80px 0;">
             <div class="container">
                 <div class="section-title">
-                    <h2>最新博客</h2>
-                    <p>分享我的思考、学习心得和技术文章</p>
+                    <h2 id="blogTitle">最新博客</h2>
+                    <p id="blogDescription">分享我的思考、学习心得和技术文章</p>
                 </div>
                 <div id="latest-blog-container" class="featured-grid">
                     <div class="loading-message">加载最新博客中...</div>
@@ -178,16 +178,75 @@
         </section>
     </main>
 
-    <!-- 页脚容器，用于动态加载页脚 -->
+    <!-- 页脚容器 -->
     <div id="footer-container"></div>
 
-    <!-- JavaScript -->
-    <!-- 只需要加载components.js，它会自动加载导航栏和页脚 -->
-    <script src="assets/js/components.js"></script>
-    <script src="assets/js/main.js"></script>
+    <!-- Gist渲染器 -->
+    <script src="assets/js/gist-renderer.js"></script>
     
-    <!-- 首页自己的内容加载逻辑 -->
+    <!-- 页面初始化 -->
     <script>
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('首页开始加载内容...');
+            
+            // 确保GistRenderer已加载
+            if (!window.gistRenderer) {
+                console.error('gist-renderer.js未正确加载');
+                return;
+            }
+            
+            try {
+                // 加载网站配置并更新页面
+                const configData = await window.gistRenderer.loadConfig();
+                
+                // 更新页面标题
+                if (configData.site && configData.site.name) {
+                    document.title = `个人主页 | ${configData.site.name}`;
+                }
+                
+                // 更新英雄区域
+                const siteOwnerName = document.getElementById('siteOwnerName');
+                const siteDescriptionHero = document.getElementById('siteDescriptionHero');
+                
+                if (siteOwnerName && configData.site && configData.site.name) {
+                    siteOwnerName.textContent = configData.site.name;
+                }
+                
+                if (siteDescriptionHero && configData.site && configData.site.description) {
+                    siteDescriptionHero.textContent = configData.site.description;
+                }
+                
+                // 更新作品区域标题
+                const portfolioTitle = document.getElementById('portfolioTitle');
+                const portfolioDescription = document.getElementById('portfolioDescription');
+                
+                if (portfolioTitle && portfolioDescription) {
+                    portfolioTitle.textContent = '精选作品';
+                    portfolioDescription.textContent = '我的网页设计、开发项目和其他创作';
+                }
+                
+                // 更新博客区域标题
+                const blogTitle = document.getElementById('blogTitle');
+                const blogDescription = document.getElementById('blogDescription');
+                
+                if (blogTitle && blogDescription) {
+                    blogTitle.textContent = '最新博客';
+                    blogDescription.textContent = '分享我的思考、学习心得和技术文章';
+                }
+                
+                // 渲染导航栏和页脚
+                await window.gistRenderer.renderAll();
+                
+                // 加载首页特定内容（博客和作品集）
+                loadHomepageContent();
+                
+            } catch (error) {
+                console.error('初始化失败:', error);
+                showErrorFallback();
+            }
+        });
+        
         // Gist配置
         const BLOG_GIST_ID = '73cc78400c25eb9effed665e2c89843d';
         const PORTFOLIO_GIST_ID = '311b9a0a483aafc4314d17f577e859bb';
@@ -205,14 +264,6 @@
             'api': 'fas fa-server',
             'default': 'fas fa-laptop-code'
         };
-        
-        // 页面加载完成后执行
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('首页开始加载内容...');
-            
-            // 加载首页特定内容（博客和作品集）
-            loadHomepageContent();
-        });
         
         // 加载首页所有内容
         async function loadHomepageContent() {
@@ -399,8 +450,7 @@
                     ).join('')}
                     ${techStack.length > 3 ? 
                         `<span class="tech-tag" style="background: #f0f5ff; color: #666; padding: 3px 8px; border-radius: 12px; font-size: 11px;">+${techStack.length - 3}</span>` : 
-                        ''
-                    }
+                        ''}
                 </div>
             `;
         }
@@ -410,7 +460,7 @@
             const blogContainer = document.getElementById('latest-blog-container');
             const portfolioContainer = document.getElementById('featured-portfolio-container');
             
-            if (blogContainer.innerHTML.includes('加载中')) {
+            if (blogContainer && blogContainer.innerHTML.includes('加载中')) {
                 blogContainer.innerHTML = `
                     <div class="error-message">
                         <p>❌ 博客加载失败</p>
@@ -419,7 +469,7 @@
                 `;
             }
             
-            if (portfolioContainer.innerHTML.includes('加载中')) {
+            if (portfolioContainer && portfolioContainer.innerHTML.includes('加载中')) {
                 portfolioContainer.innerHTML = `
                     <div class="error-message">
                         <p>❌ 作品集加载失败</p>
@@ -437,5 +487,8 @@
             return div.innerHTML;
         }
     </script>
+    
+    <!-- 主交互脚本 -->
+    <script src="assets/js/main.js"></script>
 </body>
 </html>
