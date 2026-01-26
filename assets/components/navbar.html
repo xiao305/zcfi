@@ -1,14 +1,8 @@
 <header>
     <div class="container">
         <nav class="navbar">
-            <!-- 网站Logo将通过配置动态生成 -->
-            <a href="./" class="logo" id="siteLogo">
-                <!-- Logo将由JavaScript动态生成 -->
-            </a>
-            <!-- 导航菜单将通过配置动态生成 -->
-            <ul class="nav-links" id="mainNavLinks">
-                <!-- 导航链接将由JavaScript动态生成 -->
-            </ul>
+            <a href="#" class="logo" id="siteLogo"></a>
+            <ul class="nav-links" id="mainNavLinks"></ul>
             <div class="mobile-menu-btn">
                 <i class="fas fa-bars"></i>
             </div>
@@ -16,135 +10,147 @@
     </div>
 </header>
 
-<!-- 导航栏自己的配置加载和渲染逻辑 -->
 <script>
-// 导航栏自治逻辑 - 自己负责从Gist获取配置并渲染自己
-(function() {
-    const CONFIG_GIST_ID = '983bb7371ddb439a2fcbfb4885e34d14';
-    const CONFIG_RAW_URL = `https://gist.githubusercontent.com/xiao305/${CONFIG_GIST_ID}/raw/config.json`;
-    
-    // 等待DOM加载完成
-    document.addEventListener('DOMContentLoaded', function() {
-        // 延迟加载，确保页面稳定
-        setTimeout(loadAndRenderNavbar, 100);
-    });
-    
-    async function loadAndRenderNavbar() {
-        console.log('导航栏开始加载配置...');
+// 导航栏配置加载器
+class NavbarLoader {
+    constructor() {
+        this.CONFIG_GIST_ID = '983bb7371ddb439a2fcbfb4885e34d14';
+        this.configData = null;
+    }
+
+    async loadConfig() {
+        if (this.configData) return this.configData;
         
         try {
-            // 1. 从Gist加载网站配置
-            const timestamp = new Date().getTime();
-            const response = await fetch(`${CONFIG_RAW_URL}?t=${timestamp}`);
+            const timestamp = Date.now();
+            const response = await fetch(
+                `https://gist.githubusercontent.com/xiao305/${this.CONFIG_GIST_ID}/raw/config.json?t=${timestamp}`
+            );
             
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
             
-            const configData = await response.json();
-            console.log('导航栏配置加载成功:', configData);
-            
-            // 2. 渲染导航栏
-            renderNavbar(configData);
-            
-            // 3. 初始化移动端菜单
-            initMobileMenu();
-            
+            this.configData = await response.json();
+            return this.configData;
         } catch (error) {
             console.error('导航栏配置加载失败:', error);
-            // 不显示任何内容，保持空白
-            renderNavbar({});
+            return this.getEmptyConfig();
         }
     }
-    
-    // 渲染导航栏
-    function renderNavbar(configData) {
-        // 确保配置结构存在
-        const siteConfig = configData.site || {};
-        const navigationConfig = configData.navigation || {};
-        
-        // 更新Logo
-        const siteLogo = document.getElementById('siteLogo');
-        if (siteLogo) {
-            if (siteConfig.name) {
-                siteLogo.innerHTML = `${escapeHtml(siteConfig.name)}<span>.</span>cn`;
-            } else {
-                siteLogo.innerHTML = '';
-            }
-        }
-        
-        // 更新导航菜单
-        const navLinksContainer = document.getElementById('mainNavLinks');
-        if (navLinksContainer) {
-            if (navigationConfig.items && Array.isArray(navigationConfig.items)) {
-                // 获取当前页面路径
-                const currentPath = window.location.pathname;
-                const currentPage = currentPath.split('/').pop() || 'index.html';
-                
-                // 按order排序
-                const sortedNav = [...navigationConfig.items].sort((a, b) => (a.order || 0) - (b.order || 0));
-                
-                // 生成导航链接
-                const navLinksHTML = sortedNav.map(item => {
-                    // 判断是否为当前页面
-                    let isActive = false;
-                    const itemUrl = item.url || './';
-                    
-                    if (itemUrl === './' || itemUrl === 'index.html') {
-                        // 首页
-                        isActive = currentPage === 'index.html' || currentPage === '';
-                    } else if (currentPage === itemUrl || currentPage.includes(itemUrl.replace('.html', ''))) {
-                        // 其他页面
-                        isActive = true;
-                    }
-                    
-                    const activeClass = isActive ? 'active' : '';
-                    return `<li><a href="${escapeHtml(itemUrl)}" class="nav-link ${activeClass}">${escapeHtml(item.name || '未命名')}</a></li>`;
-                }).join('');
-                
-                // 更新DOM
-                navLinksContainer.innerHTML = navLinksHTML;
-            } else {
-                navLinksContainer.innerHTML = '';
-            }
-            
-            console.log('导航栏渲染完成');
-        }
+
+    getEmptyConfig() {
+        return {
+            site: { name: '' },
+            navigation: { items: [] }
+        };
     }
-    
-    // 初始化移动端菜单
-    function initMobileMenu() {
-        const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
-        const navLinks = document.querySelector('.nav-links');
-        
-        if (!mobileMenuBtn || !navLinks) return;
-        
-        mobileMenuBtn.addEventListener('click', function() {
-            navLinks.classList.toggle('active');
-            const icon = this.querySelector('i');
-            if (navLinks.classList.contains('active')) {
-                icon.className = 'fas fa-times';
-            } else {
-                icon.className = 'fas fa-bars';
-            }
-        });
-        
-        // 点击导航链接关闭菜单
-        navLinks.addEventListener('click', function(e) {
-            if (e.target.tagName === 'A') {
-                navLinks.classList.remove('active');
-                const icon = mobileMenuBtn.querySelector('i');
-                if (icon) icon.className = 'fas fa-bars';
-            }
-        });
-    }
-    
-    // HTML转义函数
-    function escapeHtml(text) {
+
+    escapeHtml(text) {
         if (!text) return '';
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
     }
-})();
+
+    normalizeUrl(url) {
+        if (!url) return '#';
+        if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('/')) {
+            return url;
+        }
+        return url;
+    }
+
+    isCurrentPage(url) {
+        if (!url) return false;
+        
+        const currentPath = window.location.pathname;
+        const currentPage = currentPath.split('/').pop() || 'index.html';
+        
+        // 移除可能的查询参数和哈希
+        const cleanUrl = url.split('?')[0].split('#')[0];
+        const cleanCurrent = currentPage.split('?')[0].split('#')[0];
+        
+        // 如果是首页
+        if (cleanUrl === './' || cleanUrl === 'index.html' || cleanUrl.endsWith('/')) {
+            return cleanCurrent === 'index.html' || cleanCurrent === '';
+        }
+        
+        // 检查是否匹配
+        return cleanCurrent === cleanUrl || cleanCurrent.includes(cleanUrl.replace('.html', ''));
+    }
+
+    async render() {
+        const config = await this.loadConfig();
+        const site = config.site || {};
+        const navigation = config.navigation || {};
+        
+        // 1. 更新Logo
+        const siteLogo = document.getElementById('siteLogo');
+        if (siteLogo) {
+            siteLogo.innerHTML = site.name ? 
+                `${this.escapeHtml(site.name)}<span>.</span>cn` : 
+                'zcfi<span>.</span>cn';
+            siteLogo.href = this.normalizeUrl('./');
+        }
+        
+        // 2. 更新导航菜单
+        const navLinksContainer = document.getElementById('mainNavLinks');
+        if (navLinksContainer) {
+            if (navigation.items && Array.isArray(navigation.items)) {
+                // 按order排序
+                const sortedItems = [...navigation.items].sort((a, b) => (a.order || 0) - (b.order || 0));
+                
+                const navHtml = sortedItems
+                    .filter(item => item && item.name && item.url)
+                    .map(item => {
+                        const isActive = this.isCurrentPage(item.url);
+                        const activeClass = isActive ? 'active' : '';
+                        return `
+                            <li>
+                                <a href="${this.normalizeUrl(item.url)}" class="nav-link ${activeClass}">
+                                    ${this.escapeHtml(item.name)}
+                                </a>
+                            </li>
+                        `;
+                    }).join('');
+                
+                navLinksContainer.innerHTML = navHtml;
+            } else {
+                navLinksContainer.innerHTML = '';
+            }
+        }
+        
+        // 3. 初始化移动端菜单
+        this.initMobileMenu();
+    }
+
+    initMobileMenu() {
+        const mobileBtn = document.querySelector('.mobile-menu-btn');
+        const navLinks = document.querySelector('.nav-links');
+        
+        if (!mobileBtn || !navLinks) return;
+        
+        mobileBtn.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            const icon = mobileBtn.querySelector('i');
+            icon.classList.toggle('fa-bars');
+            icon.classList.toggle('fa-times');
+        });
+
+        // 点击菜单项关闭菜单
+        navLinks.addEventListener('click', (e) => {
+            if (e.target.tagName === 'A') {
+                navLinks.classList.remove('active');
+                const icon = mobileBtn.querySelector('i');
+                icon.classList.add('fa-bars');
+                icon.classList.remove('fa-times');
+            }
+        });
+    }
+}
+
+// 初始化
+document.addEventListener('DOMContentLoaded', () => {
+    const navbarLoader = new NavbarLoader();
+    navbarLoader.render();
+});
 </script>
