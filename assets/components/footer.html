@@ -1,12 +1,16 @@
 <footer>
-    <div class="container" id="footer-container">
+    <div class="container">
         <div class="footer-content">
             <div class="footer-about">
                 <!-- 网站Logo和描述将通过配置动态生成 -->
                 <a href="./" class="footer-logo" id="footerSiteLogo">zcfi<span>.</span>cn</a>
                 <p id="siteDescriptionFooter">个人网站和作品展示平台</p>
                 <!-- 社交媒体链接将通过配置动态生成 -->
-                <div class="social-links" id="footerSocialLinks"></div>
+                <div class="social-links" id="footerSocialLinks">
+                    <!-- 默认社交链接 -->
+                    <a href="https://github.com" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>
+                    <a href="https://weibo.com" target="_blank" title="微博"><i class="fab fa-weibo"></i></a>
+                </div>
             </div>
             <div class="footer-links">
                 <h3 class="footer-heading">快速链接</h3>
@@ -42,97 +46,136 @@
     </div>
 </footer>
 
+<!-- 页脚自己的配置加载和渲染逻辑 -->
 <script>
-// 在DOM加载完成后初始化页脚
-document.addEventListener('DOMContentLoaded', function() {
-    // 检查是否已定义siteConfigLoader，如果没有则加载它
-    if (typeof window.siteConfig === 'undefined') {
-        const script = document.createElement('script');
-        script.src = '../assets/js/config-loader.js';
-        script.onload = function() {
-            initFooter();
-        };
-        document.head.appendChild(script);
-    } else {
-        initFooter();
+// 页脚自治逻辑 - 自己负责从Gist获取配置并渲染自己
+(function() {
+    const CONFIG_GIST_ID = '983bb7371ddb439a2fcbfb4885e34d14';
+    const CONFIG_RAW_URL = `https://gist.githubusercontent.com/xiao305/${CONFIG_GIST_ID}/raw/config.json`;
+    
+    // 等待DOM加载完成
+    document.addEventListener('DOMContentLoaded', function() {
+        // 延迟加载，确保页面稳定
+        setTimeout(loadAndRenderFooter, 150);
+    });
+    
+    async function loadAndRenderFooter() {
+        console.log('页脚开始加载配置...');
+        
+        try {
+            // 1. 从Gist加载网站配置
+            const timestamp = new Date().getTime();
+            const response = await fetch(`${CONFIG_RAW_URL}?t=${timestamp}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const configData = await response.json();
+            console.log('页脚配置加载成功:', configData);
+            
+            // 2. 渲染页脚
+            renderFooter(configData);
+            
+        } catch (error) {
+            console.error('页脚配置加载失败:', error);
+            // 保持默认页脚
+        }
     }
-});
-
-function initFooter() {
-    // 加载网站配置
-    window.siteConfig.loadConfig().then(config => {
+    
+    // 渲染页脚
+    function renderFooter(configData) {
         // 更新页脚Logo
         const footerLogo = document.getElementById('footerSiteLogo');
-        if (footerLogo && config.site) {
-            footerLogo.innerHTML = `${config.site.name}<span>.</span>cn`;
+        if (footerLogo && configData.site && configData.site.name) {
+            footerLogo.innerHTML = `${configData.site.name}<span>.</span>cn`;
         }
         
         // 更新页脚描述
         const footerDesc = document.getElementById('siteDescriptionFooter');
-        if (footerDesc && config.footer) {
-            footerDesc.textContent = config.footer.description || '个人网站和作品展示平台';
+        if (footerDesc && configData.footer && configData.footer.description) {
+            footerDesc.textContent = configData.footer.description;
         }
         
         // 更新版权信息
         const copyrightText = document.getElementById('copyrightText');
-        if (copyrightText && config.footer) {
-            copyrightText.innerHTML = config.footer.copyright || '© 2026 zcfi.cn 版权所有';
+        if (copyrightText && configData.footer && configData.footer.copyright) {
+            copyrightText.textContent = configData.footer.copyright;
         }
         
         // 更新快速链接
         const quickLinksContainer = document.getElementById('footerQuickLinks');
-        if (quickLinksContainer && config.footer && config.footer.quickLinks) {
-            const quickLinksHTML = config.footer.quickLinks.map(link => 
-                `<li><a href="${link.url}">${link.name}</a></li>`
+        if (quickLinksContainer && configData.footer && configData.footer.quickLinks) {
+            const quickLinksHTML = configData.footer.quickLinks.map(link => 
+                `<li><a href="${escapeHtml(link.url || './')}">${escapeHtml(link.name || '链接')}</a></li>`
             ).join('');
             quickLinksContainer.innerHTML = quickLinksHTML;
         }
         
         // 更新法律声明链接
         const legalLinksContainer = document.getElementById('footerLegalLinks');
-        if (legalLinksContainer && config.footer && config.footer.legalLinks) {
-            const legalLinksHTML = config.footer.legalLinks.map(link => 
-                `<li><a href="${link.url}">${link.name}</a></li>`
+        if (legalLinksContainer && configData.footer && configData.footer.legalLinks) {
+            const legalLinksHTML = configData.footer.legalLinks.map(link => 
+                `<li><a href="${escapeHtml(link.url || './')}">${escapeHtml(link.name || '声明')}</a></li>`
             ).join('');
             legalLinksContainer.innerHTML = legalLinksHTML;
         }
         
-        // 更新合规声明链接 (通常与法律声明相同)
+        // 更新合规声明链接
         const complianceLinksContainer = document.getElementById('complianceLinks');
-        if (complianceLinksContainer && config.footer && config.footer.legalLinks) {
-            const complianceLinksHTML = config.footer.legalLinks.map(link => 
-                `<a href="${link.url}">${link.name}</a>`
+        if (complianceLinksContainer && configData.footer && configData.footer.legalLinks) {
+            const complianceLinksHTML = configData.footer.legalLinks.map(link => 
+                `<a href="${escapeHtml(link.url || './')}">${escapeHtml(link.name || '声明')}</a>`
             ).join('');
             complianceLinksContainer.innerHTML = complianceLinksHTML;
         }
         
         // 更新社交媒体链接
         const socialLinksContainer = document.getElementById('footerSocialLinks');
-        if (socialLinksContainer && config.footer && config.footer.social) {
-            const socialLinks = config.footer.social;
-            const socialHTML = `
-                ${socialLinks.github && socialLinks.github.trim() !== '' ? 
-                    `<a href="${socialLinks.github}" target="_blank" rel="noopener noreferrer" title="GitHub">
-                        <i class="fab fa-github"></i>
-                    </a>` : ''}
-                ${socialLinks.weibo && socialLinks.weibo.trim() !== '' ? 
-                    `<a href="${socialLinks.weibo}" target="_blank" rel="noopener noreferrer" title="微博">
-                        <i class="fab fa-weibo"></i>
-                    </a>` : ''}
-                ${socialLinks.zhihu && socialLinks.zhihu.trim() !== '' ? 
-                    `<a href="${socialLinks.zhihu}" target="_blank" rel="noopener noreferrer" title="知乎">
-                        <i class="fab fa-zhihu"></i>
-                    </a>` : ''}
-                ${socialLinks.linkedin && socialLinks.linkedin.trim() !== '' ? 
-                    `<a href="${socialLinks.linkedin}" target="_blank" rel="noopener noreferrer" title="LinkedIn">
-                        <i class="fab fa-linkedin"></i>
-                    </a>` : ''}
-            `;
+        if (socialLinksContainer && configData.footer && configData.footer.social) {
+            const socialLinks = configData.footer.social;
+            let socialHTML = '';
+            
+            // GitHub链接
+            if (socialLinks.github && socialLinks.github.trim() !== '' && socialLinks.github !== 'https://example.com') {
+                socialHTML += `<a href="${escapeHtml(socialLinks.github)}" target="_blank" rel="noopener noreferrer" title="GitHub"><i class="fab fa-github"></i></a>`;
+            }
+            
+            // 微博链接
+            if (socialLinks.weibo && socialLinks.weibo.trim() !== '' && socialLinks.weibo !== 'https://example.com') {
+                socialHTML += `<a href="${escapeHtml(socialLinks.weibo)}" target="_blank" rel="noopener noreferrer" title="微博"><i class="fab fa-weibo"></i></a>`;
+            }
+            
+            // 知乎链接
+            if (socialLinks.zhihu && socialLinks.zhihu.trim() !== '' && socialLinks.zhihu !== 'https://example.com') {
+                socialHTML += `<a href="${escapeHtml(socialLinks.zhihu)}" target="_blank" rel="noopener noreferrer" title="知乎"><i class="fab fa-zhihu"></i></a>`;
+            }
+            
+            // LinkedIn链接
+            if (socialLinks.linkedin && socialLinks.linkedin.trim() !== '' && socialLinks.linkedin !== 'https://example.com') {
+                socialHTML += `<a href="${escapeHtml(socialLinks.linkedin)}" target="_blank" rel="noopener noreferrer" title="LinkedIn"><i class="fab fa-linkedin"></i></a>`;
+            }
+            
+            // 如果没有配置任何社交链接，保留默认
+            if (socialHTML === '') {
+                socialHTML = `
+                    <a href="https://github.com" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>
+                    <a href="https://weibo.com" target="_blank" title="微博"><i class="fab fa-weibo"></i></a>
+                `;
+            }
+            
             socialLinksContainer.innerHTML = socialHTML;
         }
-    }).catch(error => {
-        console.error('加载页脚配置失败:', error);
-        // 保持默认页脚
-    });
-}
+        
+        console.log('页脚渲染完成');
+    }
+    
+    // HTML转义函数
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+})();
 </script>
