@@ -160,45 +160,41 @@ color: white;
 .permission-name {
 font-weight: 500;
 }
-/* Token有效期提示样式 */
-.token-expiry-section {
+/* Token状态提示样式 */
+.token-status-section {
 margin-top: 20px;
 padding: 15px;
 border-radius: 8px;
 background: #e3f2fd;
 border: 1px solid #bbdefb;
 }
-.token-expiry-warning {
+.token-status-warning {
 background: #fff8e1;
 border-color: #ffecb3;
 }
-.token-expiry-alert {
+.token-status-alert {
 background: #ffebee;
 border-color: #ffcdd2;
 }
-.expiry-label {
+.status-label {
 font-weight: 600;
 margin-bottom: 5px;
 display: flex;
 align-items: center;
 gap: 8px;
 }
-.expiry-date {
-font-family: monospace;
-font-weight: 500;
+.status-message {
+font-size: 14px;
+line-height: 1.5;
 }
-.expiry-progress {
-height: 8px;
-background: #e9ecef;
-border-radius: 4px;
-margin-top: 10px;
-overflow: hidden;
+.status-good {
+color: #28a745;
 }
-.expiry-progress-bar {
-height: 100%;
-background: #4a6fa5;
-border-radius: 4px;
-transition: width 0.3s ease;
+.status-warning {
+color: #ffc107;
+}
+.status-bad {
+color: #dc3545;
 }
 /* 响应式调整 */
 @media (max-width: 768px) {
@@ -271,7 +267,7 @@ width: 100%;
 2. 基础功能需要勾选 <code>gist</code> 权限<br>
 3. 高级功能（如自动生成博客页面）需要额外勾选 <code>repo</code> 权限<br>
 4. Token格式：<code>ghp_xxxxxxxxxxxx</code><br>
-5. Token安全存储，切勿泄露
+5. <strong>安全提示：</strong> 建议为Token设置合理的有效期，定期更换
 </p>
 </div>
 </div>
@@ -302,28 +298,24 @@ width: 100%;
 <div class="permissions-section" id="permissionsList">
 <!-- 权限列表将在这里动态生成 -->
 </div>
-<!-- Token有效期信息显示区域 -->
-<div class="token-expiry-section" id="tokenExpirySection">
-<p class="expiry-label">
-<i class="fas fa-clock"></i> Token 有效期:
+<!-- Token状态信息显示区域 -->
+<div class="token-status-section" id="tokenStatusSection">
+<p class="status-label">
+<i class="fas fa-check-circle status-good"></i> <span id="statusTitle">Token 状态: 正常</span>
 </p>
-<p id="expiryDateDisplay" class="expiry-date">加载中...</p>
-<div class="expiry-progress">
-<div id="expiryProgressBar" class="expiry-progress-bar" style="width: 0%"></div>
-</div>
-<p id="expiryStatusMessage" style="margin-top: 8px; font-size: 13px; color: #6c757d;">
-正在检查Token有效期...
+<p class="status-message" id="statusMessage">
+Token 当前有效，可以正常使用所有授权功能。
 </p>
 </div>
 <p style="margin-top: 15px; font-weight: 500;">请注意：</p>
 <ul style="text-align: left; margin-top: 10px; margin-bottom: 20px;">
 <li>缺少<span style="color: #dc3545; font-weight: 600;">gist</span>权限将无法使用任何后台功能</li>
 <li>缺少<span style="color: #4a6fa5; font-weight: 600;">repo</span>权限将无法使用<span style="color: #4a6fa5;">自动生成博客页面</span>等高级功能</li>
-<li>Token有效期不足30天时将显示警告，不足7天时将显示严重警告</li>
+<li>Token 过期后需要重新生成并登录，<strong>建议定期更换 Token 以确保安全</strong></li>
 </ul>
 <p style="text-align: left; margin-top: 10px;">
-您可以在 <a href="https://github.com/settings/tokens" target="_blank" style="color: #4a6fa5; text-decoration: none;">GitHub Token设置</a> 
-中修改权限或创建新Token，然后重新登录。
+您可以在 <a href="https://github.com/settings/tokens" target="_blank" style="color: #4a6fa5; text-decoration: none;">GitHub Token设置页面</a> 
+查看Token有效期、修改权限或创建新Token。系统不会存储您的Token，每次登录都需要重新输入。
 </p>
 </div>
 <div class="modal-buttons">
@@ -336,7 +328,6 @@ width: 100%;
 let selectedModule = null;
 const BLOG_GIST_ID = '73cc78400c25eb9effed665e2c89843d';
 const GIST_URL = `https://api.github.com/gists/${BLOG_GIST_ID}`;
-const REPO_TEST_URL = 'https://api.github.com/user';
 const SCOPE_CHECK_URL = 'https://api.github.com';
 // 页面加载
 document.addEventListener('DOMContentLoaded', () => {
@@ -422,11 +413,10 @@ console.error('检查repo权限失败:', error);
 }
 return permissions;
 }
-// 检查Token有效期
-async function checkTokenExpiry(token) {
-// GitHub API不会直接返回token的有效期
-// 但我们可以通过尝试获取用户信息来间接验证token状态
+// 检查Token状态（是否有效）
+async function checkTokenStatus(token) {
 try {
+// 尝试获取用户信息来验证token状态
 const response = await fetch('https://api.github.com/user', {
 headers: {
 'Authorization': `token ${token}`,
@@ -434,60 +424,68 @@ headers: {
 }
 });
 if (!response.ok) {
-// Token可能已失效
+// Token无效或权限不足
 return {
 isValid: false,
-message: 'Token可能已失效或权限不足'
+status: 'invalid',
+message: `Token无效或权限不足。状态码: ${response.status} ${response.statusText}`
 };
 }
-// 尝试从响应头获取速率限制信息，这可以帮助判断token状态
+// 检查速率限制
 const rateLimitRemaining = response.headers.get('x-ratelimit-remaining');
 const rateLimitReset = response.headers.get('x-ratelimit-reset');
-if (rateLimitRemaining !== null && rateLimitReset !== null) {
+if (rateLimitRemaining !== null && parseInt(rateLimitRemaining) === 0) {
 const resetTime = new Date(parseInt(rateLimitReset) * 1000);
 const now = new Date();
-const hoursUntilReset = (resetTime - now) / (1000 * 60 * 60);
-if (parseInt(rateLimitRemaining) === 0 && hoursUntilReset > 0) {
+const minutesUntilReset = Math.ceil((resetTime - now) / (1000 * 60));
+if (minutesUntilReset > 0) {
 return {
 isValid: true,
-message: `Token暂时被速率限制，将在${Math.ceil(hoursUntilReset)}小时内恢复`
+status: 'rate_limited',
+message: `Token当前被速率限制，将在约${minutesUntilReset}分钟后恢复。请稍后再试或联系GitHub支持。`
 };
 }
 }
-// 由于GitHub API不直接返回token有效期
-// 我们提供一个提示，引导用户去GitHub查看
+// Token状态良好
 return {
 isValid: true,
-message: 'GitHub API不提供Token精确有效期。您可以在<a href="https://github.com/settings/tokens" target="_blank" style="color: #4a6fa5;">GitHub Token设置页面</a>查看并管理您的Token。'
+status: 'good',
+message: 'Token当前有效，可以正常使用所有授权功能。'
 };
 } catch (error) {
 console.error('检查Token状态失败:', error);
 return {
 isValid: false,
-message: '无法验证Token状态，可能已失效或网络问题'
+status: 'error',
+message: '无法验证Token状态，请检查网络连接或Token是否正确。'
 };
 }
 }
-// 生成Token有效期显示
-function renderTokenExpiryInfo(expiryInfo) {
-const expirySection = document.getElementById('tokenExpirySection');
-const dateDisplay = document.getElementById('expiryDateDisplay');
-const progressBar = document.getElementById('expiryProgressBar');
-const statusMessage = document.getElementById('expiryStatusMessage');
-if (!expiryInfo.isValid) {
-expirySection.className = 'token-expiry-section token-expiry-alert';
-dateDisplay.textContent = '无法确定';
-statusMessage.innerHTML = `<i class="fas fa-exclamation-triangle" style="color: #dc3545;"></i> ${expiryInfo.message}`;
-progressBar.style.width = '0%';
-return;
+// 渲染Token状态信息
+function renderTokenStatusInfo(statusInfo) {
+const statusSection = document.getElementById('tokenStatusSection');
+const statusTitle = document.getElementById('statusTitle');
+const statusMessage = document.getElementById('statusMessage');
+const statusIcon = statusSection.querySelector('.fa-check-circle');
+if (statusInfo.status === 'good') {
+statusSection.className = 'token-status-section';
+statusTitle.innerHTML = '<i class="fas fa-check-circle status-good"></i> Token 状态: 正常';
+statusMessage.className = 'status-message';
+statusMessage.innerHTML = statusInfo.message;
+statusIcon.className = 'fas fa-check-circle status-good';
+} else if (statusInfo.status === 'rate_limited') {
+statusSection.className = 'token-status-section token-status-warning';
+statusTitle.innerHTML = '<i class="fas fa-exclamation-triangle status-warning"></i> Token 状态: 速率限制';
+statusMessage.className = 'status-message status-warning';
+statusMessage.innerHTML = statusInfo.message;
+statusIcon.className = 'fas fa-exclamation-triangle status-warning';
+} else {
+statusSection.className = 'token-status-section token-status-alert';
+statusTitle.innerHTML = '<i class="fas fa-times-circle status-bad"></i> Token 状态: 无效';
+statusMessage.className = 'status-message status-bad';
+statusMessage.innerHTML = statusInfo.message;
+statusIcon.className = 'fas fa-times-circle status-bad';
 }
-// 由于无法获取精确有效期，显示提示信息
-expirySection.className = 'token-expiry-section';
-dateDisplay.innerHTML = '请在GitHub设置中查看';
-statusMessage.innerHTML = expiryInfo.message;
-// 显示一个"信息性"的进度条，不表示实际剩余时间
-progressBar.style.width = '70%';
-progressBar.style.background = '#17a2b8';
 }
 async function validateAndLogin() {
 const token = document.getElementById('token').value.trim();
@@ -511,11 +509,11 @@ throw new Error(`验证失败: ${response.status} ${response.statusText}`);
 closeModal();
 showLoadingModal('正在检查权限...');
 const permissions = await checkTokenPermissions(token);
-// 检查Token有效期
-const expiryInfo = await checkTokenExpiry(token);
+// 检查Token状态
+const statusInfo = await checkTokenStatus(token);
 closeModal();
 // 显示权限检查结果
-showPermissionsModal(permissions, expiryInfo);
+showPermissionsModal(permissions, statusInfo);
 // 保存token和选择的模块，等待用户确认
 sessionStorage.setItem('pending_admin_token', token);
 sessionStorage.setItem('pending_selected_module', selectedModule);
@@ -525,7 +523,7 @@ console.error('Token 验证失败:', error);
 showModal('验证失败', `Token 无效或无权限访问 Gist\n错误: ${error.message}`, 'error');
 }
 }
-function showPermissionsModal(permissions, expiryInfo) {
+function showPermissionsModal(permissions, statusInfo) {
 const permissionsList = document.getElementById('permissionsList');
 permissionsList.innerHTML = `
 <div class="permission-item">
@@ -541,11 +539,11 @@ ${permissions.repo ? '✓' : '✗'}
 <div class="permission-name">仓库 (repo) 权限: ${permissions.repo ? '<span style="color: #28a745;">已授权</span>' : '<span style="color: #dc3545;">未授权</span>'}</div>
 </div>
 <p style="margin-top: 15px; font-size: 13px; color: #6c757d;">
-提示：权限检查基于 GitHub API 返回的 Token 作用域信息，确保准确性。
+提示：权限检查基于 GitHub API 返回的 Token 作用域信息。
 </p>
 `;
-// 渲染Token有效期信息
-renderTokenExpiryInfo(expiryInfo);
+// 渲染Token状态信息
+renderTokenStatusInfo(statusInfo);
 document.getElementById('permissionsModal').classList.add('show');
 }
 function closePermissionsModal() {
@@ -638,6 +636,12 @@ sessionStorage.removeItem('admin_verified');
 sessionStorage.removeItem('admin_permissions');
 sessionStorage.removeItem('selected_module');
 // 清除输入框
+if (document.getElementById('token')) {
+document.getElementById('token').value = '';
+}
+});
+// 页面加载时清空输入框
+window.addEventListener('load', () => {
 if (document.getElementById('token')) {
 document.getElementById('token').value = '';
 }
