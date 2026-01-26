@@ -141,7 +141,7 @@
             <div class="container">
                 <h1>你好，我是<span style="color: var(--primary-color);">网站所有者</span></h1>
                 <p>欢迎来到我的个人空间。这里将展示我的作品、分享我的思考，记录我的学习与成长历程。</p>
-                <a href="https://zcfi.cn/contact.html" class="cta-button">联系我</a>
+                <a href="contact.html" class="cta-button">联系我</a>
             </div>
         </section>
 
@@ -156,7 +156,7 @@
                     <div class="loading-message">加载精选作品中...</div>
                 </div>
                 <div style="text-align: center; margin-top: 40px;">
-                    <a href="https://zcfi.cn/portfolio.html" class="cta-button">查看更多作品</a>
+                    <a href="portfolio.html" class="cta-button">查看更多作品</a>
                 </div>
             </div>
         </section>
@@ -172,7 +172,7 @@
                     <div class="loading-message">加载最新博客中...</div>
                 </div>
                 <div style="text-align: center; margin-top: 40px;">
-                    <a href="https://zcfi.cn/blog.html" class="cta-button">查看更多文章</a>
+                    <a href="blog.html" class="cta-button">查看更多文章</a>
                 </div>
             </div>
         </section>
@@ -182,19 +182,19 @@
     <div id="footer-container"></div>
 
     <!-- JavaScript -->
-    <script src="assets/js/main.js"></script>
-    <script src="assets/js/config-loader.js"></script>
+    <!-- 只需要加载components.js，它会自动加载导航栏和页脚 -->
     <script src="assets/js/components.js"></script>
+    <script src="assets/js/main.js"></script>
     
-    <!-- 动态内容加载脚本 -->
+    <!-- 首页自己的内容加载逻辑 -->
     <script>
         // Gist配置
         const BLOG_GIST_ID = '73cc78400c25eb9effed665e2c89843d';
         const PORTFOLIO_GIST_ID = '311b9a0a483aafc4314d17f577e859bb';
         
         // 页面配置
-        const MAX_BLOG_POSTS = 4; // 首页显示的博客数量
-        const MAX_PORTFOLIO_ITEMS = 4; // 首页显示的作品数量
+        const MAX_BLOG_POSTS = 4;
+        const MAX_PORTFOLIO_ITEMS = 4;
         
         // 图标映射
         const portfolioIcons = {
@@ -206,24 +206,12 @@
             'default': 'fas fa-laptop-code'
         };
         
+        // 页面加载完成后执行
         document.addEventListener('DOMContentLoaded', function() {
-            // 初始化组件加载
-            window.siteComponents.loadAllComponents().then(() => {
-                // 加载首页内容
-                loadHomepageContent();
-            }).catch(error => {
-                console.error('加载组件失败:', error);
-                // 即使组件加载失败，也尝试加载首页内容
-                loadHomepageContent();
-            });
+            console.log('首页开始加载内容...');
             
-            // 初始化网站配置
-            if (window.siteConfig) {
-                window.siteConfig.loadConfig().then(config => {
-                    // 更新页面元数据
-                    window.siteConfig.updatePageMetadata();
-                });
-            }
+            // 加载首页特定内容（博客和作品集）
+            loadHomepageContent();
         });
         
         // 加载首页所有内容
@@ -233,6 +221,7 @@
                     loadLatestBlog(),
                     loadFeaturedPortfolio()
                 ]);
+                console.log('首页内容加载完成');
             } catch (error) {
                 console.error('加载首页内容失败:', error);
                 showErrorFallback();
@@ -253,7 +242,7 @@
                 
                 const data = await response.json();
                 
-                // 兼容数据格式：可能是数组或对象
+                // 兼容数据格式
                 const blogPosts = Array.isArray(data) ? data : (data.blog || []);
                 
                 // 过滤已发布的文章并按时间排序
@@ -273,7 +262,7 @@
                         <div class="blog-content">
                             <h3>${escapeHtml(post.title || '未命名文章')}</h3>
                             <p>${escapeHtml(post.excerpt || '文章摘要')}</p>
-                            <a href="${post.customUrl || `https://zcfi.cn/blog/${post.id || ''}`}" class="read-more">阅读更多 →</a>
+                            <a href="${post.customUrl || `blog/${post.id || ''}`}" class="read-more">阅读更多 →</a>
                         </div>
                     </div>
                 `).join('');
@@ -289,7 +278,7 @@
             }
         }
         
-        // 加载精选作品 - 根据后台设置显示
+        // 加载精选作品
         async function loadFeaturedPortfolio() {
             const container = document.getElementById('featured-portfolio-container');
             
@@ -308,16 +297,13 @@
                 let featuredItems = [];
                 
                 if (Array.isArray(portfolioData)) {
-                    // 数据是数组格式
                     portfolioItems = portfolioData;
                     
-                    // 获取被标记为featured的项目
                     featuredItems = portfolioItems
                         .filter(item => item.featured === true)
                         .sort((a, b) => (a.featuredOrder || 0) - (b.featuredOrder || 0))
                         .slice(0, MAX_PORTFOLIO_ITEMS);
                     
-                    // 如果featured项目不足，用其他已发布项目补足
                     if (featuredItems.length < MAX_PORTFOLIO_ITEMS) {
                         const otherItems = portfolioItems
                             .filter(item => item.featured !== true && (item.status === 'published' || !item.status))
@@ -325,24 +311,20 @@
                         featuredItems = featuredItems.concat(otherItems);
                     }
                 } else {
-                    // 数据是对象格式
                     portfolioItems = portfolioData.projects || [];
                     
-                    // 优先使用独立的featured数组
                     if (portfolioData.featured && Array.isArray(portfolioData.featured)) {
                         const featuredIds = portfolioData.featured.slice(0, MAX_PORTFOLIO_ITEMS);
                         featuredItems = featuredIds.map(id => 
                             portfolioItems.find(item => item.id === id)
                         ).filter(Boolean);
                     } else {
-                        // 如果没有独立的featured数组，使用项目的featured属性
                         featuredItems = portfolioItems
                             .filter(item => item.featured === true && (item.status === 'published' || !item.status))
                             .sort((a, b) => (a.featuredOrder || 0) - (b.featuredOrder || 0))
                             .slice(0, MAX_PORTFOLIO_ITEMS);
                     }
                     
-                    // 如果featured项目不足，用其他已发布项目补足
                     if (featuredItems.length < MAX_PORTFOLIO_ITEMS) {
                         const otherItems = portfolioItems
                             .filter(item => item.featured !== true && (item.status === 'published' || !item.status))
