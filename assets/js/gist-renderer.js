@@ -28,7 +28,7 @@ class GistRenderer {
     getDefaultConfig() {
         return {
             site: {
-                name: 'zcfi.cn',
+                name: 'zcfi',
                 description: '个人网站和作品展示平台'
             },
             navigation: {
@@ -68,6 +68,30 @@ class GistRenderer {
         return div.innerHTML;
     }
 
+    // 生成Logo HTML - 修复版
+    generateLogoHtml(siteName) {
+        if (!siteName || siteName.trim() === '') {
+            return 'zcfi<span>.</span>cn';
+        }
+        
+        let nameWithoutExtension = siteName;
+        
+        // 如果以 .cn 结尾，移除 .cn
+        if (nameWithoutExtension.toLowerCase().endsWith('.cn')) {
+            nameWithoutExtension = nameWithoutExtension.slice(0, -3);
+        }
+        
+        // 移除所有点
+        nameWithoutExtension = nameWithoutExtension.replace(/\./g, '').trim();
+        
+        // 如果没有内容了，使用默认
+        if (!nameWithoutExtension) {
+            nameWithoutExtension = 'zcfi';
+        }
+        
+        return `${this.escapeHtml(nameWithoutExtension)}<span>.</span>cn`;
+    }
+
     normalizeUrl(url) {
         if (!url) return '#';
         if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('/')) {
@@ -88,10 +112,8 @@ class GistRenderer {
         const site = config.site || {};
         const navigation = config.navigation || {};
 
-        // 生成导航栏HTML
-        const logoHtml = site.name ? 
-            `${this.escapeHtml(site.name)}<span>.</span>cn` : 
-            'zcfi<span>.</span>cn';
+        // 生成导航栏HTML - 使用修复的Logo生成
+        const logoHtml = this.generateLogoHtml(site.name);
 
         // 获取当前页面路径
         const currentPath = window.location.pathname;
@@ -164,10 +186,8 @@ class GistRenderer {
         const site = config.site || {};
         const footer = config.footer || {};
 
-        // 生成页脚HTML
-        const logoHtml = site.name ? 
-            `${this.escapeHtml(site.name)}<span>.</span>cn` : 
-            'zcfi<span>.</span>cn';
+        // 生成页脚HTML - 使用修复的Logo生成
+        const logoHtml = this.generateLogoHtml(site.name);
 
         // 快速链接
         let quickLinksHtml = '';
@@ -242,7 +262,7 @@ class GistRenderer {
                         </div>
                     </div>
                     <div class="compliance">
-                        <p>${this.escapeHtml(footer.copyright || `© ${new Date().getFullYear()} zcfi.cn 版权所有`)}</p>
+                        <p>${this.escapeHtml(footer.copyright || `© ${new Date().getFullYear()} ${site.name || 'zcfi.cn'} 版权所有`)}</p>
                         <div class="compliance-links">
                             ${complianceLinksHtml}
                         </div>
