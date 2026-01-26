@@ -3,44 +3,37 @@
         <div class="footer-content">
             <div class="footer-about">
                 <!-- 网站Logo和描述将通过配置动态生成 -->
-                <a href="./" class="footer-logo" id="footerSiteLogo">zcfi<span>.</span>cn</a>
-                <p id="siteDescriptionFooter">个人网站和作品展示平台</p>
+                <a href="./" class="footer-logo" id="footerSiteLogo">
+                    <!-- Logo将由JavaScript动态生成 -->
+                </a>
+                <p id="siteDescriptionFooter"></p>
                 <!-- 社交媒体链接将通过配置动态生成 -->
                 <div class="social-links" id="footerSocialLinks">
-                    <!-- 默认社交链接 -->
-                    <a href="https://github.com" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>
-                    <a href="https://weibo.com" target="_blank" title="微博"><i class="fab fa-weibo"></i></a>
+                    <!-- 社交链接将由JavaScript动态生成 -->
                 </div>
             </div>
             <div class="footer-links">
                 <h3 class="footer-heading">快速链接</h3>
                 <!-- 快速链接将通过配置动态生成 -->
                 <ul id="footerQuickLinks">
-                    <li><a href="./">首页</a></li>
-                    <li><a href="portfolio.html">作品集</a></li>
-                    <li><a href="blog.html">博客</a></li>
-                    <li><a href="contact.html">联系我</a></li>
+                    <!-- 链接将由JavaScript动态生成 -->
                 </ul>
             </div>
             <div class="footer-links">
                 <h3 class="footer-heading">法律声明</h3>
                 <!-- 法律声明链接将通过配置动态生成 -->
                 <ul id="footerLegalLinks">
-                    <li><a href="privacy.html">隐私政策</a></li>
-                    <li><a href="terms.html">使用条款</a></li>
-                    <li><a href="copyright.html">版权声明</a></li>
+                    <!-- 链接将由JavaScript动态生成 -->
                 </ul>
             </div>
         </div>
         
         <div class="compliance">
             <!-- 版权信息将通过配置动态生成 -->
-            <p id="copyrightText">© 2026 zcfi.cn 版权所有</p>
+            <p id="copyrightText"></p>
             <!-- 合规声明链接将通过配置动态生成 -->
             <div class="compliance-links" id="complianceLinks">
-                <a href="privacy.html">隐私政策</a>
-                <a href="terms.html">使用条款</a>
-                <a href="copyright.html">版权声明</a>
+                <!-- 链接将由JavaScript动态生成 -->
             </div>
         </div>
     </div>
@@ -79,61 +72,96 @@
             
         } catch (error) {
             console.error('页脚配置加载失败:', error);
-            // 保持默认页脚
+            // 不显示任何内容，保持空白
+            renderFooter({});
         }
     }
     
     // 渲染页脚
     function renderFooter(configData) {
+        // 确保配置结构存在
+        const siteConfig = configData.site || {};
+        const footerConfig = configData.footer || {};
+        
         // 更新页脚Logo
         const footerLogo = document.getElementById('footerSiteLogo');
-        if (footerLogo && configData.site && configData.site.name) {
-            footerLogo.innerHTML = `${configData.site.name}<span>.</span>cn`;
+        if (footerLogo) {
+            if (siteConfig.name) {
+                footerLogo.innerHTML = `${escapeHtml(siteConfig.name)}<span>.</span>cn`;
+            } else {
+                footerLogo.innerHTML = '';
+            }
         }
         
         // 更新页脚描述
         const footerDesc = document.getElementById('siteDescriptionFooter');
-        if (footerDesc && configData.footer && configData.footer.description) {
-            footerDesc.textContent = configData.footer.description;
+        if (footerDesc) {
+            if (footerConfig.description) {
+                footerDesc.textContent = footerConfig.description;
+            } else {
+                footerDesc.textContent = '';
+            }
         }
         
         // 更新版权信息
         const copyrightText = document.getElementById('copyrightText');
-        if (copyrightText && configData.footer && configData.footer.copyright) {
-            copyrightText.textContent = configData.footer.copyright;
+        if (copyrightText) {
+            if (footerConfig.copyright) {
+                copyrightText.textContent = footerConfig.copyright;
+            } else {
+                copyrightText.textContent = '';
+            }
         }
         
         // 更新快速链接
         const quickLinksContainer = document.getElementById('footerQuickLinks');
-        if (quickLinksContainer && configData.footer && configData.footer.quickLinks) {
-            const quickLinksHTML = configData.footer.quickLinks.map(link => 
-                `<li><a href="${escapeHtml(link.url || './')}">${escapeHtml(link.name || '链接')}</a></li>`
-            ).join('');
-            quickLinksContainer.innerHTML = quickLinksHTML;
+        if (quickLinksContainer) {
+            if (footerConfig.quickLinks && Array.isArray(footerConfig.quickLinks)) {
+                const quickLinksHTML = footerConfig.quickLinks
+                    .filter(link => link && link.name && link.url)
+                    .map(link => 
+                        `<li><a href="${escapeHtml(link.url)}">${escapeHtml(link.name)}</a></li>`
+                    ).join('');
+                quickLinksContainer.innerHTML = quickLinksHTML;
+            } else {
+                quickLinksContainer.innerHTML = '';
+            }
         }
         
         // 更新法律声明链接
         const legalLinksContainer = document.getElementById('footerLegalLinks');
-        if (legalLinksContainer && configData.footer && configData.footer.legalLinks) {
-            const legalLinksHTML = configData.footer.legalLinks.map(link => 
-                `<li><a href="${escapeHtml(link.url || './')}">${escapeHtml(link.name || '声明')}</a></li>`
-            ).join('');
-            legalLinksContainer.innerHTML = legalLinksHTML;
+        if (legalLinksContainer) {
+            if (footerConfig.legalLinks && Array.isArray(footerConfig.legalLinks)) {
+                const legalLinksHTML = footerConfig.legalLinks
+                    .filter(link => link && link.name && link.url)
+                    .map(link => 
+                        `<li><a href="${escapeHtml(link.url)}">${escapeHtml(link.name)}</a></li>`
+                    ).join('');
+                legalLinksContainer.innerHTML = legalLinksHTML;
+            } else {
+                legalLinksContainer.innerHTML = '';
+            }
         }
         
         // 更新合规声明链接
         const complianceLinksContainer = document.getElementById('complianceLinks');
-        if (complianceLinksContainer && configData.footer && configData.footer.legalLinks) {
-            const complianceLinksHTML = configData.footer.legalLinks.map(link => 
-                `<a href="${escapeHtml(link.url || './')}">${escapeHtml(link.name || '声明')}</a>`
-            ).join('');
-            complianceLinksContainer.innerHTML = complianceLinksHTML;
+        if (complianceLinksContainer) {
+            if (footerConfig.legalLinks && Array.isArray(footerConfig.legalLinks)) {
+                const complianceLinksHTML = footerConfig.legalLinks
+                    .filter(link => link && link.name && link.url)
+                    .map(link => 
+                        `<a href="${escapeHtml(link.url)}">${escapeHtml(link.name)}</a>`
+                    ).join('');
+                complianceLinksContainer.innerHTML = complianceLinksHTML;
+            } else {
+                complianceLinksContainer.innerHTML = '';
+            }
         }
         
         // 更新社交媒体链接
         const socialLinksContainer = document.getElementById('footerSocialLinks');
-        if (socialLinksContainer && configData.footer && configData.footer.social) {
-            const socialLinks = configData.footer.social;
+        if (socialLinksContainer) {
+            const socialLinks = footerConfig.social || {};
             let socialHTML = '';
             
             // GitHub链接
@@ -154,14 +182,6 @@
             // LinkedIn链接
             if (socialLinks.linkedin && socialLinks.linkedin.trim() !== '' && socialLinks.linkedin !== 'https://example.com') {
                 socialHTML += `<a href="${escapeHtml(socialLinks.linkedin)}" target="_blank" rel="noopener noreferrer" title="LinkedIn"><i class="fab fa-linkedin"></i></a>`;
-            }
-            
-            // 如果没有配置任何社交链接，保留默认
-            if (socialHTML === '') {
-                socialHTML = `
-                    <a href="https://github.com" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>
-                    <a href="https://weibo.com" target="_blank" title="微博"><i class="fab fa-weibo"></i></a>
-                `;
             }
             
             socialLinksContainer.innerHTML = socialHTML;
