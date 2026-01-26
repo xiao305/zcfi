@@ -199,6 +199,8 @@ padding: 30px 20px;
 <div class="login-container">
 <a href="https://zcfi.cn" class="login-logo">zcfi<span>.</span>cn</a>
 <h2 class="login-title"><i class="fas fa-lock"></i> 管理后台登录</h2>
+<!-- 将密码字段包含在表单中 -->
+<form id="loginForm">
 <div class="token-input">
 <input type="password" id="token" placeholder="请输入 GitHub Personal Access Token (ghp_xxx...)" autocomplete="off">
 </div>
@@ -239,6 +241,7 @@ padding: 30px 20px;
 <button class="login-btn" id="enterBtn" disabled>
 <i class="fas fa-sign-in-alt"></i> 进入管理
 </button>
+</form>
 <!-- Token使用说明 -->
 <div style="margin-top: 25px; padding: 15px; background: #f8f9fa; border-radius: 8px; font-size: 14px; color: #6c757d;">
 <p style="margin-bottom: 8px;"><i class="fas fa-info-circle" style="color: #4a6fa5;"></i> <strong>Token 说明：</strong></p>
@@ -307,12 +310,23 @@ let selectedModule = null;
 const BLOG_GIST_ID = '73cc78400c25eb9effed665e2c89843d';
 const GIST_URL = `https://api.github.com/gists/${BLOG_GIST_ID}`;
 const REPO_URL = 'https://api.github.com/user/repos'; // 用于检查repo权限
+
 // 页面加载
 document.addEventListener('DOMContentLoaded', () => {
 setupEventListeners();
 loadHistory();
 });
+
 function setupEventListeners() {
+// 阻止表单默认提交
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+e.preventDefault();
+// 如果按钮可用且已选择模块，执行登录操作
+if (!document.getElementById('enterBtn').disabled && selectedModule) {
+validateAndLogin();
+}
+});
+
 // 模块选择
 document.querySelectorAll('.module-card').forEach(card => {
 card.addEventListener('click', function() {
@@ -324,16 +338,21 @@ updateEnterButton();
 highlightSelectedModule();
 });
 });
+
 // Token 输入
 document.getElementById('token').addEventListener('input', updateEnterButton);
+
 // 进入按钮
 document.getElementById('enterBtn').addEventListener('click', validateAndLogin);
+
 // 弹窗按钮
 document.getElementById('modalConfirmBtn').addEventListener('click', closeModal);
 document.getElementById('modalCancelBtn').addEventListener('click', closeModal);
+
 // 权限弹窗按钮
 document.getElementById('permissionsCancelBtn').addEventListener('click', closePermissionsModal);
 document.getElementById('permissionsConfirmBtn').addEventListener('click', confirmPermissionsAndNavigate);
+
 // 历史记录点击
 document.getElementById('historyList').addEventListener('click', function(e) {
 if (e.target.closest('.history-item')) {
@@ -341,6 +360,7 @@ const historyId = e.target.closest('.history-item').dataset.id;
 useHistory(historyId);
 }
 });
+
 // 点击外部取消选中
 document.addEventListener('click', function(e) {
 if (!e.target.closest('.module-card') && !e.target.closest('#enterBtn')) {
@@ -350,21 +370,25 @@ updateEnterButton();
 }
 });
 }
+
 function updateEnterButton() {
 const token = document.getElementById('token').value.trim();
 const btn = document.getElementById('enterBtn');
 btn.disabled = !(token && selectedModule);
 }
+
 function highlightSelectedModule() {
 // 可以在这里添加额外的视觉效果
 console.log('已选择模块:', selectedModule);
 }
+
 // 检查Token权限
 async function checkTokenPermissions(token) {
 const permissions = {
 gist: false,
 repo: false
 };
+
 try {
 // 检查gist权限 - 尝试获取当前Gist
 const gistResponse = await fetch(GIST_URL, {
@@ -377,6 +401,7 @@ permissions.gist = gistResponse.ok;
 } catch (error) {
 console.error('检查gist权限失败:', error);
 }
+
 try {
 // 检查repo权限 - 尝试获取用户仓库列表
 const repoResponse = await fetch(REPO_URL, {
@@ -389,15 +414,19 @@ permissions.repo = repoResponse.ok;
 } catch (error) {
 console.error('检查repo权限失败:', error);
 }
+
 return permissions;
 }
+
 async function validateAndLogin() {
 const token = document.getElementById('token').value.trim();
 if (!token.startsWith('ghp_')) {
 showModal('错误', 'Token 必须以 "ghp_" 开头', 'error');
 return;
 }
+
 showLoadingModal('正在验证 Token...');
+
 try {
 // 首先验证Token基本有效性
 const response = await fetch(GIST_URL, {
@@ -406,26 +435,30 @@ headers: {
 'Accept': 'application/vnd.github.v3+json'
 }
 });
+
 if (!response.ok) {
 throw new Error(`验证失败: ${response.status} ${response.statusText}`);
 }
+
 // 验证成功，检查详细权限
 closeModal();
 showLoadingModal('正在检查权限...');
 const permissions = await checkTokenPermissions(token);
 closeModal();
+
 // 显示权限检查结果
 showPermissionsModal(permissions);
+
 // 保存token和选择的模块，等待用户确认
 sessionStorage.setItem('pending_admin_token', token);
 sessionStorage.setItem('pending_selected_module', selectedModule);
 sessionStorage.setItem('token_permissions', JSON.stringify(permissions));
 } catch (error) {
 console.error('Token 验证失败:', error);
-showModal('验证失败', `Token 无效或无权限访问 Gist
-错误: ${error.message}`, 'error');
+showModal('验证失败', `Token 无效或无权限访问 Gist\n错误: ${error.message}`, 'error');
 }
 }
+
 function showPermissionsModal(permissions) {
 const permissionsList = document.getElementById('permissionsList');
 permissionsList.innerHTML = `
@@ -444,20 +477,24 @@ ${permissions.repo ? '✓' : '✗'}
 `;
 document.getElementById('permissionsModal').classList.add('show');
 }
+
 function closePermissionsModal() {
 document.getElementById('permissionsModal').classList.remove('show');
 }
+
 function confirmPermissionsAndNavigate() {
 closePermissionsModal();
 const token = sessionStorage.getItem('pending_admin_token');
 const module = sessionStorage.getItem('pending_selected_module');
 const permissions = JSON.parse(sessionStorage.getItem('token_permissions') || '{}');
+
 // 保存验证信息
 sessionStorage.setItem('admin_token', token);
 sessionStorage.setItem('admin_verified', 'true');
 sessionStorage.setItem('admin_login_time', Date.now().toString());
 sessionStorage.setItem('admin_permissions', JSON.stringify(permissions));
 sessionStorage.setItem('selected_module', module);
+
 // 保存历史记录
 const now = new Date().toISOString();
 const historyItem = {
@@ -466,9 +503,11 @@ time: now,
 display: `${token.substring(0, 12)}...`
 };
 saveHistory(historyItem);
+
 // 导航到选择的模块
 navigateToModule(module);
 }
+
 function navigateToModule(module) {
 // 根据模块名称跳转到对应页面
 let pageUrl = '';
@@ -490,6 +529,7 @@ pageUrl = 'index.html';
 }
 window.location.href = pageUrl;
 }
+
 function showModal(title, message, type = 'info', showCancel = false) {
 const modal = document.getElementById('customModal');
 const modalTitle = document.querySelector('.modal-title');
@@ -497,8 +537,10 @@ const modalMessage = document.getElementById('modalMessage');
 const headerIcon = document.querySelector('.modal-header i');
 const confirmBtn = document.getElementById('modalConfirmBtn');
 const cancelBtn = document.getElementById('modalCancelBtn');
+
 // 设置类型样式
 modal.className = `custom-modal modal-${type} show`;
+
 // 设置图标
 if (type === 'success') {
 headerIcon.className = 'fas fa-check-circle';
@@ -507,13 +549,16 @@ headerIcon.className = 'fas fa-exclamation-circle';
 } else {
 headerIcon.className = 'fas fa-info-circle';
 }
+
 // 设置内容
 modalTitle.textContent = title;
 modalMessage.innerHTML = message.replace(/\n/g, '<br>');
+
 // 设置按钮
 cancelBtn.style.display = showCancel ? 'inline-block' : 'none';
 confirmBtn.textContent = showCancel ? '确定' : '好的';
 }
+
 function showLoadingModal(message) {
 const modal = document.getElementById('customModal');
 const modalTitle = document.querySelector('.modal-title');
@@ -521,6 +566,7 @@ const modalMessage = document.getElementById('modalMessage');
 const headerIcon = document.querySelector('.modal-header i');
 const confirmBtn = document.getElementById('modalConfirmBtn');
 const cancelBtn = document.getElementById('modalCancelBtn');
+
 modal.className = 'custom-modal modal-info show';
 headerIcon.className = 'fas fa-spinner fa-spin';
 modalTitle.textContent = '请稍候';
@@ -528,9 +574,11 @@ modalMessage.textContent = message;
 confirmBtn.style.display = 'none';
 cancelBtn.style.display = 'none';
 }
+
 function closeModal() {
 document.getElementById('customModal').classList.remove('show');
 }
+
 // 历史记录功能
 function saveHistory(item) {
 let history = JSON.parse(localStorage.getItem('admin_token_history') || '[]');
@@ -540,6 +588,7 @@ history = history.slice(0, 5); // 只保留最近5条记录
 localStorage.setItem('admin_token_history', JSON.stringify(history));
 loadHistory();
 }
+
 function loadHistory() {
 const history = JSON.parse(localStorage.getItem('admin_token_history') || '[]');
 const section = document.getElementById('historySection');
@@ -556,15 +605,16 @@ list.innerHTML = history.map(item => `
 section.style.display = 'none';
 }
 }
+
 function useHistory(historyId) {
 // 提示用户需要输入完整 Token
 showModal(
 '历史记录提示',
-'出于安全考虑，历史记录仅用于参考。
-请在 Token 输入框中输入完整的 Token，然后选择要管理的模块。',
+'出于安全考虑，历史记录仅用于参考。\n请在 Token 输入框中输入完整的 Token，然后选择要管理的模块。',
 'info'
 );
 }
+
 function clearHistory() {
 if (confirm('确定要清空所有历史记录吗？')) {
 localStorage.removeItem('admin_token_history');
@@ -572,6 +622,7 @@ loadHistory();
 showModal('操作成功', '历史记录已清空', 'success');
 }
 }
+
 // 自动填充上次使用的Token（如果有的话）
 function autoFillLastToken() {
 const history = JSON.parse(localStorage.getItem('admin_token_history') || '[]');
@@ -579,12 +630,12 @@ if (history.length > 0) {
 // 可以在这里添加自动填充逻辑，但出于安全考虑，我们只显示提示
 showModal(
 '检测到历史记录',
-`检测到您有 ${history.length} 条历史记录。
-请从下方历史记录中选择或手动输入新Token。`,
+`检测到您有 ${history.length} 条历史记录。\n请从下方历史记录中选择或手动输入新Token。`,
 'info'
 );
 }
 }
+
 // 页面加载时自动填充上次选择的模块（如果有）
 function restoreSelectedModule() {
 const savedModule = sessionStorage.getItem('selected_module');
@@ -597,9 +648,11 @@ updateEnterButton();
 }
 }
 }
+
 // 初始化时执行
 restoreSelectedModule();
 autoFillLastToken();
+
 // 页面卸载时清除临时存储
 window.addEventListener('beforeunload', () => {
 sessionStorage.removeItem('pending_admin_token');
