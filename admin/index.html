@@ -1,544 +1,611 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>管理后台 | zcfi.cn</title>
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="../favicon/favicon.svg">
-    <link rel="icon" type="image/png" sizes="96x96" href="../favicon/favicon-96x96.png">
-    <link rel="icon" type="image/x-icon" href="../favicon/favicon.ico">
-    
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- 后台公共CSS -->
-    <link rel="stylesheet" href="assets/css/admin-common.css">
-    
-    <style>
-        /* 登录页面特定样式 */
-        .login-container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 15px 50px rgba(0,0,0,0.3);
-            width: 100%;
-            max-width: 600px;
-            padding: 40px;
-            text-align: center;
-        }
-        
-        .login-logo {
-            font-size: 36px;
-            font-weight: 700;
-            color: #4a6fa5;
-            margin-bottom: 30px;
-            text-decoration: none;
-            display: inline-block;
-        }
-        
-        .login-logo span {
-            color: #28a745;
-        }
-        
-        .login-title {
-            color: #333;
-            margin-bottom: 25px;
-            font-size: 24px;
-        }
-        
-        .token-input {
-            position: relative;
-            margin-bottom: 30px;
-        }
-        
-        .token-input input {
-            width: 100%;
-            padding: 15px 20px;
-            border: 2px solid #dee2e6;
-            border-radius: 12px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-        
-        .token-input input:focus {
-            outline: none;
-            border-color: #4a6fa5;
-            box-shadow: 0 0 0 4px rgba(74, 111, 165, 0.15);
-        }
-        
-        .modules-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            margin-top: 30px;
-        }
-        
-        .module-card {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
-            border-radius: 15px;
-            padding: 25px 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-        }
-        
-        .module-card:hover {
-            transform: translateY(-5px);
-            border-color: #4a6fa5;
-            box-shadow: 0 8px 20px rgba(74, 111, 165, 0.2);
-            background: #ffffff;
-        }
-        
-        .module-card.selected {
-            border-color: #4a6fa5;
-            background: #ffffff;
-            box-shadow: 0 8px 20px rgba(74, 111, 165, 0.25);
-        }
-        
-        .module-icon {
-            font-size: 32px;
-            color: #4a6fa5;
-            margin-bottom: 15px;
-            transition: transform 0.3s ease;
-        }
-        
-        .module-card:hover .module-icon {
-            transform: scale(1.2);
-        }
-        
-        .module-title {
-            font-weight: 600;
-            color: #333;
-            font-size: 16px;
-        }
-        
-        .login-btn {
-            width: 100%;
-            padding: 16px;
-            background: #4a6fa5;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 25px;
-        }
-        
-        .login-btn:hover {
-            background: #3a5a80;
-            transform: translateY(-2px);
-        }
-        
-        .login-btn:disabled {
-            background: #6c757d;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        .history-section {
-            margin-top: 25px;
-            text-align: left;
-        }
-        
-        .history-item {
-            padding: 10px 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid #e9ecef;
-        }
-        
-        .history-item:hover {
-            background: #e9ecef;
-        }
-        
-        .clear-history {
-            color: #dc3545;
-            font-size: 12px;
-            cursor: pointer;
-        }
-        
-        /* 模块说明样式 */
-        .module-description {
-            font-size: 13px;
-            color: #6c757d;
-            margin-top: 8px;
-            line-height: 1.4;
-            min-height: 36px;
-        }
-        
-        @media (max-width: 768px) {
-            .modules-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .login-container {
-                padding: 30px 20px;
-            }
-        }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>管理后台 | zcfi.cn</title>
+<!-- Favicon -->
+<link rel="icon" type="image/svg+xml" href="../favicon/favicon.svg">
+<link rel="icon" type="image/png" sizes="96x96" href="../favicon/favicon-96x96.png">
+<link rel="icon" type="image/x-icon" href="../favicon/favicon.ico">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- 后台公共CSS -->
+<link rel="stylesheet" href="assets/css/admin-common.css">
+<style>
+/* 登录页面特定样式 */
+.login-container {
+background: white;
+border-radius: 20px;
+box-shadow: 0 15px 50px rgba(0,0,0,0.3);
+width: 100%;
+max-width: 600px;
+padding: 40px;
+text-align: center;
+}
+.login-logo {
+font-size: 36px;
+font-weight: 700;
+color: #4a6fa5;
+margin-bottom: 30px;
+text-decoration: none;
+display: inline-block;
+}
+.login-logo span {
+color: #28a745;
+}
+.login-title {
+color: #333;
+margin-bottom: 25px;
+font-size: 24px;
+}
+.token-input {
+position: relative;
+margin-bottom: 30px;
+}
+.token-input input {
+width: 100%;
+padding: 15px 20px;
+border: 2px solid #dee2e6;
+border-radius: 12px;
+font-size: 16px;
+transition: all 0.3s ease;
+}
+.token-input input:focus {
+outline: none;
+border-color: #4a6fa5;
+box-shadow: 0 0 0 4px rgba(74, 111, 165, 0.15);
+}
+.modules-grid {
+display: grid;
+grid-template-columns: repeat(2, 1fr);
+gap: 20px;
+margin-top: 30px;
+}
+.module-card {
+background: #f8f9fa;
+border: 2px solid #e9ecef;
+border-radius: 15px;
+padding: 25px 15px;
+cursor: pointer;
+transition: all 0.3s ease;
+text-align: center;
+}
+.module-card:hover {
+transform: translateY(-5px);
+border-color: #4a6fa5;
+box-shadow: 0 8px 20px rgba(74, 111, 165, 0.2);
+background: #ffffff;
+}
+.module-card.selected {
+border-color: #4a6fa5;
+background: #ffffff;
+box-shadow: 0 8px 20px rgba(74, 111, 165, 0.25);
+}
+.module-icon {
+font-size: 32px;
+color: #4a6fa5;
+margin-bottom: 15px;
+transition: transform 0.3s ease;
+}
+.module-card:hover .module-icon {
+transform: scale(1.2);
+}
+.module-title {
+font-weight: 600;
+color: #333;
+font-size: 16px;
+}
+.login-btn {
+width: 100%;
+padding: 16px;
+background: #4a6fa5;
+color: white;
+border: none;
+border-radius: 12px;
+font-size: 18px;
+font-weight: 600;
+cursor: pointer;
+transition: all 0.3s ease;
+margin-top: 25px;
+}
+.login-btn:hover {
+background: #3a5a80;
+transform: translateY(-2px);
+}
+.login-btn:disabled {
+background: #6c757d;
+cursor: not-allowed;
+transform: none;
+}
+.history-section {
+margin-top: 25px;
+text-align: left;
+}
+.history-item {
+padding: 10px 15px;
+background: #f8f9fa;
+border-radius: 8px;
+margin-bottom: 10px;
+cursor: pointer;
+display: flex;
+justify-content: space-between;
+align-items: center;
+border: 1px solid #e9ecef;
+}
+.history-item:hover {
+background: #e9ecef;
+}
+.clear-history {
+color: #dc3545;
+font-size: 12px;
+cursor: pointer;
+}
+/* 模块说明样式 */
+.module-description {
+font-size: 13px;
+color: #6c757d;
+margin-top: 8px;
+line-height: 1.4;
+min-height: 36px;
+}
+/* 权限显示样式 */
+.permissions-section {
+margin-top: 20px;
+padding: 15px;
+background: #f8f9fa;
+border-radius: 8px;
+text-align: left;
+}
+.permission-item {
+display: flex;
+align-items: center;
+margin-bottom: 8px;
+}
+.permission-icon {
+width: 24px;
+height: 24px;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+margin-right: 10px;
+font-size: 14px;
+}
+.permission-granted {
+background-color: #28a745;
+color: white;
+}
+.permission-denied {
+background-color: #dc3545;
+color: white;
+}
+.permission-name {
+font-weight: 500;
+}
+/* 响应式调整 */
+@media (max-width: 768px) {
+.modules-grid {
+grid-template-columns: 1fr;
+}
+.login-container {
+padding: 30px 20px;
+}
+}
+</style>
 </head>
 <body class="admin-body">
-    <div class="admin-container" style="max-width: 600px;">
-        <div class="login-container">
-            <a href="https://zcfi.cn" class="login-logo">zcfi<span>.</span>cn</a>
-            <h2 class="login-title"><i class="fas fa-lock"></i> 管理后台登录</h2>
-            
-            <div class="token-input">
-                <input type="password" id="token" placeholder="请输入 GitHub Personal Access Token (ghp_xxx...)" autocomplete="off">
-            </div>
-            
-            <div class="modules-grid">
-                <!-- 博客管理 -->
-                <div class="module-card" data-module="blog">
-                    <div class="module-icon">
-                        <i class="fas fa-blog"></i>
-                    </div>
-                    <div class="module-title">博客管理</div>
-                    <div class="module-description">管理博客文章，编辑发布新内容</div>
-                </div>
-                
-                <!-- 作品集管理 -->
-                <div class="module-card" data-module="portfolio">
-                    <div class="module-icon">
-                        <i class="fas fa-briefcase"></i>
-                    </div>
-                    <div class="module-title">作品集管理</div>
-                    <div class="module-description">管理项目作品，设置首页展示</div>
-                </div>
-                
-                <!-- 留言管理 -->
-                <div class="module-card" data-module="contact">
-                    <div class="module-icon">
-                        <i class="fas fa-comments"></i>
-                    </div>
-                    <div class="module-title">留言管理</div>
-                    <div class="module-description">查看和处理访客留言</div>
-                </div>
-                
-                <!-- 配置面板 -->
-                <div class="module-card" data-module="config">
-                    <div class="module-icon">
-                        <i class="fas fa-cog"></i>
-                    </div>
-                    <div class="module-title">配置面板</div>
-                    <div class="module-description">网站设置和法律声明配置</div>
-                </div>
-            </div>
-            
-            <button class="login-btn" id="enterBtn" disabled>
-                <i class="fas fa-sign-in-alt"></i> 进入管理
-            </button>
-            
-            <!-- Token使用说明 -->
-            <div style="margin-top: 25px; padding: 15px; background: #f8f9fa; border-radius: 8px; font-size: 14px; color: #6c757d;">
-                <p style="margin-bottom: 8px;"><i class="fas fa-info-circle" style="color: #4a6fa5;"></i> <strong>Token 说明：</strong></p>
-                <p style="font-size: 13px; line-height: 1.5;">
-                    1. 前往 <a href="https://github.com/settings/tokens" target="_blank" style="color: #4a6fa5; text-decoration: none;">GitHub Token设置</a> 创建新Token<br>
-                    2. 需要勾选 <code>gist</code> 权限<br>
-                    3. Token格式：<code>ghp_xxxxxxxxxxxx</code><br>
-                    4. Token安全存储，切勿泄露
-                </p>
-            </div>
-            
-            <!-- 历史记录区域 -->
-            <div class="history-section" id="historySection" style="display:none;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                    <strong>历史记录</strong>
-                    <span class="clear-history" onclick="clearHistory()">清空</span>
-                </div>
-                <div id="historyList"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 使用公共弹窗样式 -->
-    <div class="custom-modal" id="customModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <i class="fas fa-info-circle"></i>
-            </div>
-            <div class="modal-title">提示</div>
-            <div class="modal-message" id="modalMessage">消息内容</div>
-            <div class="modal-buttons">
-                <button class="modal-btn btn-primary" id="modalConfirmBtn">确定</button>
-                <button class="modal-btn btn-secondary" id="modalCancelBtn" style="display:none;">取消</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        let selectedModule = null;
-        const BLOG_GIST_ID = '73cc78400c25eb9effed665e2c89843d';
-        const GIST_URL = `https://api.github.com/gists/${BLOG_GIST_ID}`;
-        
-        // 页面加载
-        document.addEventListener('DOMContentLoaded', () => {
-            setupEventListeners();
-            loadHistory();
-        });
-        
-        function setupEventListeners() {
-            // 模块选择
-            document.querySelectorAll('.module-card').forEach(card => {
-                card.addEventListener('click', function() {
-                    document.querySelectorAll('.module-card').forEach(c => c.classList.remove('selected'));
-                    this.classList.add('selected');
-                    selectedModule = this.dataset.module;
-                    updateEnterButton();
-                    
-                    // 显示选中模块的描述
-                    highlightSelectedModule();
-                });
-            });
-            
-            // Token 输入
-            document.getElementById('token').addEventListener('input', updateEnterButton);
-            
-            // 进入按钮
-            document.getElementById('enterBtn').addEventListener('click', validateAndLogin);
-            
-            // 弹窗按钮
-            document.getElementById('modalConfirmBtn').addEventListener('click', closeModal);
-            document.getElementById('modalCancelBtn').addEventListener('click', closeModal);
-            
-            // 历史记录点击
-            document.getElementById('historyList').addEventListener('click', function(e) {
-                if (e.target.closest('.history-item')) {
-                    const historyId = e.target.closest('.history-item').dataset.id;
-                    useHistory(historyId);
-                }
-            });
-            
-            // 点击外部取消选中
-            document.addEventListener('click', function(e) {
-                if (!e.target.closest('.module-card') && !e.target.closest('#enterBtn')) {
-                    document.querySelectorAll('.module-card').forEach(c => c.classList.remove('selected'));
-                    selectedModule = null;
-                    updateEnterButton();
-                }
-            });
-        }
-        
-        function updateEnterButton() {
-            const token = document.getElementById('token').value.trim();
-            const btn = document.getElementById('enterBtn');
-            btn.disabled = !(token && selectedModule);
-        }
-        
-        function highlightSelectedModule() {
-            // 可以在这里添加额外的视觉效果
-            console.log('已选择模块:', selectedModule);
-        }
-        
-        async function validateAndLogin() {
-            const token = document.getElementById('token').value.trim();
-            
-            if (!token.startsWith('ghp_')) {
-                showModal('错误', 'Token 必须以 "ghp_" 开头', 'error');
-                return;
-            }
-            
-            showLoadingModal('正在验证 Token...');
-            
-            try {
-                // 实际验证 Token 有效性
-                const response = await fetch(GIST_URL, {
-                    headers: {
-                        'Authorization': `token ${token}`,
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`验证失败: ${response.status} ${response.statusText}`);
-                }
-                
-                // 验证成功
-                closeModal();
-                saveValidToken(token);
-                navigateToModule(selectedModule);
-                
-            } catch (error) {
-                console.error('Token 验证失败:', error);
-                showModal('验证失败', `Token 无效或无权限访问 Gist\n错误: ${error.message}`, 'error');
-            }
-        }
-        
-        function saveValidToken(token) {
-            // 保存到 sessionStorage（会话级别，跨页面保持）
-            sessionStorage.setItem('admin_token', token);
-            sessionStorage.setItem('admin_verified', 'true');
-            sessionStorage.setItem('admin_login_time', Date.now().toString());
-            
-            // 保存当前选择的模块
-            sessionStorage.setItem('selected_module', selectedModule);
-            
-            // 保存历史记录（安全方式）
-            const now = new Date().toISOString();
-            const historyItem = {
-                id: btoa(token.substring(0, 12) + now),
-                time: now,
-                display: `${token.substring(0, 12)}...`
-            };
-            saveHistory(historyItem);
-        }
-        
-        function navigateToModule(module) {
-            // 根据模块名称跳转到对应页面
-            let pageUrl = '';
-            
-            switch(module) {
-                case 'blog':
-                    pageUrl = 'blog.html';
-                    break;
-                case 'portfolio':
-                    pageUrl = 'portfolio.html';
-                    break;
-                case 'contact':
-                    pageUrl = 'contact.html';
-                    break;
-                case 'config':
-                    pageUrl = 'config.html';
-                    break;
-                default:
-                    pageUrl = 'index.html';
-            }
-            
-            window.location.href = pageUrl;
-        }
-        
-        function showModal(title, message, type = 'info', showCancel = false) {
-            const modal = document.getElementById('customModal');
-            const modalTitle = document.querySelector('.modal-title');
-            const modalMessage = document.getElementById('modalMessage');
-            const headerIcon = document.querySelector('.modal-header i');
-            const confirmBtn = document.getElementById('modalConfirmBtn');
-            const cancelBtn = document.getElementById('modalCancelBtn');
-            
-            // 设置类型样式
-            modal.className = `custom-modal modal-${type} show`;
-            
-            // 设置图标
-            if (type === 'success') {
-                headerIcon.className = 'fas fa-check-circle';
-            } else if (type === 'error') {
-                headerIcon.className = 'fas fa-exclamation-circle';
-            } else {
-                headerIcon.className = 'fas fa-info-circle';
-            }
-            
-            // 设置内容
-            modalTitle.textContent = title;
-            modalMessage.innerHTML = message.replace(/\n/g, '<br>');
-            
-            // 设置按钮
-            cancelBtn.style.display = showCancel ? 'inline-block' : 'none';
-            confirmBtn.textContent = showCancel ? '确定' : '好的';
-        }
-        
-        function showLoadingModal(message) {
-            const modal = document.getElementById('customModal');
-            const modalTitle = document.querySelector('.modal-title');
-            const modalMessage = document.getElementById('modalMessage');
-            const headerIcon = document.querySelector('.modal-header i');
-            const confirmBtn = document.getElementById('modalConfirmBtn');
-            const cancelBtn = document.getElementById('modalCancelBtn');
-            
-            modal.className = 'custom-modal modal-info show';
-            headerIcon.className = 'fas fa-spinner fa-spin';
-            modalTitle.textContent = '请稍候';
-            modalMessage.textContent = message;
-            confirmBtn.style.display = 'none';
-            cancelBtn.style.display = 'none';
-        }
-        
-        function closeModal() {
-            document.getElementById('customModal').classList.remove('show');
-        }
-        
-        // 历史记录功能
-        function saveHistory(item) {
-            let history = JSON.parse(localStorage.getItem('admin_token_history') || '[]');
-            history = history.filter(h => h.id !== item.id);
-            history.unshift(item);
-            history = history.slice(0, 5); // 只保留最近5条记录
-            localStorage.setItem('admin_token_history', JSON.stringify(history));
-            loadHistory();
-        }
-        
-        function loadHistory() {
-            const history = JSON.parse(localStorage.getItem('admin_token_history') || '[]');
-            const section = document.getElementById('historySection');
-            const list = document.getElementById('historyList');
-            
-            if (history.length > 0) {
-                section.style.display = 'block';
-                list.innerHTML = history.map(item => `
-                    <div class="history-item" data-id="${item.id}">
-                        <span>${item.display}</span>
-                        <span style="font-size: 12px; color: #999;">${new Date(item.time).toLocaleDateString()}</span>
-                    </div>
-                `).join('');
-            } else {
-                section.style.display = 'none';
-            }
-        }
-        
-        function useHistory(historyId) {
-            // 提示用户需要输入完整 Token
-            showModal(
-                '历史记录提示',
-                '出于安全考虑，历史记录仅用于参考。\n请在 Token 输入框中输入完整的 Token，然后选择要管理的模块。',
-                'info'
-            );
-        }
-        
-        function clearHistory() {
-            if (confirm('确定要清空所有历史记录吗？')) {
-                localStorage.removeItem('admin_token_history');
-                loadHistory();
-                showModal('操作成功', '历史记录已清空', 'success');
-            }
-        }
-        
-        // 自动填充上次使用的Token（如果有的话）
-        function autoFillLastToken() {
-            const history = JSON.parse(localStorage.getItem('admin_token_history') || '[]');
-            if (history.length > 0) {
-                // 可以在这里添加自动填充逻辑，但出于安全考虑，我们只显示提示
-                showModal(
-                    '检测到历史记录',
-                    `检测到您有 ${history.length} 条历史记录。\n请从下方历史记录中选择或手动输入新Token。`,
-                    'info'
-                );
-            }
-        }
-        
-        // 页面加载时自动填充上次选择的模块（如果有）
-        function restoreSelectedModule() {
-            const savedModule = sessionStorage.getItem('selected_module');
-            if (savedModule) {
-                const moduleCard = document.querySelector(`.module-card[data-module="${savedModule}"]`);
-                if (moduleCard) {
-                    moduleCard.classList.add('selected');
-                    selectedModule = savedModule;
-                    updateEnterButton();
-                }
-            }
-        }
-        
-        // 初始化时执行
-        restoreSelectedModule();
-        autoFillLastToken();
-    </script>
+<div class="admin-container" style="max-width: 600px;">
+<div class="login-container">
+<a href="https://zcfi.cn" class="login-logo">zcfi<span>.</span>cn</a>
+<h2 class="login-title"><i class="fas fa-lock"></i> 管理后台登录</h2>
+<div class="token-input">
+<input type="password" id="token" placeholder="请输入 GitHub Personal Access Token (ghp_xxx...)" autocomplete="off">
+</div>
+<div class="modules-grid">
+<!-- 博客管理 -->
+<div class="module-card" data-module="blog">
+<div class="module-icon">
+<i class="fas fa-blog"></i>
+</div>
+<div class="module-title">博客管理</div>
+<div class="module-description">管理博客文章，编辑发布新内容</div>
+</div>
+<!-- 作品集管理 -->
+<div class="module-card" data-module="portfolio">
+<div class="module-icon">
+<i class="fas fa-briefcase"></i>
+</div>
+<div class="module-title">作品集管理</div>
+<div class="module-description">管理项目作品，设置首页展示</div>
+</div>
+<!-- 留言管理 -->
+<div class="module-card" data-module="contact">
+<div class="module-icon">
+<i class="fas fa-comments"></i>
+</div>
+<div class="module-title">留言管理</div>
+<div class="module-description">查看和处理访客留言</div>
+</div>
+<!-- 配置面板 -->
+<div class="module-card" data-module="config">
+<div class="module-icon">
+<i class="fas fa-cog"></i>
+</div>
+<div class="module-title">配置面板</div>
+<div class="module-description">网站设置和法律声明配置</div>
+</div>
+</div>
+<button class="login-btn" id="enterBtn" disabled>
+<i class="fas fa-sign-in-alt"></i> 进入管理
+</button>
+<!-- Token使用说明 -->
+<div style="margin-top: 25px; padding: 15px; background: #f8f9fa; border-radius: 8px; font-size: 14px; color: #6c757d;">
+<p style="margin-bottom: 8px;"><i class="fas fa-info-circle" style="color: #4a6fa5;"></i> <strong>Token 说明：</strong></p>
+<p style="font-size: 13px; line-height: 1.5;">
+1. 前往 <a href="https://github.com/settings/tokens" target="_blank" style="color: #4a6fa5; text-decoration: none;">GitHub Token设置</a> 创建新Token<br>
+2. 基础功能需要勾选 <code>gist</code> 权限<br>
+3. 高级功能（如自动生成博客页面）需要额外勾选 <code>repo</code> 权限<br>
+4. Token格式：<code>ghp_xxxxxxxxxxxx</code><br>
+5. Token安全存储，切勿泄露
+</p>
+</div>
+<!-- 历史记录区域 -->
+<div class="history-section" id="historySection" style="display:none;">
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+<strong>历史记录</strong>
+<span class="clear-history" onclick="clearHistory()">清空</span>
+</div>
+<div id="historyList"></div>
+</div>
+</div>
+</div>
+<!-- 使用公共弹窗样式 -->
+<div class="custom-modal" id="customModal">
+<div class="modal-content">
+<div class="modal-header">
+<i class="fas fa-info-circle"></i>
+</div>
+<div class="modal-title">提示</div>
+<div class="modal-message" id="modalMessage">消息内容</div>
+<div class="modal-buttons">
+<button class="modal-btn btn-primary" id="modalConfirmBtn">确定</button>
+<button class="modal-btn btn-secondary" id="modalCancelBtn" style="display:none;">取消</button>
+</div>
+</div>
+</div>
+<!-- 权限确认弹窗 -->
+<div class="custom-modal" id="permissionsModal">
+<div class="modal-content">
+<div class="modal-header">
+<i class="fas fa-shield-alt"></i>
+</div>
+<div class="modal-title">权限验证结果</div>
+<div class="modal-message">
+<p>您的Token权限验证已完成，以下是详细信息：</p>
+<div class="permissions-section" id="permissionsList">
+<!-- 权限列表将在这里动态生成 -->
+</div>
+<p style="margin-top: 15px; font-weight: 500;">请注意：</p>
+<ul style="text-align: left; margin-top: 10px; margin-bottom: 20px;">
+<li>缺少<span style="color: #dc3545; font-weight: 600;">gist</span>权限将无法使用任何后台功能</li>
+<li>缺少<span style="color: #4a6fa5; font-weight: 600;">repo</span>权限将无法使用<span style="color: #4a6fa5;">自动生成博客页面</span>等高级功能</li>
+</ul>
+<p style="text-align: left; margin-top: 10px;">
+您可以在 <a href="https://github.com/settings/tokens" target="_blank" style="color: #4a6fa5; text-decoration: none;">GitHub Token设置</a> 
+中修改权限，然后重新登录。
+</p>
+</div>
+<div class="modal-buttons">
+<button class="modal-btn btn-secondary" id="permissionsCancelBtn">返回修改</button>
+<button class="modal-btn btn-primary" id="permissionsConfirmBtn">确认并继续</button>
+</div>
+</div>
+</div>
+<script>
+let selectedModule = null;
+const BLOG_GIST_ID = '73cc78400c25eb9effed665e2c89843d';
+const GIST_URL = `https://api.github.com/gists/${BLOG_GIST_ID}`;
+const REPO_URL = 'https://api.github.com/user/repos'; // 用于检查repo权限
+// 页面加载
+document.addEventListener('DOMContentLoaded', () => {
+setupEventListeners();
+loadHistory();
+});
+function setupEventListeners() {
+// 模块选择
+document.querySelectorAll('.module-card').forEach(card => {
+card.addEventListener('click', function() {
+document.querySelectorAll('.module-card').forEach(c => c.classList.remove('selected'));
+this.classList.add('selected');
+selectedModule = this.dataset.module;
+updateEnterButton();
+// 显示选中模块的描述
+highlightSelectedModule();
+});
+});
+// Token 输入
+document.getElementById('token').addEventListener('input', updateEnterButton);
+// 进入按钮
+document.getElementById('enterBtn').addEventListener('click', validateAndLogin);
+// 弹窗按钮
+document.getElementById('modalConfirmBtn').addEventListener('click', closeModal);
+document.getElementById('modalCancelBtn').addEventListener('click', closeModal);
+// 权限弹窗按钮
+document.getElementById('permissionsCancelBtn').addEventListener('click', closePermissionsModal);
+document.getElementById('permissionsConfirmBtn').addEventListener('click', confirmPermissionsAndNavigate);
+// 历史记录点击
+document.getElementById('historyList').addEventListener('click', function(e) {
+if (e.target.closest('.history-item')) {
+const historyId = e.target.closest('.history-item').dataset.id;
+useHistory(historyId);
+}
+});
+// 点击外部取消选中
+document.addEventListener('click', function(e) {
+if (!e.target.closest('.module-card') && !e.target.closest('#enterBtn')) {
+document.querySelectorAll('.module-card').forEach(c => c.classList.remove('selected'));
+selectedModule = null;
+updateEnterButton();
+}
+});
+}
+function updateEnterButton() {
+const token = document.getElementById('token').value.trim();
+const btn = document.getElementById('enterBtn');
+btn.disabled = !(token && selectedModule);
+}
+function highlightSelectedModule() {
+// 可以在这里添加额外的视觉效果
+console.log('已选择模块:', selectedModule);
+}
+// 检查Token权限
+async function checkTokenPermissions(token) {
+const permissions = {
+gist: false,
+repo: false
+};
+try {
+// 检查gist权限 - 尝试获取当前Gist
+const gistResponse = await fetch(GIST_URL, {
+headers: {
+'Authorization': `token ${token}`,
+'Accept': 'application/vnd.github.v3+json'
+}
+});
+permissions.gist = gistResponse.ok;
+} catch (error) {
+console.error('检查gist权限失败:', error);
+}
+try {
+// 检查repo权限 - 尝试获取用户仓库列表
+const repoResponse = await fetch(REPO_URL, {
+headers: {
+'Authorization': `token ${token}`,
+'Accept': 'application/vnd.github.v3+json'
+}
+});
+permissions.repo = repoResponse.ok;
+} catch (error) {
+console.error('检查repo权限失败:', error);
+}
+return permissions;
+}
+async function validateAndLogin() {
+const token = document.getElementById('token').value.trim();
+if (!token.startsWith('ghp_')) {
+showModal('错误', 'Token 必须以 "ghp_" 开头', 'error');
+return;
+}
+showLoadingModal('正在验证 Token...');
+try {
+// 首先验证Token基本有效性
+const response = await fetch(GIST_URL, {
+headers: {
+'Authorization': `token ${token}`,
+'Accept': 'application/vnd.github.v3+json'
+}
+});
+if (!response.ok) {
+throw new Error(`验证失败: ${response.status} ${response.statusText}`);
+}
+// 验证成功，检查详细权限
+closeModal();
+showLoadingModal('正在检查权限...');
+const permissions = await checkTokenPermissions(token);
+closeModal();
+// 显示权限检查结果
+showPermissionsModal(permissions);
+// 保存token和选择的模块，等待用户确认
+sessionStorage.setItem('pending_admin_token', token);
+sessionStorage.setItem('pending_selected_module', selectedModule);
+sessionStorage.setItem('token_permissions', JSON.stringify(permissions));
+} catch (error) {
+console.error('Token 验证失败:', error);
+showModal('验证失败', `Token 无效或无权限访问 Gist
+错误: ${error.message}`, 'error');
+}
+}
+function showPermissionsModal(permissions) {
+const permissionsList = document.getElementById('permissionsList');
+permissionsList.innerHTML = `
+<div class="permission-item">
+<div class="permission-icon ${permissions.gist ? 'permission-granted' : 'permission-denied'}">
+${permissions.gist ? '✓' : '✗'}
+</div>
+<div class="permission-name">Gist 权限: ${permissions.gist ? '<span style="color: #28a745;">已授权</span>' : '<span style="color: #dc3545;">未授权</span>'}</div>
+</div>
+<div class="permission-item">
+<div class="permission-icon ${permissions.repo ? 'permission-granted' : 'permission-denied'}">
+${permissions.repo ? '✓' : '✗'}
+</div>
+<div class="permission-name">仓库 (repo) 权限: ${permissions.repo ? '<span style="color: #28a745;">已授权</span>' : '<span style="color: #dc3545;">未授权</span>'}</div>
+</div>
+`;
+document.getElementById('permissionsModal').classList.add('show');
+}
+function closePermissionsModal() {
+document.getElementById('permissionsModal').classList.remove('show');
+}
+function confirmPermissionsAndNavigate() {
+closePermissionsModal();
+const token = sessionStorage.getItem('pending_admin_token');
+const module = sessionStorage.getItem('pending_selected_module');
+const permissions = JSON.parse(sessionStorage.getItem('token_permissions') || '{}');
+// 保存验证信息
+sessionStorage.setItem('admin_token', token);
+sessionStorage.setItem('admin_verified', 'true');
+sessionStorage.setItem('admin_login_time', Date.now().toString());
+sessionStorage.setItem('admin_permissions', JSON.stringify(permissions));
+sessionStorage.setItem('selected_module', module);
+// 保存历史记录
+const now = new Date().toISOString();
+const historyItem = {
+id: btoa(token.substring(0, 12) + now),
+time: now,
+display: `${token.substring(0, 12)}...`
+};
+saveHistory(historyItem);
+// 导航到选择的模块
+navigateToModule(module);
+}
+function navigateToModule(module) {
+// 根据模块名称跳转到对应页面
+let pageUrl = '';
+switch(module) {
+case 'blog':
+pageUrl = 'blog.html';
+break;
+case 'portfolio':
+pageUrl = 'portfolio.html';
+break;
+case 'contact':
+pageUrl = 'contact.html';
+break;
+case 'config':
+pageUrl = 'config.html';
+break;
+default:
+pageUrl = 'index.html';
+}
+window.location.href = pageUrl;
+}
+function showModal(title, message, type = 'info', showCancel = false) {
+const modal = document.getElementById('customModal');
+const modalTitle = document.querySelector('.modal-title');
+const modalMessage = document.getElementById('modalMessage');
+const headerIcon = document.querySelector('.modal-header i');
+const confirmBtn = document.getElementById('modalConfirmBtn');
+const cancelBtn = document.getElementById('modalCancelBtn');
+// 设置类型样式
+modal.className = `custom-modal modal-${type} show`;
+// 设置图标
+if (type === 'success') {
+headerIcon.className = 'fas fa-check-circle';
+} else if (type === 'error') {
+headerIcon.className = 'fas fa-exclamation-circle';
+} else {
+headerIcon.className = 'fas fa-info-circle';
+}
+// 设置内容
+modalTitle.textContent = title;
+modalMessage.innerHTML = message.replace(/\n/g, '<br>');
+// 设置按钮
+cancelBtn.style.display = showCancel ? 'inline-block' : 'none';
+confirmBtn.textContent = showCancel ? '确定' : '好的';
+}
+function showLoadingModal(message) {
+const modal = document.getElementById('customModal');
+const modalTitle = document.querySelector('.modal-title');
+const modalMessage = document.getElementById('modalMessage');
+const headerIcon = document.querySelector('.modal-header i');
+const confirmBtn = document.getElementById('modalConfirmBtn');
+const cancelBtn = document.getElementById('modalCancelBtn');
+modal.className = 'custom-modal modal-info show';
+headerIcon.className = 'fas fa-spinner fa-spin';
+modalTitle.textContent = '请稍候';
+modalMessage.textContent = message;
+confirmBtn.style.display = 'none';
+cancelBtn.style.display = 'none';
+}
+function closeModal() {
+document.getElementById('customModal').classList.remove('show');
+}
+// 历史记录功能
+function saveHistory(item) {
+let history = JSON.parse(localStorage.getItem('admin_token_history') || '[]');
+history = history.filter(h => h.id !== item.id);
+history.unshift(item);
+history = history.slice(0, 5); // 只保留最近5条记录
+localStorage.setItem('admin_token_history', JSON.stringify(history));
+loadHistory();
+}
+function loadHistory() {
+const history = JSON.parse(localStorage.getItem('admin_token_history') || '[]');
+const section = document.getElementById('historySection');
+const list = document.getElementById('historyList');
+if (history.length > 0) {
+section.style.display = 'block';
+list.innerHTML = history.map(item => `
+<div class="history-item" data-id="${item.id}">
+<span>${item.display}</span>
+<span style="font-size: 12px; color: #999;">${new Date(item.time).toLocaleDateString()}</span>
+</div>
+`).join('');
+} else {
+section.style.display = 'none';
+}
+}
+function useHistory(historyId) {
+// 提示用户需要输入完整 Token
+showModal(
+'历史记录提示',
+'出于安全考虑，历史记录仅用于参考。
+请在 Token 输入框中输入完整的 Token，然后选择要管理的模块。',
+'info'
+);
+}
+function clearHistory() {
+if (confirm('确定要清空所有历史记录吗？')) {
+localStorage.removeItem('admin_token_history');
+loadHistory();
+showModal('操作成功', '历史记录已清空', 'success');
+}
+}
+// 自动填充上次使用的Token（如果有的话）
+function autoFillLastToken() {
+const history = JSON.parse(localStorage.getItem('admin_token_history') || '[]');
+if (history.length > 0) {
+// 可以在这里添加自动填充逻辑，但出于安全考虑，我们只显示提示
+showModal(
+'检测到历史记录',
+`检测到您有 ${history.length} 条历史记录。
+请从下方历史记录中选择或手动输入新Token。`,
+'info'
+);
+}
+}
+// 页面加载时自动填充上次选择的模块（如果有）
+function restoreSelectedModule() {
+const savedModule = sessionStorage.getItem('selected_module');
+if (savedModule) {
+const moduleCard = document.querySelector(`.module-card[data-module="${savedModule}"]`);
+if (moduleCard) {
+moduleCard.classList.add('selected');
+selectedModule = savedModule;
+updateEnterButton();
+}
+}
+}
+// 初始化时执行
+restoreSelectedModule();
+autoFillLastToken();
+// 页面卸载时清除临时存储
+window.addEventListener('beforeunload', () => {
+sessionStorage.removeItem('pending_admin_token');
+sessionStorage.removeItem('pending_selected_module');
+sessionStorage.removeItem('token_permissions');
+});
+</script>
 </body>
 </html>
