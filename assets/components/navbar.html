@@ -1,158 +1,294 @@
-<header>
-    <div class="container">
-        <nav class="navbar">
-            <a href="#" class="logo" id="siteLogo"></a>
-            <ul class="nav-links" id="mainNavLinks"></ul>
-            <div class="mobile-menu-btn">
+<!-- assets/components/navbar.html -->
+<style>
+/* 导航栏专用CSS */
+.navbar-wrapper {
+    --primary-color: #4a6fa5;
+    --accent-color: #4fc3a1;
+}
+
+.navbar-container {
+    width: 100%;
+    background-color: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    position: fixed;
+    top: 0;
+    z-index: 1000;
+}
+
+.navbar-inner {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+}
+
+.navbar-logo {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+
+.navbar-logo span {
+    color: var(--accent-color);
+}
+
+.navbar-links {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.navbar-links li {
+    margin-left: 30px;
+}
+
+.navbar-links a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.navbar-links a:hover {
+    color: var(--primary-color);
+}
+
+.navbar-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: var(--primary-color);
+    transition: all 0.3s ease;
+}
+
+.navbar-links a:hover::after {
+    width: 100%;
+}
+
+.navbar-mobile-btn {
+    display: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--primary-color);
+    background: none;
+    border: none;
+    padding: 10px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .navbar-mobile-btn {
+        display: block;
+    }
+    
+    .navbar-links {
+        position: fixed;
+        top: 80px;
+        left: 0;
+        width: 100%;
+        background-color: white;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 0;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        transform: translateY(-150%);
+        transition: transform 0.3s ease;
+        z-index: 999;
+    }
+    
+    .navbar-links.active {
+        transform: translateY(0);
+    }
+    
+    .navbar-links li {
+        margin: 15px 0;
+    }
+}
+</style>
+
+<nav class="navbar-container">
+    <div class="navbar-inner">
+        <div class="navbar">
+            <a href="#" class="navbar-logo" id="navbar-logo">zcfi<span>.</span>cn</a>
+            <ul class="navbar-links" id="navbar-links"></ul>
+            <button class="navbar-mobile-btn">
                 <i class="fas fa-bars"></i>
-            </div>
-        </nav>
+            </button>
+        </div>
     </div>
-</header>
+</nav>
 
 <script>
-console.log('navbar.html脚本开始执行', Date.now());
-
-// 导航栏配置加载器
-class NavbarLoader {
-    constructor() {
-        this.CONFIG_GIST_ID = '983bb7371ddb439a2fcbfb4885e34d14';
-        this.configData = null;
-    }
-
-    async loadConfig() {
-        if (this.configData) return this.configData;
+// 导航栏自包含脚本
+(function() {
+    console.log('导航栏开始初始化...');
+    
+    const CONFIG_GIST_ID = '983bb7371ddb439a2fcbfb4885e34d14';
+    
+    // 移动端菜单切换
+    function initMobileMenu() {
+        const mobileBtn = document.querySelector('.navbar-mobile-btn');
+        const navLinks = document.querySelector('.navbar-links');
         
+        if (mobileBtn && navLinks) {
+            mobileBtn.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+                const icon = mobileBtn.querySelector('i');
+                if (navLinks.classList.contains('active')) {
+                    icon.className = 'fas fa-times';
+                } else {
+                    icon.className = 'fas fa-bars';
+                }
+            });
+            
+            // 点击链接关闭菜单
+            navLinks.addEventListener('click', (e) => {
+                if (e.target.tagName === 'A') {
+                    navLinks.classList.remove('active');
+                    const icon = mobileBtn.querySelector('i');
+                    icon.className = 'fas fa-bars';
+                }
+            });
+        }
+    }
+    
+    // 加载配置并渲染
+    async function loadAndRenderNavbar() {
         try {
+            console.log('开始加载导航栏配置...');
+            
+            // 从Gist加载配置
             const timestamp = Date.now();
             const response = await fetch(
-                `https://gist.githubusercontent.com/xiao305/${this.CONFIG_GIST_ID}/raw/config.json?t=${timestamp}`
+                `https://gist.githubusercontent.com/xiao305/${CONFIG_GIST_ID}/raw/config.json?t=${timestamp}`
             );
             
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
             
-            this.configData = await response.json();
-            return this.configData;
+            const configData = await response.json();
+            console.log('导航栏配置加载成功:', configData);
+            
+            // 渲染导航栏
+            renderNavbar(configData);
+            
         } catch (error) {
-            console.error('导航栏配置加载失败:', error);
-            return this.getEmptyConfig();
+            console.error('加载导航栏配置失败:', error);
+            renderDefaultNavbar();
         }
     }
-
-    getEmptyConfig() {
-        return {
-            site: { name: '' },
-            navigation: { items: [] }
-        };
-    }
-
-    escapeHtml(text) {
-        if (!text) return '';
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    normalizeUrl(url) {
-        if (!url) return '#';
-        if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('/')) {
-            return url;
-        }
-        return url;
-    }
-
-    isCurrentPage(url) {
-        if (!url) return false;
+    
+    // 渲染导航栏
+    function renderNavbar(configData) {
+        const site = configData.site || {};
+        const navigation = configData.navigation || {};
         
-        const currentPath = window.location.pathname;
-        const currentPage = currentPath.split('/').pop() || 'index.html';
-        
-        // 移除可能的查询参数和哈希
-        const cleanUrl = url.split('?')[0].split('#')[0];
-        const cleanCurrent = currentPage.split('?')[0].split('#')[0];
-        
-        // 如果是首页
-        if (cleanUrl === './' || cleanUrl === 'index.html' || cleanUrl.endsWith('/')) {
-            return cleanCurrent === 'index.html' || cleanCurrent === '';
+        // 更新Logo
+        const logo = document.getElementById('navbar-logo');
+        if (logo && site.name) {
+            logo.innerHTML = `${escapeHtml(site.name)}<span>.</span>cn`;
+            logo.href = './';
         }
         
-        // 检查是否匹配
-        return cleanCurrent === cleanUrl || cleanCurrent.includes(cleanUrl.replace('.html', ''));
-    }
-
-    async render() {
-        const config = await this.loadConfig();
-        const site = config.site || {};
-        const navigation = config.navigation || {};
-        
-        // 1. 更新Logo
-        const siteLogo = document.getElementById('siteLogo');
-        if (siteLogo) {
-            siteLogo.innerHTML = site.name ? 
-                `${this.escapeHtml(site.name)}<span>.</span>cn` : 
-                'zcfi<span>.</span>cn';
-            siteLogo.href = this.normalizeUrl('./');
-        }
-        
-        // 2. 更新导航菜单
-        const navLinksContainer = document.getElementById('mainNavLinks');
-        if (navLinksContainer) {
+        // 更新导航链接
+        const linksContainer = document.getElementById('navbar-links');
+        if (linksContainer) {
             if (navigation.items && Array.isArray(navigation.items)) {
                 // 按order排序
                 const sortedItems = [...navigation.items].sort((a, b) => (a.order || 0) - (b.order || 0));
                 
-                const navHtml = sortedItems
+                // 生成链接HTML
+                const linksHTML = sortedItems
                     .filter(item => item && item.name && item.url)
                     .map(item => {
-                        const isActive = this.isCurrentPage(item.url);
+                        // 检查是否是当前页面
+                        let isActive = false;
+                        const currentPath = window.location.pathname;
+                        const currentPage = currentPath.split('/').pop() || 'index.html';
+                        
+                        if (item.url === './' || item.url === 'index.html') {
+                            isActive = currentPage === 'index.html' || currentPage === '';
+                        } else if (currentPage === item.url || currentPage.includes(item.url.replace('.html', ''))) {
+                            isActive = true;
+                        }
+                        
                         const activeClass = isActive ? 'active' : '';
                         return `
                             <li>
-                                <a href="${this.normalizeUrl(item.url)}" class="nav-link ${activeClass}">
-                                    ${this.escapeHtml(item.name)}
+                                <a href="${escapeHtml(item.url)}" class="${activeClass}">
+                                    ${escapeHtml(item.name)}
                                 </a>
                             </li>
                         `;
                     }).join('');
                 
-                navLinksContainer.innerHTML = navHtml;
+                linksContainer.innerHTML = linksHTML;
+                console.log('导航栏链接渲染完成');
             } else {
-                navLinksContainer.innerHTML = '';
+                renderDefaultNavbar();
             }
         }
-        
-        // 3. 初始化移动端菜单
-        this.initMobileMenu();
     }
-
-    initMobileMenu() {
-        const mobileBtn = document.querySelector('.mobile-menu-btn');
-        const navLinks = document.querySelector('.nav-links');
+    
+    // 渲染默认导航栏（后备）
+    function renderDefaultNavbar() {
+        console.log('使用默认导航栏');
         
-        if (!mobileBtn || !navLinks) return;
+        const logo = document.getElementById('navbar-logo');
+        if (logo) {
+            logo.innerHTML = 'zcfi<span>.</span>cn';
+            logo.href = './';
+        }
         
-        mobileBtn.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
-            const icon = mobileBtn.querySelector('i');
-            icon.classList.toggle('fa-bars');
-            icon.classList.toggle('fa-times');
-        });
-
-        // 点击菜单项关闭菜单
-        navLinks.addEventListener('click', (e) => {
-            if (e.target.tagName === 'A') {
-                navLinks.classList.remove('active');
-                const icon = mobileBtn.querySelector('i');
-                icon.classList.add('fa-bars');
-                icon.classList.remove('fa-times');
-            }
-        });
+        const linksContainer = document.getElementById('navbar-links');
+        if (linksContainer) {
+            linksContainer.innerHTML = `
+                <li><a href="./">首页</a></li>
+                <li><a href="portfolio.html">作品集</a></li>
+                <li><a href="blog.html">博客</a></li>
+                <li><a href="contact.html">联系我</a></li>
+            `;
+        }
     }
-}
-
-// 初始化
-document.addEventListener('DOMContentLoaded', () => {
-    const navbarLoader = new NavbarLoader();
-    navbarLoader.render();
-});
+    
+    // HTML转义函数
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('导航栏DOM就绪，开始加载配置...');
+        loadAndRenderNavbar();
+        initMobileMenu();
+    });
+    
+    // 如果DOM已经就绪，直接初始化
+    if (document.readyState !== 'loading') {
+        console.log('DOM已就绪，立即初始化导航栏...');
+        setTimeout(() => {
+            loadAndRenderNavbar();
+            initMobileMenu();
+        }, 100);
+    }
+})();
 </script>
