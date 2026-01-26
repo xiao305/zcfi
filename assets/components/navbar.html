@@ -2,14 +2,12 @@
     <div class="container">
         <nav class="navbar">
             <!-- 网站Logo将通过配置动态生成 -->
-            <a href="./" class="logo" id="siteLogo">zcfi<span>.</span>cn</a>
+            <a href="./" class="logo" id="siteLogo">
+                <!-- Logo将由JavaScript动态生成 -->
+            </a>
             <!-- 导航菜单将通过配置动态生成 -->
             <ul class="nav-links" id="mainNavLinks">
-                <!-- 默认内容，会被配置覆盖 -->
-                <li><a href="./" class="nav-link">首页</a></li>
-                <li><a href="portfolio.html" class="nav-link">作品集</a></li>
-                <li><a href="blog.html" class="nav-link">博客</a></li>
-                <li><a href="contact.html" class="nav-link">联系我</a></li>
+                <!-- 导航链接将由JavaScript动态生成 -->
             </ul>
             <div class="mobile-menu-btn">
                 <i class="fas fa-bars"></i>
@@ -54,48 +52,61 @@
             
         } catch (error) {
             console.error('导航栏配置加载失败:', error);
-            // 保持默认导航栏
+            // 不显示任何内容，保持空白
+            renderNavbar({});
         }
     }
     
     // 渲染导航栏
     function renderNavbar(configData) {
+        // 确保配置结构存在
+        const siteConfig = configData.site || {};
+        const navigationConfig = configData.navigation || {};
+        
         // 更新Logo
         const siteLogo = document.getElementById('siteLogo');
-        if (siteLogo && configData.site && configData.site.name) {
-            siteLogo.innerHTML = `${configData.site.name}<span>.</span>cn`;
+        if (siteLogo) {
+            if (siteConfig.name) {
+                siteLogo.innerHTML = `${escapeHtml(siteConfig.name)}<span>.</span>cn`;
+            } else {
+                siteLogo.innerHTML = '';
+            }
         }
         
         // 更新导航菜单
         const navLinksContainer = document.getElementById('mainNavLinks');
-        if (navLinksContainer && configData.navigation && configData.navigation.items) {
-            // 获取当前页面路径
-            const currentPath = window.location.pathname;
-            const currentPage = currentPath.split('/').pop() || 'index.html';
-            
-            // 按order排序
-            const sortedNav = [...configData.navigation.items].sort((a, b) => (a.order || 0) - (b.order || 0));
-            
-            // 生成导航链接
-            const navLinksHTML = sortedNav.map(item => {
-                // 判断是否为当前页面
-                let isActive = false;
-                const itemUrl = item.url || './';
+        if (navLinksContainer) {
+            if (navigationConfig.items && Array.isArray(navigationConfig.items)) {
+                // 获取当前页面路径
+                const currentPath = window.location.pathname;
+                const currentPage = currentPath.split('/').pop() || 'index.html';
                 
-                if (itemUrl === './' || itemUrl === 'index.html') {
-                    // 首页
-                    isActive = currentPage === 'index.html' || currentPage === '';
-                } else if (currentPage === itemUrl || currentPage.includes(itemUrl.replace('.html', ''))) {
-                    // 其他页面
-                    isActive = true;
-                }
+                // 按order排序
+                const sortedNav = [...navigationConfig.items].sort((a, b) => (a.order || 0) - (b.order || 0));
                 
-                const activeClass = isActive ? 'active' : '';
-                return `<li><a href="${escapeHtml(itemUrl)}" class="nav-link ${activeClass}">${escapeHtml(item.name || '未命名')}</a></li>`;
-            }).join('');
-            
-            // 更新DOM
-            navLinksContainer.innerHTML = navLinksHTML;
+                // 生成导航链接
+                const navLinksHTML = sortedNav.map(item => {
+                    // 判断是否为当前页面
+                    let isActive = false;
+                    const itemUrl = item.url || './';
+                    
+                    if (itemUrl === './' || itemUrl === 'index.html') {
+                        // 首页
+                        isActive = currentPage === 'index.html' || currentPage === '';
+                    } else if (currentPage === itemUrl || currentPage.includes(itemUrl.replace('.html', ''))) {
+                        // 其他页面
+                        isActive = true;
+                    }
+                    
+                    const activeClass = isActive ? 'active' : '';
+                    return `<li><a href="${escapeHtml(itemUrl)}" class="nav-link ${activeClass}">${escapeHtml(item.name || '未命名')}</a></li>`;
+                }).join('');
+                
+                // 更新DOM
+                navLinksContainer.innerHTML = navLinksHTML;
+            } else {
+                navLinksContainer.innerHTML = '';
+            }
             
             console.log('导航栏渲染完成');
         }
