@@ -3,12 +3,7 @@
 
 /* 组件容器样式 */
 .component-container {
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.component-loaded {
-    opacity: 1;
+    opacity: 1; /* 默认完全显示 */
 }
 
 /* 组件加载状态 */
@@ -85,6 +80,7 @@
         transform: translateY(-150%);
         transition: transform 0.3s ease;
         z-index: 999;
+        display: flex !important; /* 确保显示 */
     }
 
     .nav-links.active {
