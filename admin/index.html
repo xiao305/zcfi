@@ -160,6 +160,42 @@ color: white;
 .permission-name {
 font-weight: 500;
 }
+/* Token状态提示样式 */
+.token-status-section {
+margin-top: 20px;
+padding: 15px;
+border-radius: 8px;
+background: #e3f2fd;
+border: 1px solid #bbdefb;
+}
+.token-status-warning {
+background: #fff8e1;
+border-color: #ffecb3;
+}
+.token-status-alert {
+background: #ffebee;
+border-color: #ffcdd2;
+}
+.status-label {
+font-weight: 600;
+margin-bottom: 5px;
+display: flex;
+align-items: center;
+gap: 8px;
+}
+.status-message {
+font-size: 14px;
+line-height: 1.5;
+}
+.status-good {
+color: #28a745;
+}
+.status-warning {
+color: #ffc107;
+}
+.status-bad {
+color: #dc3545;
+}
 /* 响应式调整 */
 @media (max-width: 768px) {
 .modules-grid {
@@ -231,7 +267,7 @@ width: 100%;
 2. 基础功能需要勾选 <code>gist</code> 权限<br>
 3. 高级功能（如自动生成博客页面）需要额外勾选 <code>repo</code> 权限<br>
 4. Token格式：<code>ghp_xxxxxxxxxxxx</code><br>
-5. Token安全存储，切勿泄露
+5. <strong>安全提示：</strong> 建议为Token设置合理的有效期，定期更换
 </p>
 </div>
 </div>
@@ -256,20 +292,30 @@ width: 100%;
 <div class="modal-header">
 <i class="fas fa-shield-alt"></i>
 </div>
-<div class="modal-title" id="permissionsModalTitle">权限验证结果</div>
-<div class="modal-message" id="permissionsModalMessage">
+<div class="modal-title">权限验证结果</div>
+<div class="modal-message">
 <p>您的Token权限验证已完成，以下是详细信息：</p>
 <div class="permissions-section" id="permissionsList">
 <!-- 权限列表将在这里动态生成 -->
+</div>
+<!-- Token状态信息显示区域 -->
+<div class="token-status-section" id="tokenStatusSection">
+<p class="status-label">
+<i class="fas fa-check-circle status-good"></i> <span id="statusTitle">Token 状态: 正常</span>
+</p>
+<p class="status-message" id="statusMessage">
+Token 当前有效，可以正常使用所有授权功能。
+</p>
 </div>
 <p style="margin-top: 15px; font-weight: 500;">请注意：</p>
 <ul style="text-align: left; margin-top: 10px; margin-bottom: 20px;">
 <li>缺少<span style="color: #dc3545; font-weight: 600;">gist</span>权限将无法使用任何后台功能</li>
 <li>缺少<span style="color: #4a6fa5; font-weight: 600;">repo</span>权限将无法使用<span style="color: #4a6fa5;">自动生成博客页面</span>等高级功能</li>
+<li>Token 过期后需要重新生成并登录，<strong>建议定期更换 Token 以确保安全</strong></li>
 </ul>
 <p style="text-align: left; margin-top: 10px;">
-您可以在 <a href="https://github.com/settings/tokens" target="_blank" style="color: #4a6fa5; text-decoration: none;">GitHub Token设置</a> 
-中修改权限，然后重新登录。
+您可以在 <a href="https://github.com/settings/tokens" target="_blank" style="color: #4a6fa5; text-decoration: none;">GitHub Token设置页面</a> 
+查看Token有效期、修改权限或创建新Token。系统不会存储您的Token，每次登录都需要重新输入。
 </p>
 </div>
 <div class="modal-buttons">
@@ -282,16 +328,16 @@ width: 100%;
 let selectedModule = null;
 const BLOG_GIST_ID = '73cc78400c25eb9effed665e2c89843d';
 const GIST_URL = `https://api.github.com/gists/${BLOG_GIST_ID}`;
-const REPO_URL = 'https://api.github.com/user/repos'; // 用于检查repo权限
+const SCOPE_CHECK_URL = 'https://api.github.com';
 // 页面加载
 document.addEventListener('DOMContentLoaded', () => {
 setupEventListeners();
 });
+// 初始化事件监听器
 function setupEventListeners() {
-// 阻止表单默认提交
+// 防止表单默认提交
 document.getElementById('loginForm').addEventListener('submit', function(e) {
 e.preventDefault();
-// 如果按钮可用且已选择模块，执行登录操作
 if (!document.getElementById('enterBtn').disabled && selectedModule) {
 validateAndLogin();
 }
@@ -303,8 +349,6 @@ document.querySelectorAll('.module-card').forEach(c => c.classList.remove('selec
 this.classList.add('selected');
 selectedModule = this.dataset.module;
 updateEnterButton();
-// 显示选中模块的描述
-highlightSelectedModule();
 });
 });
 // Token 输入
@@ -317,23 +361,12 @@ document.getElementById('modalCancelBtn').addEventListener('click', closeModal);
 // 权限弹窗按钮
 document.getElementById('permissionsCancelBtn').addEventListener('click', closePermissionsModal);
 document.getElementById('permissionsConfirmBtn').addEventListener('click', confirmPermissionsAndNavigate);
-// 点击外部取消选中
-document.addEventListener('click', function(e) {
-if (!e.target.closest('.module-card') && !e.target.closest('#enterBtn')) {
-document.querySelectorAll('.module-card').forEach(c => c.classList.remove('selected'));
-selectedModule = null;
-updateEnterButton();
 }
-});
-}
+// 更新按钮状态
 function updateEnterButton() {
 const token = document.getElementById('token').value.trim();
 const btn = document.getElementById('enterBtn');
 btn.disabled = !(token && selectedModule);
-}
-function highlightSelectedModule() {
-// 可以在这里添加额外的视觉效果
-console.log('已选择模块:', selectedModule);
 }
 // 检查Token权限
 async function checkTokenPermissions(token) {
@@ -342,42 +375,122 @@ gist: false,
 repo: false
 };
 try {
-// 检查gist权限 - 尝试获取当前Gist
+// 1. 检查gist权限
 const gistResponse = await fetch(GIST_URL, {
 headers: {
 'Authorization': `token ${token}`,
 'Accept': 'application/vnd.github.v3+json'
 }
 });
-permissions.gist = gistResponse.ok;
+if (gistResponse.ok) {
+permissions.gist = true;
+}
 } catch (error) {
 console.error('检查gist权限失败:', error);
 }
 try {
-// 检查repo权限 - 尝试获取用户仓库列表
-const repoResponse = await fetch(REPO_URL, {
+// 2. 检查repo权限 - 从响应头获取scope信息
+const scopeResponse = await fetch(SCOPE_CHECK_URL, {
 headers: {
 'Authorization': `token ${token}`,
 'Accept': 'application/vnd.github.v3+json'
 }
 });
-permissions.repo = repoResponse.ok;
+if (scopeResponse.ok) {
+const scopesHeader = scopeResponse.headers.get('x-oauth-scopes');
+if (scopesHeader) {
+const scopes = scopesHeader.split(',').map(scope => scope.trim());
+console.log('Token scopes:', scopes);
+permissions.repo = scopes.some(scope => 
+scope === 'repo' || 
+scope.startsWith('repo:') || 
+scope.includes('write')
+);
+}
+}
 } catch (error) {
 console.error('检查repo权限失败:', error);
 }
 return permissions;
 }
+// 检查Token状态（是否有效）
+async function checkTokenStatus(token) {
+try {
+// 尝试获取用户信息来验证token状态
+const response = await fetch('https://api.github.com/user', {
+headers: {
+'Authorization': `token ${token}`,
+'Accept': 'application/vnd.github.v3+json'
+}
+});
+if (!response.ok) {
+// Token无效或权限不足
+return {
+isValid: false,
+status: 'invalid',
+message: `Token无效或权限不足。状态码: ${response.status} ${response.statusText}`
+};
+}
+// 检查速率限制
+const rateLimitRemaining = response.headers.get('x-ratelimit-remaining');
+const rateLimitReset = response.headers.get('x-ratelimit-reset');
+if (rateLimitRemaining !== null && parseInt(rateLimitRemaining) === 0) {
+const resetTime = new Date(parseInt(rateLimitReset) * 1000);
+const now = new Date();
+const minutesUntilReset = Math.ceil((resetTime - now) / (1000 * 60));
+if (minutesUntilReset > 0) {
+return {
+isValid: true,
+status: 'rate_limited',
+message: `Token当前被速率限制，将在约${minutesUntilReset}分钟后恢复。请稍后再试或联系GitHub支持。`
+};
+}
+}
+// Token状态良好
+return {
+isValid: true,
+status: 'good',
+message: 'Token当前有效，可以正常使用所有授权功能。'
+};
+} catch (error) {
+console.error('检查Token状态失败:', error);
+return {
+isValid: false,
+status: 'error',
+message: '无法验证Token状态，请检查网络连接或Token是否正确。'
+};
+}
+}
+// 渲染Token状态信息
+function renderTokenStatusInfo(statusInfo) {
+const statusSection = document.getElementById('tokenStatusSection');
+const statusTitle = document.getElementById('statusTitle');
+const statusMessage = document.getElementById('statusMessage');
+const statusIcon = statusSection.querySelector('.fa-check-circle');
+if (statusInfo.status === 'good') {
+statusSection.className = 'token-status-section';
+statusTitle.innerHTML = '<i class="fas fa-check-circle status-good"></i> Token 状态: 正常';
+statusMessage.className = 'status-message';
+statusMessage.innerHTML = statusInfo.message;
+statusIcon.className = 'fas fa-check-circle status-good';
+} else if (statusInfo.status === 'rate_limited') {
+statusSection.className = 'token-status-section token-status-warning';
+statusTitle.innerHTML = '<i class="fas fa-exclamation-triangle status-warning"></i> Token 状态: 速率限制';
+statusMessage.className = 'status-message status-warning';
+statusMessage.innerHTML = statusInfo.message;
+statusIcon.className = 'fas fa-exclamation-triangle status-warning';
+} else {
+statusSection.className = 'token-status-section token-status-alert';
+statusTitle.innerHTML = '<i class="fas fa-times-circle status-bad"></i> Token 状态: 无效';
+statusMessage.className = 'status-message status-bad';
+statusMessage.innerHTML = statusInfo.message;
+statusIcon.className = 'fas fa-times-circle status-bad';
+}
+}
 async function validateAndLogin() {
 const token = document.getElementById('token').value.trim();
 if (!token.startsWith('ghp_')) {
-// 使用权限弹窗显示错误
-showPermissionsModal({
-gist: false,
-repo: false
-}, {
-isValid: false,
-message: 'Token 必须以 "ghp_" 开头'
-});
+showModal('错误', 'Token 必须以 "ghp_" 开头', 'error');
 return;
 }
 showLoadingModal('正在验证 Token...');
@@ -396,47 +509,22 @@ throw new Error(`验证失败: ${response.status} ${response.statusText}`);
 closeModal();
 showLoadingModal('正在检查权限...');
 const permissions = await checkTokenPermissions(token);
+// 检查Token状态
+const statusInfo = await checkTokenStatus(token);
 closeModal();
 // 显示权限检查结果
-showPermissionsModal(permissions);
+showPermissionsModal(permissions, statusInfo);
 // 保存token和选择的模块，等待用户确认
 sessionStorage.setItem('pending_admin_token', token);
 sessionStorage.setItem('pending_selected_module', selectedModule);
 sessionStorage.setItem('token_permissions', JSON.stringify(permissions));
 } catch (error) {
 console.error('Token 验证失败:', error);
-// 使用权限弹窗显示错误
-showPermissionsModal({
-gist: false,
-repo: false
-}, {
-isValid: false,
-message: `Token 无效或无权限访问 Gist\n错误: ${error.message}`
-});
+showModal('验证失败', `Token 无效或无权限访问 Gist\n错误: ${error.message}`, 'error');
 }
 }
-function showPermissionsModal(permissions, errorInfo = null) {
+function showPermissionsModal(permissions, statusInfo) {
 const permissionsList = document.getElementById('permissionsList');
-const modalTitle = document.getElementById('permissionsModalTitle');
-const modalMessage = document.getElementById('permissionsModalMessage');
-if (errorInfo) {
-// 显示错误信息
-modalTitle.textContent = '验证失败';
-modalMessage.innerHTML = `<p style="color: #dc3545; font-weight: 500;">${errorInfo.message}</p>
-<p>请检查以下事项：</p>
-<ul style="text-align: left; margin-top: 10px;">
-<li>Token 是否正确 (应以 ghp_ 开头)</li>
-<li>网络连接是否正常</li>
-<li>是否在 GitHub Pages 域名下访问 (https://zcfi.cn)</li>
-<li>GitHub API 服务是否正常</li>
-</ul>`;
-document.getElementById('permissionsConfirmBtn').style.display = 'none';
-document.getElementById('permissionsCancelBtn').textContent = '返回';
-permissionsList.innerHTML = '';
-} else {
-// 显示正常权限信息
-modalTitle.textContent = '权限验证结果';
-modalMessage.innerHTML = `<p>您的Token权限验证已完成，以下是详细信息：</p>`;
 permissionsList.innerHTML = `
 <div class="permission-item">
 <div class="permission-icon ${permissions.gist ? 'permission-granted' : 'permission-denied'}">
@@ -450,10 +538,12 @@ ${permissions.repo ? '✓' : '✗'}
 </div>
 <div class="permission-name">仓库 (repo) 权限: ${permissions.repo ? '<span style="color: #28a745;">已授权</span>' : '<span style="color: #dc3545;">未授权</span>'}</div>
 </div>
+<p style="margin-top: 15px; font-size: 13px; color: #6c757d;">
+提示：权限检查基于 GitHub API 返回的 Token 作用域信息。
+</p>
 `;
-document.getElementById('permissionsConfirmBtn').style.display = 'inline-block';
-document.getElementById('permissionsCancelBtn').textContent = '返回修改';
-}
+// 渲染Token状态信息
+renderTokenStatusInfo(statusInfo);
 document.getElementById('permissionsModal').classList.add('show');
 }
 function closePermissionsModal() {
@@ -535,11 +625,26 @@ cancelBtn.style.display = 'none';
 function closeModal() {
 document.getElementById('customModal').classList.remove('show');
 }
-// 页面卸载时清除临时存储
+// 安全增强：页面卸载时清除敏感信息
 window.addEventListener('beforeunload', () => {
+// 清除所有可能的敏感信息
 sessionStorage.removeItem('pending_admin_token');
 sessionStorage.removeItem('pending_selected_module');
 sessionStorage.removeItem('token_permissions');
+sessionStorage.removeItem('admin_token');
+sessionStorage.removeItem('admin_verified');
+sessionStorage.removeItem('admin_permissions');
+sessionStorage.removeItem('selected_module');
+// 清除输入框
+if (document.getElementById('token')) {
+document.getElementById('token').value = '';
+}
+});
+// 页面加载时清空输入框
+window.addEventListener('load', () => {
+if (document.getElementById('token')) {
+document.getElementById('token').value = '';
+}
 });
 </script>
 </body>
