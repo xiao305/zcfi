@@ -171,6 +171,22 @@
     margin: 0;
     font-size: 16px;
     font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.fullscreen-btn {
+    background: none;
+    border: none;
+    color: #4a6fa5;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+.fullscreen-btn:hover {
+    background: #e9ecef;
 }
 .preview-content {
     padding: 20px;
@@ -432,6 +448,14 @@
     padding: 8px 12px !important;
     font-size: 13px !important;
 }
+.homepage-item {
+    background-color: #e9f7fe !important;
+    border-color: #17a2b8 !important;
+}
+.homepage-item .btn-danger,
+.homepage-item .btn-secondary {
+    visibility: hidden;
+}
 /* 页脚配置表单 */
 .footer-config-form .form-group {
     margin-bottom: 20px;
@@ -469,12 +493,17 @@
     margin-top: 15px;
     background: #f8f9fa;
 }
-/* 社交链接配置样式 */
-.social-link-item {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 12px;
+/* 修正：统一社交链接输入框样式 */
+.social-links-config {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
     align-items: center;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    margin-bottom: 12px;
 }
 .social-icon-preview {
     width: 32px;
@@ -485,11 +514,95 @@
     justify-content: center;
     color: white;
     font-size: 16px;
+    flex-shrink: 0;
 }
 .social-github { background-color: #333; }
 .social-weibo { background-color: #e6162d; }
 .social-zhihu { background-color: #0084ff; }
 .social-linkedin { background-color: #0077b5; }
+.social-link-name {
+    font-weight: 500;
+    color: #495057;
+    white-space: nowrap;
+    min-width: 80px;
+}
+/* URL验证样式 */
+.url-validation {
+    margin-top: 5px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.url-valid {
+    color: #28a745;
+}
+.url-invalid {
+    color: #dc3545;
+}
+/* 全屏预览模态框 */
+.fullscreen-preview-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+.fullscreen-preview-modal.show {
+    opacity: 1;
+    visibility: visible;
+}
+.fullscreen-preview-container {
+    width: 100%;
+    max-width: 1200px;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 0 50px rgba(0,0,0,0.5);
+}
+.fullscreen-preview-header {
+    background: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e9ecef;
+}
+.fullscreen-preview-title {
+    font-weight: 600;
+    color: #333;
+}
+.close-fullscreen-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+.close-fullscreen-btn:hover {
+    background: #c82333;
+    transform: scale(1.1);
+}
+.fullscreen-preview-content {
+    padding: 20px;
+}
 /* 响应式设计 */
 @media (max-width: 992px) {
     .config-layout {
@@ -564,6 +677,10 @@
     }
     .preview-footer-content {
         grid-template-columns: 1fr;
+    }
+    /* 修正：移动端社交链接布局 */
+    .social-links-config {
+        grid-template-columns: auto 1fr;
     }
 }
 </style>
@@ -722,7 +839,11 @@
 </div>
 </div>
 <div class="preview-area">
-<h4>预览效果：</h4>
+<h4>预览效果：
+<button class="fullscreen-btn" onclick="openFullscreenPreview('privacy')">
+<i class="fas fa-expand"></i> 全屏预览
+</button>
+</h4>
 <div class="preview-content" id="privacyPreview">
 内容将在这里预览...
 </div>
@@ -776,7 +897,11 @@
 </div>
 </div>
 <div class="preview-area">
-<h4>预览效果：</h4>
+<h4>预览效果：
+<button class="fullscreen-btn" onclick="openFullscreenPreview('terms')">
+<i class="fas fa-expand"></i> 全屏预览
+</button>
+</h4>
 <div class="preview-content" id="termsPreview">
 内容将在这里预览...
 </div>
@@ -830,7 +955,11 @@
 </div>
 </div>
 <div class="preview-area">
-<h4>预览效果：</h4>
+<h4>预览效果：
+<button class="fullscreen-btn" onclick="openFullscreenPreview('copyright')">
+<i class="fas fa-expand"></i> 全屏预览
+</button>
+</h4>
 <div class="preview-content" id="copyrightPreview">
 内容将在这里预览...
 </div>
@@ -857,21 +986,25 @@
 <div class="form-group">
 <label for="navItems"><i class="fas fa-list"></i> 导航菜单项</label>
 <div id="navItemsContainer">
-<!-- 动态生成的导航项表单 -->
+<!-- 动态生成的导航项表单，首页项会自动创建 -->
 </div>
 <button type="button" class="admin-btn btn-secondary" onclick="addNavItem()" style="margin-top: 10px;">
 <i class="fas fa-plus"></i> 添加菜单项
 </button>
 </div>
 <div class="preview-area">
-<h4>导航栏预览：</h4>
+<h4>导航栏预览：
+<button class="fullscreen-btn" onclick="openFullscreenPreview('navigation')">
+<i class="fas fa-expand"></i> 全屏预览
+</button>
+</h4>
 <div class="preview-content">
 <!-- 真实导航栏样式预览 -->
 <div class="preview-nav">
 <div class="preview-navbar">
 <a href="../index.html" class="preview-logo">zcfi<span>.</span>cn</a>
 <ul class="preview-nav-links" id="navPreviewLinks">
-<li><a href="../index.html">首页</a></li>
+<li><a href="https://zcfi.cn">首页</a></li>
 <li><a href="../portfolio.html">作品集</a></li>
 <li><a href="../blog.html">博客</a></li>
 <li><a href="../contact.html">联系我</a></li>
@@ -905,41 +1038,59 @@
 <label for="footerDescription"><i class="fas fa-align-left"></i> 页脚描述</label>
 <textarea id="footerDescription" placeholder="在页脚显示的网站描述，例如：个人网站和作品展示平台"></textarea>
 </div>
-<!-- 社交链接 -->
+<!-- 社交链接 - 修正布局 -->
 <div class="form-group">
 <label><i class="fas fa-share-alt"></i> 社交媒体链接</label>
-<div style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin-top: 10px;">
-<div class="social-link-item">
-<div class="social-icon-preview social-github">
-<i class="fab fa-github"></i>
+<div class="social-links-config">
+<div class="social-icon-preview social-github" title="GitHub"></div>
+<div class="social-link-input">
+    <input type="url" id="githubUrl" placeholder="https://github.com/yourusername" class="form-control"
+        oninput="validateUrl(this)">
+    <div class="url-validation">
+        <i class="fas fa-check-circle url-valid" style="display:none;"></i>
+        <i class="fas fa-exclamation-circle url-invalid" style="display:none;"></i>
+        <span>GitHub 链接</span>
+    </div>
 </div>
-<input type="url" id="githubUrl" placeholder="https://github.com/yourusername" class="form-control">
-<div class="social-link-help">GitHub 链接</div>
 </div>
-<div class="social-link-item">
-<div class="social-icon-preview social-weibo">
-<i class="fab fa-weibo"></i>
+<div class="social-links-config">
+<div class="social-icon-preview social-weibo" title="微博"></div>
+<div class="social-link-input">
+    <input type="url" id="weiboUrl" placeholder="https://weibo.com/yourprofile" class="form-control"
+        oninput="validateUrl(this)">
+    <div class="url-validation">
+        <i class="fas fa-check-circle url-valid" style="display:none;"></i>
+        <i class="fas fa-exclamation-circle url-invalid" style="display:none;"></i>
+        <span>微博链接 (可选)</span>
+    </div>
 </div>
-<input type="url" id="weiboUrl" placeholder="https://weibo.com/yourprofile" class="form-control">
-<div class="social-link-help">微博链接</div>
 </div>
-<div class="social-link-item">
-<div class="social-icon-preview social-zhihu">
-<i class="fab fa-zhihu"></i>
+<div class="social-links-config">
+<div class="social-icon-preview social-zhihu" title="知乎"></div>
+<div class="social-link-input">
+    <input type="url" id="zhihuUrl" placeholder="https://www.zhihu.com/people/yourprofile" class="form-control"
+        oninput="validateUrl(this)">
+    <div class="url-validation">
+        <i class="fas fa-check-circle url-valid" style="display:none;"></i>
+        <i class="fas fa-exclamation-circle url-invalid" style="display:none;"></i>
+        <span>知乎链接 (可选)</span>
+    </div>
 </div>
-<input type="url" id="zhihuUrl" placeholder="https://www.zhihu.com/people/yourprofile" class="form-control">
-<div class="social-link-help">知乎链接</div>
 </div>
-<div class="social-link-item">
-<div class="social-icon-preview social-linkedin">
-<i class="fab fa-linkedin"></i>
+<div class="social-links-config">
+<div class="social-icon-preview social-linkedin" title="LinkedIn"></div>
+<div class="social-link-input">
+    <input type="url" id="linkedinUrl" placeholder="https://linkedin.com/in/yourprofile" class="form-control"
+        oninput="validateUrl(this)">
+    <div class="url-validation">
+        <i class="fas fa-check-circle url-valid" style="display:none;"></i>
+        <i class="fas fa-exclamation-circle url-invalid" style="display:none;"></i>
+        <span>LinkedIn 链接 (可选)</span>
+    </div>
 </div>
-<input type="url" id="linkedinUrl" placeholder="https://linkedin.com/in/yourprofile" class="form-control">
-<div class="social-link-help">LinkedIn 链接</div>
 </div>
-<div style="font-size: 12px; color: #6c757d; margin-top: 10px;">
-注：留空的链接不会在页脚显示
-</div>
+<div style="font-size: 13px; color: #6c757d; margin-top: 8px;">
+注：留空的链接不会在页脚显示。请确保输入完整的 URL (以 http:// 或 https:// 开头)
 </div>
 </div>
 <!-- 快速链接 -->
@@ -948,28 +1099,52 @@
 <div class="footer-links-container" id="quickLinksContainer">
 <div class="footer-link-item">
 <input type="text" class="quick-link-name" placeholder="链接名称 (例如：首页)">
-<input type="text" class="quick-link-url" placeholder="链接地址 (例如：./)">
+<input type="url" class="quick-link-url" placeholder="https://example.com (必须是完整链接)"
+    oninput="validateUrl(this)">
+<div class="url-validation">
+    <i class="fas fa-check-circle url-valid" style="display:none;"></i>
+    <i class="fas fa-exclamation-circle url-invalid" style="display:none;"></i>
+    <span>完整 URL，以 http:// 或 https:// 开头</span>
+</div>
 <button type="button" class="admin-btn btn-danger btn-sm remove-link-btn">
 <i class="fas fa-trash"></i>
 </button>
 </div>
 <div class="footer-link-item">
 <input type="text" class="quick-link-name" placeholder="链接名称 (例如：作品集)">
-<input type="text" class="quick-link-url" placeholder="链接地址 (例如：portfolio.html)">
+<input type="url" class="quick-link-url" placeholder="https://example.com/portfolio (必须是完整链接)"
+    oninput="validateUrl(this)">
+<div class="url-validation">
+    <i class="fas fa-check-circle url-valid" style="display:none;"></i>
+    <i class="fas fa-exclamation-circle url-invalid" style="display:none;"></i>
+    <span>完整 URL，以 http:// 或 https:// 开头</span>
+</div>
 <button type="button" class="admin-btn btn-danger btn-sm remove-link-btn">
 <i class="fas fa-trash"></i>
 </button>
 </div>
 <div class="footer-link-item">
 <input type="text" class="quick-link-name" placeholder="链接名称 (例如：博客)">
-<input type="text" class="quick-link-url" placeholder="链接地址 (例如：blog.html)">
+<input type="url" class="quick-link-url" placeholder="https://example.com/blog (必须是完整链接)"
+    oninput="validateUrl(this)">
+<div class="url-validation">
+    <i class="fas fa-check-circle url-valid" style="display:none;"></i>
+    <i class="fas fa-exclamation-circle url-invalid" style="display:none;"></i>
+    <span>完整 URL，以 http:// 或 https:// 开头</span>
+</div>
 <button type="button" class="admin-btn btn-danger btn-sm remove-link-btn">
 <i class="fas fa-trash"></i>
 </button>
 </div>
 <div class="footer-link-item">
 <input type="text" class="quick-link-name" placeholder="链接名称 (例如：联系我)">
-<input type="text" class="quick-link-url" placeholder="链接地址 (例如：contact.html)">
+<input type="url" class="quick-link-url" placeholder="https://example.com/contact (必须是完整链接)"
+    oninput="validateUrl(this)">
+<div class="url-validation">
+    <i class="fas fa-check-circle url-valid" style="display:none;"></i>
+    <i class="fas fa-exclamation-circle url-invalid" style="display:none;"></i>
+    <span>完整 URL，以 http:// 或 https:// 开头</span>
+</div>
 <button type="button" class="admin-btn btn-danger btn-sm remove-link-btn">
 <i class="fas fa-trash"></i>
 </button>
@@ -979,27 +1154,45 @@
 <i class="fas fa-plus"></i> 添加快速链接
 </button>
 </div>
-<!-- 法律声明链接 -->
+<!-- 法律声明链接 - 可配置 -->
 <div class="form-group">
 <label><i class="fas fa-scale-balanced"></i> 法律声明链接</label>
 <div class="footer-links-container" id="legalLinksContainer">
 <div class="footer-link-item">
-<input type="text" class="legal-link-name" value="隐私政策" placeholder="链接名称">
-<input type="text" class="legal-link-url" value="privacy.html" placeholder="链接地址">
+<input type="text" class="legal-link-name" placeholder="链接名称 (例如：隐私政策)">
+<input type="url" class="legal-link-url" placeholder="https://zcfi.cn/privacy.html (必须是完整链接)"
+    oninput="validateUrl(this)">
+<div class="url-validation">
+    <i class="fas fa-check-circle url-valid" style="display:none;"></i>
+    <i class="fas fa-exclamation-circle url-invalid" style="display:none;"></i>
+    <span>完整 URL，以 http:// 或 https:// 开头</span>
+</div>
 <button type="button" class="admin-btn btn-danger btn-sm remove-link-btn">
 <i class="fas fa-trash"></i>
 </button>
 </div>
 <div class="footer-link-item">
-<input type="text" class="legal-link-name" value="使用条款" placeholder="链接名称">
-<input type="text" class="legal-link-url" value="terms.html" placeholder="链接地址">
+<input type="text" class="legal-link-name" placeholder="链接名称 (例如：使用条款)">
+<input type="url" class="legal-link-url" placeholder="https://zcfi.cn/terms.html (必须是完整链接)"
+    oninput="validateUrl(this)">
+<div class="url-validation">
+    <i class="fas fa-check-circle url-valid" style="display:none;"></i>
+    <i class="fas fa-exclamation-circle url-invalid" style="display:none;"></i>
+    <span>完整 URL，以 http:// 或 https:// 开头</span>
+</div>
 <button type="button" class="admin-btn btn-danger btn-sm remove-link-btn">
 <i class="fas fa-trash"></i>
 </button>
 </div>
 <div class="footer-link-item">
-<input type="text" class="legal-link-name" value="版权声明" placeholder="链接名称">
-<input type="text" class="legal-link-url" value="copyright.html" placeholder="链接地址">
+<input type="text" class="legal-link-name" placeholder="链接名称 (例如：版权声明)">
+<input type="url" class="legal-link-url" placeholder="https://zcfi.cn/copyright.html (必须是完整链接)"
+    oninput="validateUrl(this)">
+<div class="url-validation">
+    <i class="fas fa-check-circle url-valid" style="display:none;"></i>
+    <i class="fas fa-exclamation-circle url-invalid" style="display:none;"></i>
+    <span>完整 URL，以 http:// 或 https:// 开头</span>
+</div>
 <button type="button" class="admin-btn btn-danger btn-sm remove-link-btn">
 <i class="fas fa-trash"></i>
 </button>
@@ -1019,13 +1212,17 @@
 </div>
 </div>
 <div class="preview-area">
-<h4>页脚预览 (真实效果)：</h4>
+<h4>页脚预览 (真实效果)：
+<button class="fullscreen-btn" onclick="openFullscreenPreview('footer')">
+<i class="fas fa-expand"></i> 全屏预览
+</button>
+</h4>
 <div class="preview-content">
 <!-- 真实页脚样式预览 -->
 <footer class="preview-footer">
 <div class="preview-footer-content">
 <div class="preview-footer-about">
-<a href="../index.html" class="preview-footer-logo">zcfi<span>.</span>cn</a>
+<a href="https://zcfi.cn" class="preview-footer-logo">zcfi<span>.</span>cn</a>
 <p id="previewFooterDescription">个人网站和作品展示平台</p>
 <div class="preview-social-links" id="previewSocialLinks">
 <a href="https://github.com" target="_blank"><i class="fab fa-github"></i></a>
@@ -1037,27 +1234,27 @@
 <div class="preview-footer-links">
 <h3 class="preview-footer-heading">快速链接</h3>
 <ul id="previewQuickLinks">
-<li><a href="../index.html">首页</a></li>
-<li><a href="../portfolio.html">作品集</a></li>
-<li><a href="../blog.html">博客</a></li>
-<li><a href="../contact.html">联系我</a></li>
+<li><a href="https://zcfi.cn">首页</a></li>
+<li><a href="https://zcfi.cn/portfolio.html">作品集</a></li>
+<li><a href="https://zcfi.cn/blog.html">博客</a></li>
+<li><a href="https://zcfi.cn/contact.html">联系我</a></li>
 </ul>
 </div>
 <div class="preview-footer-links">
 <h3 class="preview-footer-heading">法律声明</h3>
 <ul id="previewLegalLinks">
-<li><a href="../privacy.html">隐私政策</a></li>
-<li><a href="../terms.html">使用条款</a></li>
-<li><a href="../copyright.html">版权声明</a></li>
+<li><a href="https://zcfi.cn/privacy.html">隐私政策</a></li>
+<li><a href="https://zcfi.cn/terms.html">使用条款</a></li>
+<li><a href="https://zcfi.cn/copyright.html">版权声明</a></li>
 </ul>
 </div>
 </div>
 <div class="preview-compliance">
 <p id="previewCopyright">© 2026 zcfi.cn 版权所有</p>
 <div class="preview-compliance-links" id="previewComplianceLinks">
-<a href="../privacy.html">隐私政策</a>
-<a href="../terms.html">使用条款</a>
-<a href="../copyright.html">版权声明</a>
+<a href="https://zcfi.cn/privacy.html">隐私政策</a>
+<a href="https://zcfi.cn/terms.html">使用条款</a>
+<a href="https://zcfi.cn/copyright.html">版权声明</a>
 </div>
 </div>
 </footer>
@@ -1079,6 +1276,20 @@
 <p style="margin-top: 10px; font-size: 13px; color: #6c757d;">
 注意：保存的配置将同步到GitHub Gist，网站前端会实时加载最新配置。
 </p>
+</div>
+</div>
+</div>
+<!-- 全屏预览模态框 -->
+<div class="fullscreen-preview-modal" id="fullscreenPreviewModal">
+<div class="fullscreen-preview-container">
+<div class="fullscreen-preview-header">
+<div class="fullscreen-preview-title" id="fullscreenPreviewTitle">预览</div>
+<button class="close-fullscreen-btn" onclick="closeFullscreenPreview()">
+<i class="fas fa-times"></i>
+</button>
+</div>
+<div class="fullscreen-preview-content" id="fullscreenPreviewContent">
+<!-- 预览内容将在这里动态生成 -->
 </div>
 </div>
 </div>
@@ -1198,11 +1409,45 @@ function initEventListeners() {
         document.getElementById('previewCopyright').innerHTML = this.value || '© 2026 zcfi.cn 版权所有';
     });
     
+    // 法律声明链接验证
+    document.querySelectorAll('.legal-link-url, .quick-link-url').forEach(input => {
+        input.addEventListener('input', function() {
+            validateUrl(this);
+            previewFooter();
+        });
+    });
+    
     // 社交链接预览
-    document.getElementById('githubUrl').addEventListener('input', previewFooter);
-    document.getElementById('weiboUrl').addEventListener('input', previewFooter);
-    document.getElementById('zhihuUrl').addEventListener('input', previewFooter);
-    document.getElementById('linkedinUrl').addEventListener('input', previewFooter);
+    document.getElementById('githubUrl').addEventListener('input', function() {
+        validateUrl(this);
+        previewFooter();
+    });
+    document.getElementById('weiboUrl').addEventListener('input', function() {
+        validateUrl(this);
+        previewFooter();
+    });
+    document.getElementById('zhihuUrl').addEventListener('input', function() {
+        validateUrl(this);
+        previewFooter();
+    });
+    document.getElementById('linkedinUrl').addEventListener('input', function() {
+        validateUrl(this);
+        previewFooter();
+    });
+    
+    // 关闭全屏预览
+    document.getElementById('fullscreenPreviewModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeFullscreenPreview();
+        }
+    });
+    
+    // ESC关闭全屏预览
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && document.getElementById('fullscreenPreviewModal').classList.contains('show')) {
+            closeFullscreenPreview();
+        }
+    });
 }
 
 // 初始化开关
@@ -1235,21 +1480,42 @@ function initFooterConfig() {
     });
     
     // 为现有的输入框添加事件监听
-    document.querySelectorAll('.quick-link-name, .quick-link-url, .legal-link-name, .legal-link-url').forEach(input => {
+    document.querySelectorAll('.quick-link-name, .legal-link-name').forEach(input => {
         input.addEventListener('input', previewFooter);
     });
+}
+
+// 验证URL格式
+function validateUrl(inputElement) {
+    const url = inputElement.value.trim();
+    const validationElement = inputElement.closest('.footer-link-item, .social-links-config').querySelector('.url-validation');
+    const validIcon = validationElement.querySelector('.url-valid');
+    const invalidIcon = validationElement.querySelector('.url-invalid');
     
-    // 移动端菜单按钮预览
-    document.querySelector('.preview-mobile-menu-btn').addEventListener('click', function() {
-        const navLinks = document.querySelector('.preview-nav-links');
-        navLinks.classList.toggle('active');
-        const icon = this.querySelector('i');
-        if (navLinks.classList.contains('active')) {
-            icon.className = 'fas fa-times';
-        } else {
-            icon.className = 'fas fa-bars';
+    if (!url) {
+        validIcon.style.display = 'none';
+        invalidIcon.style.display = 'none';
+        return;
+    }
+    
+    // 强制URL以http://或https://开头
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        // 尝试自动补全
+        if (url.includes('.')) {
+            inputElement.value = 'https://' + url;
+            validateUrl(inputElement); // 递归验证
+            return;
         }
-    });
+    }
+    
+    try {
+        new URL(url);
+        validIcon.style.display = 'inline-block';
+        invalidIcon.style.display = 'none';
+    } catch (e) {
+        validIcon.style.display = 'none';
+        invalidIcon.style.display = 'inline-block';
+    }
 }
 
 // 加载配置数据
@@ -1333,25 +1599,25 @@ function getDefaultConfig() {
         },
         navigation: {
             items: [
-                { name: '首页', url: './', order: 1 },
-                { name: '作品集', url: 'portfolio.html', order: 2 },
-                { name: '博客', url: 'blog.html', order: 3 },
-                { name: '联系我', url: 'contact.html', order: 4 }
+                { name: '首页', url: 'https://zcfi.cn', order: 1, fixed: true },
+                { name: '作品集', url: 'https://zcfi.cn/portfolio.html', order: 2 },
+                { name: '博客', url: 'https://zcfi.cn/blog.html', order: 3 },
+                { name: '联系我', url: 'https://zcfi.cn/contact.html', order: 4 }
             ],
             lastUpdated: new Date().toISOString()
         },
         footer: {
             description: '个人网站和作品展示平台',
             quickLinks: [
-                { name: '首页', url: './' },
-                { name: '作品集', url: 'portfolio.html' },
-                { name: '博客', url: 'blog.html' },
-                { name: '联系我', url: 'contact.html' }
+                { name: '首页', url: 'https://zcfi.cn' },
+                { name: '作品集', url: 'https://zcfi.cn/portfolio.html' },
+                { name: '博客', url: 'https://zcfi.cn/blog.html' },
+                { name: '联系我', url: 'https://zcfi.cn/contact.html' }
             ],
             legalLinks: [
-                { name: '隐私政策', url: 'privacy.html' },
-                { name: '使用条款', url: 'terms.html' },
-                { name: '版权声明', url: 'copyright.html' }
+                { name: '隐私政策', url: 'https://zcfi.cn/privacy.html' },
+                { name: '使用条款', url: 'https://zcfi.cn/terms.html' },
+                { name: '版权声明', url: 'https://zcfi.cn/copyright.html' }
             ],
             social: {
                 github: 'https://github.com',
@@ -1427,11 +1693,7 @@ function populateFormWithConfig(config) {
         populateQuickLinks(config.footer.quickLinks || []);
         
         // 法律声明链接
-        populateLegalLinks(config.footer.legalLinks || [
-            { name: '隐私政策', url: 'privacy.html' },
-            { name: '使用条款', url: 'terms.html' },
-            { name: '版权声明', url: 'copyright.html' }
-        ]);
+        populateLegalLinks(config.footer.legalLinks || []);
         
         // 版权信息
         document.getElementById('footerCopyright').value = config.footer.copyright || '© 2026 zcfi.cn 版权所有';
@@ -1448,18 +1710,19 @@ function populateNavigationForm(items) {
     // 按order排序
     const sortedItems = [...items].sort((a, b) => (a.order || 0) - (b.order || 0));
     sortedItems.forEach((item, index) => {
+        const isFixed = item.fixed || (item.name === '首页' && item.url === 'https://zcfi.cn');
         const itemHtml = `
-        <div class="nav-item-row">
+        <div class="nav-item-row ${isFixed ? 'homepage-item' : ''}">
             <input type="hidden" name="navOrder" value="${item.order || index + 1}">
-            <input type="text" class="nav-item-name" placeholder="菜单名称" value="${escapeHtml(item.name || '')}">
-            <input type="text" class="nav-item-url" placeholder="链接地址" value="${escapeHtml(item.url || '')}">
-            <button type="button" class="admin-btn btn-danger btn-sm" onclick="removeNavItem(this)">
+            <input type="text" class="nav-item-name" placeholder="菜单名称" value="${escapeHtml(item.name || '')}" ${isFixed ? 'readonly' : ''}>
+            <input type="url" class="nav-item-url" placeholder="链接地址" value="${escapeHtml(item.url || '')}" oninput="validateUrl(this)" ${isFixed ? 'readonly' : ''}>
+            <button type="button" class="admin-btn btn-danger btn-sm" onclick="removeNavItem(this)" ${isFixed ? 'disabled' : ''}>
                 <i class="fas fa-trash"></i>
             </button>
-            <button type="button" class="admin-btn btn-secondary btn-sm" onclick="moveNavItemUp(this)">
+            <button type="button" class="admin-btn btn-secondary btn-sm" onclick="moveNavItemUp(this)" ${isFixed || index === 0 ? 'disabled' : ''}>
                 <i class="fas fa-arrow-up"></i>
             </button>
-            <button type="button" class="admin-btn btn-secondary btn-sm" onclick="moveNavItemDown(this)">
+            <button type="button" class="admin-btn btn-secondary btn-sm" onclick="moveNavItemDown(this)" ${isFixed ? 'disabled' : ''}>
                 <i class="fas fa-arrow-down"></i>
             </button>
         </div>
@@ -1477,7 +1740,7 @@ function addNavItem() {
     <div class="nav-item-row">
         <input type="hidden" name="navOrder" value="${nextOrder}">
         <input type="text" class="nav-item-name" placeholder="菜单名称" value="">
-        <input type="text" class="nav-item-url" placeholder="链接地址" value="">
+        <input type="url" class="nav-item-url" placeholder="https://example.com (完整URL)" value="" oninput="validateUrl(this)">
         <button type="button" class="admin-btn btn-danger btn-sm" onclick="removeNavItem(this)">
             <i class="fas fa-trash"></i>
         </button>
@@ -1496,6 +1759,12 @@ function addNavItem() {
 // 移除导航项
 function removeNavItem(button) {
     const row = button.closest('.nav-item-row');
+    // 检查是否是首页项
+    const nameInput = row.querySelector('.nav-item-name');
+    if (nameInput && nameInput.value === '首页' && nameInput.readOnly) {
+        showResult('info', '操作受限', '首页项不可删除');
+        return;
+    }
     row.remove();
     updateNavItemOrders();
     previewNavigation();
@@ -1504,8 +1773,20 @@ function removeNavItem(button) {
 // 上移导航项
 function moveNavItemUp(button) {
     const row = button.closest('.nav-item-row');
+    // 检查是否是首页项
+    const nameInput = row.querySelector('.nav-item-name');
+    if (nameInput && nameInput.value === '首页' && nameInput.readOnly) {
+        showResult('info', '操作受限', '首页项位置固定');
+        return;
+    }
     const prevRow = row.previousElementSibling;
     if (prevRow && prevRow.classList.contains('nav-item-row')) {
+        // 检查上一项是否是首页项
+        const prevNameInput = prevRow.querySelector('.nav-item-name');
+        if (prevNameInput && prevNameInput.value === '首页' && prevNameInput.readOnly) {
+            showResult('info', '操作受限', '首页项必须在最前面');
+            return;
+        }
         row.parentNode.insertBefore(row, prevRow);
         updateNavItemOrders();
         previewNavigation();
@@ -1515,6 +1796,12 @@ function moveNavItemUp(button) {
 // 下移导航项
 function moveNavItemDown(button) {
     const row = button.closest('.nav-item-row');
+    // 检查是否是首页项
+    const nameInput = row.querySelector('.nav-item-name');
+    if (nameInput && nameInput.value === '首页' && nameInput.readOnly) {
+        showResult('info', '操作受限', '首页项位置固定');
+        return;
+    }
     const nextRow = row.nextElementSibling;
     if (nextRow && nextRow.classList.contains('nav-item-row')) {
         row.parentNode.insertBefore(nextRow, row);
@@ -1529,7 +1816,13 @@ function updateNavItemOrders() {
     items.forEach((item, index) => {
         const orderInput = item.querySelector('input[name="navOrder"]');
         if (orderInput) {
-            orderInput.value = index + 1;
+            // 保持首页项在第一位
+            const nameInput = item.querySelector('.nav-item-name');
+            if (nameInput && nameInput.value === '首页' && nameInput.readOnly) {
+                orderInput.value = 1;
+            } else {
+                orderInput.value = index + 1;
+            }
         }
     });
 }
@@ -1553,7 +1846,7 @@ function previewNavigation() {
     // 按order排序
     const sortedItems = [...items].sort((a, b) => a.order - b.order);
     if (sortedItems.length === 0) {
-        previewElement.innerHTML = '<li><a href="../index.html">首页</a></li>';
+        previewElement.innerHTML = '<li><a href="https://zcfi.cn">首页</a></li>';
         return;
     }
     
@@ -1570,7 +1863,12 @@ function populateQuickLinks(links) {
         container.innerHTML += `
         <div class="footer-link-item">
             <input type="text" class="quick-link-name" placeholder="链接名称" value="${escapeHtml(link.name || '')}">
-            <input type="text" class="quick-link-url" placeholder="链接地址" value="${escapeHtml(link.url || '')}">
+            <input type="url" class="quick-link-url" placeholder="https://example.com (完整URL)" value="${escapeHtml(link.url || '')}" oninput="validateUrl(this)">
+            <div class="url-validation">
+                <i class="fas fa-check-circle url-valid" style="display:none;"></i>
+                <i class="fas fa-exclamation-circle url-invalid" style="display:none;"></i>
+                <span>完整 URL，以 http:// 或 https:// 开头</span>
+            </div>
             <button type="button" class="admin-btn btn-danger btn-sm remove-link-btn">
                 <i class="fas fa-trash"></i>
             </button>
@@ -1581,6 +1879,11 @@ function populateQuickLinks(links) {
     document.querySelectorAll('.remove-link-btn').forEach(btn => {
         btn.removeEventListener('click', removeLinkItem);
         btn.addEventListener('click', removeLinkItem);
+    });
+    // 为新添加的输入框添加事件监听
+    document.querySelectorAll('.quick-link-url').forEach(input => {
+        input.removeEventListener('input', validateQuickLink);
+        input.addEventListener('input', validateQuickLink);
     });
 }
 
@@ -1592,7 +1895,12 @@ function populateLegalLinks(links) {
         container.innerHTML += `
         <div class="footer-link-item">
             <input type="text" class="legal-link-name" placeholder="链接名称" value="${escapeHtml(link.name || '')}">
-            <input type="text" class="legal-link-url" placeholder="链接地址" value="${escapeHtml(link.url || '')}">
+            <input type="url" class="legal-link-url" placeholder="https://example.com/page.html (完整URL)" value="${escapeHtml(link.url || '')}" oninput="validateUrl(this)">
+            <div class="url-validation">
+                <i class="fas fa-check-circle url-valid" style="display:none;"></i>
+                <i class="fas fa-exclamation-circle url-invalid" style="display:none;"></i>
+                <span>完整 URL，以 http:// 或 https:// 开头</span>
+            </div>
             <button type="button" class="admin-btn btn-danger btn-sm remove-link-btn">
                 <i class="fas fa-trash"></i>
             </button>
@@ -1604,11 +1912,25 @@ function populateLegalLinks(links) {
         btn.removeEventListener('click', removeLinkItem);
         btn.addEventListener('click', removeLinkItem);
     });
+    // 为新添加的输入框添加事件监听
+    document.querySelectorAll('.legal-link-url').forEach(input => {
+        input.removeEventListener('input', validateLegalLink);
+        input.addEventListener('input', validateLegalLink);
+    });
 }
 
 // 移除链接项
 function removeLinkItem() {
-    this.closest('.footer-link-item').remove();
+    const item = this.closest('.footer-link-item');
+    // 检查是否是必须的法律声明链接
+    const linkNameInput = item.querySelector('.legal-link-name, .quick-link-name');
+    if (linkNameInput && ['隐私政策', '使用条款', '版权声明'].includes(linkNameInput.value)) {
+        if (document.querySelectorAll('.footer-link-item').length <= 3) {
+            showResult('info', '操作受限', '至少需要3个法律声明链接');
+            return;
+        }
+    }
+    item.remove();
     previewFooter();
 }
 
@@ -1618,7 +1940,12 @@ function addQuickLink() {
     const itemHtml = `
     <div class="footer-link-item">
         <input type="text" class="quick-link-name" placeholder="链接名称" value="">
-        <input type="text" class="quick-link-url" placeholder="链接地址" value="">
+        <input type="url" class="quick-link-url" placeholder="https://example.com (完整URL)" value="" oninput="validateUrl(this)">
+        <div class="url-validation">
+            <i class="fas fa-check-circle url-valid" style="display:none;"></i>
+            <i class="fas fa-exclamation-circle url-invalid" style="display:none;"></i>
+            <span>完整 URL，以 http:// 或 https:// 开头</span>
+        </div>
         <button type="button" class="admin-btn btn-danger btn-sm remove-link-btn">
             <i class="fas fa-trash"></i>
         </button>
@@ -1628,8 +1955,9 @@ function addQuickLink() {
     // 为新添加的删除按钮添加事件监听
     container.lastElementChild.querySelector('.remove-link-btn').addEventListener('click', removeLinkItem);
     // 为新添加的输入框添加事件监听
-    container.lastElementChild.querySelectorAll('input').forEach(input => {
-        input.addEventListener('input', previewFooter);
+    container.lastElementChild.querySelector('.quick-link-url').addEventListener('input', function() {
+        validateUrl(this);
+        previewFooter();
     });
 }
 
@@ -1639,7 +1967,12 @@ function addLegalLink() {
     const itemHtml = `
     <div class="footer-link-item">
         <input type="text" class="legal-link-name" placeholder="链接名称" value="">
-        <input type="text" class="legal-link-url" placeholder="链接地址" value="">
+        <input type="url" class="legal-link-url" placeholder="https://example.com/page.html (完整URL)" value="" oninput="validateUrl(this)">
+        <div class="url-validation">
+            <i class="fas fa-check-circle url-valid" style="display:none;"></i>
+            <i class="fas fa-exclamation-circle url-invalid" style="display:none;"></i>
+            <span>完整 URL，以 http:// 或 https:// 开头</span>
+        </div>
         <button type="button" class="admin-btn btn-danger btn-sm remove-link-btn">
             <i class="fas fa-trash"></i>
         </button>
@@ -1649,8 +1982,9 @@ function addLegalLink() {
     // 为新添加的删除按钮添加事件监听
     container.lastElementChild.querySelector('.remove-link-btn').addEventListener('click', removeLinkItem);
     // 为新添加的输入框添加事件监听
-    container.lastElementChild.querySelectorAll('input').forEach(input => {
-        input.addEventListener('input', previewFooter);
+    container.lastElementChild.querySelector('.legal-link-url').addEventListener('input', function() {
+        validateUrl(this);
+        previewFooter();
     });
 }
 
@@ -1699,6 +2033,7 @@ function previewFooter() {
             const li = document.createElement('li');
             const a = document.createElement('a');
             a.href = urlInput.value.trim();
+            a.target = '_blank';
             a.textContent = nameInput.value.trim();
             li.appendChild(a);
             quickLinksContainer.appendChild(li);
@@ -1716,6 +2051,7 @@ function previewFooter() {
             const li = document.createElement('li');
             const a = document.createElement('a');
             a.href = urlInput.value.trim();
+            a.target = '_blank';
             a.textContent = nameInput.value.trim();
             li.appendChild(a);
             legalLinksContainer.appendChild(li);
@@ -1733,6 +2069,7 @@ function previewFooter() {
         if (nameInput && urlInput && nameInput.value && urlInput.value) {
             const a = document.createElement('a');
             a.href = urlInput.value.trim();
+            a.target = '_blank';
             a.textContent = nameInput.value.trim();
             complianceLinksContainer.appendChild(a);
         }
@@ -1741,6 +2078,96 @@ function previewFooter() {
     // 6. 版权信息
     const copyrightText = document.getElementById('footerCopyright').value.trim() || '© 2026 zcfi.cn 版权所有';
     document.getElementById('previewCopyright').innerHTML = copyrightText;
+}
+
+// 全屏预览
+function openFullscreenPreview(type) {
+    const modal = document.getElementById('fullscreenPreviewModal');
+    const title = document.getElementById('fullscreenPreviewTitle');
+    const content = document.getElementById('fullscreenPreviewContent');
+    
+    title.textContent = getFullscreenPreviewTitle(type);
+    
+    let previewHtml = '';
+    switch(type) {
+        case 'privacy':
+            previewHtml = `<div style="padding: 20px; background: white;">
+                <h2>${escapeHtml(document.getElementById('privacyTitle').value || '隐私政策')}</h2>
+                <div>${document.getElementById('privacyContent').value || '<p>暂无内容</p>'}</div>
+            </div>`;
+            break;
+        case 'terms':
+            previewHtml = `<div style="padding: 20px; background: white;">
+                <h2>${escapeHtml(document.getElementById('termsTitle').value || '使用条款')}</h2>
+                <div>${document.getElementById('termsContent').value || '<p>暂无内容</p>'}</div>
+            </div>`;
+            break;
+        case 'copyright':
+            previewHtml = `<div style="padding: 20px; background: white;">
+                <h2>${escapeHtml(document.getElementById('copyrightTitle').value || '版权声明')}</h2>
+                <div>${document.getElementById('copyrightContent').value || '<p>暂无内容</p>'}</div>
+            </div>`;
+            break;
+        case 'navigation':
+            previewHtml = `
+            <div style="padding: 20px;">
+                <div class="preview-nav">
+                    <div class="preview-navbar">
+                        <a href="https://zcfi.cn" class="preview-logo">zcfi<span>.</span>cn</a>
+                        <ul class="preview-nav-links">
+                            ${Array.from(document.querySelectorAll('#navPreviewLinks li')).map(li => li.innerHTML).join('')}
+                        </ul>
+                        <div class="preview-mobile-menu-btn">
+                            <i class="fas fa-bars"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `;
+            break;
+        case 'footer':
+            previewHtml = `
+            <div style="padding: 20px;">
+                ${document.querySelector('.preview-footer').outerHTML}
+            </div>
+            `;
+            break;
+    }
+    
+    content.innerHTML = previewHtml;
+    modal.classList.add('show');
+    
+    // 初始化预览中的交互
+    if (type === 'navigation') {
+        const mobileBtn = content.querySelector('.preview-mobile-menu-btn');
+        if (mobileBtn) {
+            mobileBtn.addEventListener('click', function() {
+                const navLinks = content.querySelector('.preview-nav-links');
+                navLinks.classList.toggle('active');
+                const icon = this.querySelector('i');
+                if (navLinks.classList.contains('active')) {
+                    icon.className = 'fas fa-times';
+                } else {
+                    icon.className = 'fas fa-bars';
+                }
+            });
+        }
+    }
+}
+
+function closeFullscreenPreview() {
+    document.getElementById('fullscreenPreviewModal').classList.remove('show');
+}
+
+function getFullscreenPreviewTitle(type) {
+    const titles = {
+        'privacy': '隐私政策预览',
+        'terms': '使用条款预览',
+        'copyright': '版权声明预览',
+        'navigation': '导航栏全屏预览',
+        'footer': '页脚全屏预览'
+    };
+    return titles[type] || '预览';
 }
 
 // 保存当前部分
@@ -1821,16 +2248,28 @@ function saveCurrentSection(section) {
                 const urlInput = row.querySelector('.nav-item-url');
                 const orderInput = row.querySelector('input[name="navOrder"]');
                 if (nameInput && urlInput && nameInput.value && urlInput.value) {
+                    const isHomePage = nameInput.value === '首页' && urlInput.value === 'https://zcfi.cn';
                     navItems.push({
                         name: nameInput.value.trim(),
                         url: urlInput.value.trim(),
-                        order: parseInt(orderInput?.value || '0')
+                        order: parseInt(orderInput?.value || '0'),
+                        fixed: isHomePage
                     });
                 }
             });
             if (navItems.length === 0) {
                 showResult('error', '输入错误', '请至少添加一个导航菜单项');
                 return;
+            }
+            // 确保首页项存在
+            const hasHomePage = navItems.some(item => item.fixed);
+            if (!hasHomePage) {
+                navItems.unshift({
+                    name: '首页',
+                    url: 'https://zcfi.cn',
+                    order: 1,
+                    fixed: true
+                });
             }
             sectionData.navigation = {
                 items: navItems,
