@@ -492,9 +492,7 @@ statusIcon.className = 'fas fa-times-circle status-bad';
 async function validateAndLogin() {
 const token = document.getElementById('token').value.trim();
 if (!token.startsWith('ghp_')) {
-// 确保在显示错误前关闭加载弹窗
 closeModal();
-// 使用权限弹窗显示错误
 showPermissionsModal({
 gist: false,
 repo: false
@@ -507,34 +505,36 @@ return;
 }
 showLoadingModal('正在验证 Token...');
 try {
-// 首先验证Token基本有效性
-const response = await fetch(GIST_URL, {
-headers: {
-'Authorization': `token ${token}`,
-'Accept': 'application/vnd.github.v3+json'
-}
-});
-if (!response.ok) {
-throw new Error(`验证失败: ${response.status} ${response.statusText}`);
-}
-// 验证成功，检查详细权限
+// 1. 首先检查Token状态（这是最基础的验证）
 closeModal();
-showLoadingModal('正在检查权限...');
-const permissions = await checkTokenPermissions(token);
-// 检查Token状态
+showLoadingModal('正在检查Token状态...');
 const statusInfo = await checkTokenStatus(token);
 closeModal();
-// 显示权限检查结果
+
+// 2. 如果Token状态无效，直接显示错误（不再检查权限）
+if (!statusInfo.isValid) {
+showPermissionsModal({
+gist: false,
+repo: false
+}, statusInfo);
+return;
+}
+
+// 3. Token状态有效，再检查权限
+showLoadingModal('正在检查权限...');
+const permissions = await checkTokenPermissions(token);
+closeModal();
+
+// 4. 显示权限检查结果
 showPermissionsModal(permissions, statusInfo);
-// 保存token和选择的模块，等待用户确认
+
+// 5. 保存token和选择的模块，等待用户确认
 sessionStorage.setItem('pending_admin_token', token);
 sessionStorage.setItem('pending_selected_module', selectedModule);
 sessionStorage.setItem('token_permissions', JSON.stringify(permissions));
 } catch (error) {
 console.error('Token 验证失败:', error);
-// 关键修复：确保在catch块中也关闭加载弹窗
 closeModal();
-// 使用权限弹窗显示错误
 showPermissionsModal({
 gist: false,
 repo: false
@@ -574,7 +574,7 @@ ${permissions.repo ? '✓' : '✗'}
 </p>
 `;
 } else {
-// 验证失败
+// 验证失败 - 仅显示Token状态错误，不显示权限信息
 modalTitle.textContent = '验证失败';
 modalMessage.textContent = '无法验证您的Token，请检查以下信息：';
 confirmBtn.style.display = 'none';
@@ -602,7 +602,6 @@ document.getElementById('permissionsModal').classList.add('show');
 }
 function closePermissionsModal() {
 document.getElementById('permissionsModal').classList.remove('show');
-// 确保同时关闭加载弹窗
 closeModal();
 }
 function confirmPermissionsAndNavigate() {
