@@ -9,10 +9,24 @@
     <link rel="icon" type="image/svg+xml" href="../favicon/favicon.svg">
     <link rel="icon" type="image/png" sizes="96x96" href="../favicon/favicon-96x96.png">
     <link rel="icon" type="image/x-icon" href="../favicon/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="../favicon/apple-touch-icon.png">
     
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="../favicon/site.webmanifest">
+    
+    <!-- Web App Icons -->
+    <link rel="apple-touch-icon" sizes="192x192" href="../favicon/web-app-manifest-192x192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="../favicon/web-app-manifest-512x512.png">
+    
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
     
     <style>
         /* 保持原有样式 */
@@ -21,6 +35,7 @@
             padding: 40px;
             border-radius: 8px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            margin-top: 20px;
         }
         
         .terms-container h3 {
@@ -71,29 +86,38 @@
             padding-top: 15px;
             border-top: 1px solid #eee;
         }
+        
+        /* 页面内容调整，避免被导航栏遮挡 */
+        main {
+            margin-top: 100px;
+            padding: 60px 0;
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .terms-container {
+                padding: 25px;
+            }
+            
+            main {
+                margin-top: 80px;
+                padding: 40px 0;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .terms-container {
+                padding: 20px;
+            }
+        }
     </style>
 </head>
 <body>
-    <!-- 头部导航 -->
-    <header>
-        <div class="container">
-            <nav class="navbar">
-                <a href="../index.html" class="logo">zcfi<span>.</span>cn</a>
-                <ul class="nav-links">
-                    <li><a href="../index.html">首页</a></li>
-                    <!-- 已删除关于我导航 -->
-                    <li><a href="../portfolio.html">作品集</a></li>
-                    <li><a href="../blog.html">博客</a></li>
-                    <li><a href="../contact.html">联系我</a></li>
-                </ul>
-                <div class="mobile-menu-btn">
-                    <i class="fas fa-bars"></i>
-                </div>
-            </nav>
-        </div>
-    </header>
+    <!-- 头部导航容器（与首页相同） -->
+    <div id="navbar-container"></div>
 
-    <main style="margin-top: 100px; padding: 80px 0;">
+    <!-- 主内容 -->
+    <main>
         <div class="container">
             <div class="section-title">
                 <h2 id="pageTitle">使用条款</h2>
@@ -105,94 +129,97 @@
         </div>
     </main>
 
-    <!-- 页脚 -->
-    <footer>
-        <div class="container">
-            <div class="compliance">
-                <p>© 2026 zcfi.cn 版权所有</p>
-            </div>
-        </div>
-    </footer>
+    <!-- 页脚容器（与首页相同） -->
+    <div id="footer-container"></div>
 
+    <!-- Gist渲染器（与首页相同，路径调整） -->
+    <script src="../assets/js/gist-renderer.js"></script>
+    
+    <!-- 页面初始化 -->
     <script>
-        // 配置Gist信息
-        const CONFIG_GIST_ID = '983bb7371ddb439a2fcbfb4885e34d14';
-        const CONFIG_RAW_URL = `https://gist.githubusercontent.com/xiao305/${CONFIG_GIST_ID}/raw/config.json`;
-        
-        // 页面类型
-        const PAGE_TYPE = 'terms';
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            loadPageContent();
-        });
-        
-        async function loadPageContent() {
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('使用条款页面开始加载...');
+            
+            // 确保GistRenderer已加载（与首页相同）
+            if (!window.gistRenderer) {
+                console.error('gist-renderer.js未正确加载');
+                showErrorFallback();
+                return;
+            }
+            
             try {
-                console.log('正在加载使用条款内容...');
-                const timestamp = new Date().getTime();
-                const response = await fetch(`${CONFIG_RAW_URL}?t=${timestamp}`);
+                // 加载网站配置（与首页相同）
+                const configData = await window.gistRenderer.loadConfig();
                 
-                if (!response.ok) {
-                    showError('无法加载配置数据，请稍后重试');
-                    return;
+                // 更新页面标题
+                if (configData.site && configData.site.name) {
+                    document.title = `${configData.site.name} | 使用条款`;
                 }
                 
-                const configData = await response.json();
+                // 渲染导航栏和页脚（与首页相同）
+                await window.gistRenderer.renderAll();
                 
+                // 加载使用条款内容
+                loadTermsContent(configData);
+                
+            } catch (error) {
+                console.error('初始化失败:', error);
+                showErrorFallback();
+            }
+        });
+        
+        // 加载使用条款内容
+        async function loadTermsContent(configData) {
+            try {
                 // 检查使用条款是否启用
-                if (!configData[PAGE_TYPE] || !configData[PAGE_TYPE].enabled) {
+                if (!configData.terms || !configData.terms.enabled) {
                     showDisabledMessage();
                     return;
                 }
                 
                 // 更新页面标题
-                document.title = `${configData[PAGE_TYPE].title} | zcfi.cn`;
-                document.getElementById('pageTitle').textContent = configData[PAGE_TYPE].title;
+                document.getElementById('pageTitle').textContent = configData.terms.title || '使用条款';
                 
-                // 显示最后更新时间
-                if (configData[PAGE_TYPE].lastUpdated) {
-                    const date = new Date(configData[PAGE_TYPE].lastUpdated);
-                    const dateStr = date.toLocaleDateString('zh-CN', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                    });
-                    document.getElementById('pageSubtitle').innerHTML = `<i class="fas fa-history"></i> 最后更新: ${dateStr}`;
+                // 更新子标题
+                const pageSubtitle = document.getElementById('pageSubtitle');
+                if (pageSubtitle) {
+                    if (configData.terms.lastUpdated) {
+                        const date = new Date(configData.terms.lastUpdated);
+                        const dateStr = date.toLocaleDateString('zh-CN', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+                        pageSubtitle.innerHTML = `<i class="fas fa-history"></i> 最后更新: ${dateStr}`;
+                    } else {
+                        pageSubtitle.textContent = '';
+                    }
                 }
                 
                 // 填充内容
                 const contentContainer = document.getElementById('contentContainer');
-                contentContainer.innerHTML = configData[PAGE_TYPE].content || '<p>暂无内容</p>';
-                
-                // 添加最后更新时间戳
-                if (configData[PAGE_TYPE].lastUpdated) {
-                    const lastUpdatedDiv = document.createElement('div');
-                    lastUpdatedDiv.className = 'last-updated';
-                    lastUpdatedDiv.innerHTML = `<p><i class="fas fa-clock"></i> 最后更新时间: ${configData[PAGE_TYPE].lastUpdated}</p>`;
-                    contentContainer.appendChild(lastUpdatedDiv);
+                if (configData.terms.content) {
+                    contentContainer.innerHTML = configData.terms.content;
+                    
+                    // 添加最后更新时间戳
+                    if (configData.terms.lastUpdated) {
+                        const lastUpdatedDiv = document.createElement('div');
+                        lastUpdatedDiv.className = 'last-updated';
+                        lastUpdatedDiv.innerHTML = `<p><i class="fas fa-clock"></i> 最后更新时间: ${configData.terms.lastUpdated}</p>`;
+                        contentContainer.appendChild(lastUpdatedDiv);
+                    }
+                } else {
+                    contentContainer.innerHTML = '<div class="error-message"><p><i class="fas fa-exclamation-circle"></i> 使用条款内容为空</p></div>';
                 }
                 
             } catch (error) {
-                console.error('加载内容失败:', error);
-                showError('加载内容失败，请检查网络连接或稍后重试');
+                console.error('加载使用条款内容失败:', error);
+                showErrorMessage('加载内容失败，请检查网络连接或稍后重试');
             }
         }
         
-        function showError(message) {
-            document.getElementById('pageTitle').textContent = '加载失败';
-            document.getElementById('pageSubtitle').textContent = '';
-            
-            const contentContainer = document.getElementById('contentContainer');
-            contentContainer.innerHTML = `
-                <div class="error-message">
-                    <p><i class="fas fa-exclamation-triangle"></i> ${message}</p>
-                    <button onclick="loadPageContent()" style="margin-top: 15px; padding: 10px 20px; background: #4a6fa5; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                        <i class="fas fa-redo"></i> 重新加载
-                    </button>
-                </div>
-            `;
-        }
-        
+        // 显示禁用消息
         function showDisabledMessage() {
             document.getElementById('pageTitle').textContent = '页面不可用';
             document.getElementById('pageSubtitle').textContent = '';
@@ -208,6 +235,42 @@
                 </div>
             `;
         }
+        
+        // 显示错误消息
+        function showErrorMessage(message) {
+            document.getElementById('pageTitle').textContent = '加载失败';
+            document.getElementById('pageSubtitle').textContent = '';
+            
+            const contentContainer = document.getElementById('contentContainer');
+            contentContainer.innerHTML = `
+                <div class="error-message">
+                    <p><i class="fas fa-exclamation-triangle"></i> ${message}</p>
+                    <button onclick="location.reload()" style="margin-top: 15px; padding: 10px 20px; background: #4a6fa5; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        <i class="fas fa-redo"></i> 重新加载
+                    </button>
+                </div>
+            `;
+        }
+        
+        // 全局加载失败处理
+        function showErrorFallback() {
+            const contentContainer = document.getElementById('contentContainer');
+            
+            if (contentContainer && contentContainer.innerHTML.includes('正在加载')) {
+                contentContainer.innerHTML = `
+                    <div class="error-message">
+                        <p>❌ 页面初始化失败</p>
+                        <p>请检查网络连接，或稍后重试。</p>
+                        <a href="../index.html" style="display: inline-block; margin-top: 15px; padding: 10px 20px; background: #4a6fa5; color: white; border-radius: 5px; text-decoration: none;">
+                            <i class="fas fa-home"></i> 返回首页
+                        </a>
+                    </div>
+                `;
+            }
+        }
     </script>
+    
+    <!-- 主交互脚本（与首页相同，路径调整） -->
+    <script src="../assets/js/main.js"></script>
 </body>
 </html>
