@@ -166,6 +166,7 @@
   border-radius: 8px;
   background: #e3f2fd;
   border: 1px solid #bbdefb;
+  text-align: left;
 }
 .token-status-warning {
   background: #fff8e1;
@@ -175,9 +176,13 @@
   background: #ffebee;
   border-color: #ffcdd2;
 }
+.token-status-success {
+  background: #d4edda;
+  border-color: #c3e6cb;
+}
 .status-label {
   font-weight: 600;
-  margin-bottom: 5px;
+  margin-bottom: 10px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -185,6 +190,40 @@
 .status-message {
   font-size: 14px;
   line-height: 1.5;
+  margin-bottom: 10px;
+}
+.permission-icons-row {
+  display: flex;
+  gap: 20px;
+  margin-top: 10px;
+}
+.permission-icon-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+.permission-icon-small {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+.permission-icon-granted {
+  background-color: #28a745;
+  color: white;
+}
+.permission-icon-denied {
+  background-color: #dc3545;
+  color: white;
+}
+.permission-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #495057;
 }
 .status-good {
   color: #28a745;
@@ -199,6 +238,10 @@
 @media (max-width: 768px) {
   .modules-grid {
     grid-template-columns: 1fr;
+  }
+  .permission-icons-row {
+    flex-direction: column;
+    gap: 10px;
   }
 }
 /* 修正：表单容器 */
@@ -474,43 +517,90 @@ async function checkTokenStatus(token) {
 }
 
 // 渲染Token状态信息
-function renderTokenStatusInfo(statusInfo) {
+function renderTokenStatusInfo(permissions, statusInfo) {
   const container = document.getElementById('tokenStatusSectionContainer');
   
-  let iconClass, iconType, titleText, messageText, statusClass;
+  // 根据权限和状态生成描述信息
+  let statusClass, iconClass, iconType, titleText, messageText, allowAccess;
   
-  if (statusInfo.status === 'good') {
-    iconClass = 'status-good';
-    iconType = 'fa-check-circle';
-    titleText = 'Token 状态: 正常';
-    messageText = statusInfo.message;
-    statusClass = 'token-status-section';
-  } else if (statusInfo.status === 'rate_limited') {
-    iconClass = 'status-warning';
-    iconType = 'fa-exclamation-triangle';
-    titleText = 'Token 状态: 速率限制';
-    messageText = statusInfo.message;
-    statusClass = 'token-status-section token-status-warning';
-  } else {
+  // 首先检查是否允许访问（必须有gist权限）
+  allowAccess = statusInfo.isValid && permissions.gist;
+  
+  // 根据不同的权限组合设置显示内容
+  if (!statusInfo.isValid) {
+    // Token无效
+    statusClass = 'token-status-alert';
     iconClass = 'status-bad';
     iconType = 'fa-times-circle';
     titleText = 'Token 状态: 无效';
     messageText = statusInfo.message;
-    statusClass = 'token-status-section token-status-alert';
+  } else if (statusInfo.status === 'rate_limited') {
+    // Token被限制
+    statusClass = 'token-status-warning';
+    iconClass = 'status-warning';
+    iconType = 'fa-exclamation-triangle';
+    titleText = 'Token 状态: 速率限制';
+    messageText = statusInfo.message;
+  } else if (permissions.gist && permissions.repo) {
+    // 有所有权限
+    statusClass = 'token-status-success';
+    iconClass = 'status-good';
+    iconType = 'fa-check-circle';
+    titleText = 'Token 状态: 正常';
+    messageText = 'Token有效，可以正常使用所有授权功能。';
+  } else if (permissions.gist && !permissions.repo) {
+    // 只有gist权限
+    statusClass = 'token-status-warning';
+    iconClass = 'status-warning';
+    iconType = 'fa-exclamation-triangle';
+    titleText = 'Token 状态: 部分权限';
+    messageText = 'Token有效，但缺少仓库(repo)权限，无法使用自动生成博客页面等高级功能。';
+  } else if (!permissions.gist && permissions.repo) {
+    // 只有repo权限（不允许访问）
+    statusClass = 'token-status-alert';
+    iconClass = 'status-bad';
+    iconType = 'fa-times-circle';
+    titleText = 'Token 状态: 权限不足';
+    messageText = 'Token有效，但缺少gist权限，无法使用任何后台功能。';
+  } else {
+    // 没有权限
+    statusClass = 'token-status-alert';
+    iconClass = 'status-bad';
+    iconType = 'fa-times-circle';
+    titleText = 'Token 状态: 无权限';
+    messageText = 'Token有效，但缺少gist和repo权限，无法使用任何后台功能。';
   }
+  
+  // 构建权限图标行
+  const gistIconClass = permissions.gist ? 'permission-icon-granted' : 'permission-icon-denied';
+  const repoIconClass = permissions.repo ? 'permission-icon-granted' : 'permission-icon-denied';
+  const gistIcon = permissions.gist ? '✓' : '✗';
+  const repoIcon = permissions.repo ? '✓' : '✗';
   
   // 构建状态显示HTML
   const statusHTML = `
-    <div class="${statusClass}" id="tokenStatusSection">
-      <p class="status-label">
+    <div class="token-status-section ${statusClass}" id="tokenStatusSection">
+      <div class="status-label">
         <i class="fas ${iconType} ${iconClass}"></i> <span id="statusTitle">${titleText}</span>
-      </p>
-      <p class="status-message" id="statusMessage">${messageText}</p>
+      </div>
+      <div class="status-message" id="statusMessage">${messageText}</div>
+      <div class="permission-icons-row">
+        <div class="permission-icon-item">
+          <div class="permission-icon-small ${gistIconClass}">${gistIcon}</div>
+          <div class="permission-label">Gist 权限</div>
+        </div>
+        <div class="permission-icon-item">
+          <div class="permission-icon-small ${repoIconClass}">${repoIcon}</div>
+          <div class="permission-label">Repo 权限</div>
+        </div>
+      </div>
     </div>
   `;
   
   // 直接替换整个状态区域
   container.innerHTML = statusHTML;
+  
+  return allowAccess;
 }
 
 // 验证和登录
@@ -539,7 +629,7 @@ async function validateAndLogin() {
     const statusInfo = await checkTokenStatus(token);
     closeModal();
 
-    // 2. 如果Token状态无效，直接显示错误（不再检查权限）
+    // 2. 如果Token状态无效，直接显示错误
     if (!statusInfo.isValid) {
       showPermissionsModal({
         gist: false,
@@ -585,7 +675,6 @@ function showPermissionsModal(permissions, statusInfo) {
     // 验证成功
     modalTitle.textContent = '权限验证结果';
     modalMessage.textContent = '您的Token权限验证已完成，以下是详细信息：';
-    confirmBtn.style.display = 'inline-block';
     
     // 构建权限列表HTML
     permissionsList.innerHTML = `
@@ -609,7 +698,6 @@ function showPermissionsModal(permissions, statusInfo) {
     // 验证失败 - 仅显示Token状态错误，不显示权限信息
     modalTitle.textContent = '验证失败';
     modalMessage.textContent = '无法验证您的Token，请检查以下信息：';
-    confirmBtn.style.display = 'none';
     
     permissionsList.innerHTML = `
       <div style="padding: 15px; background: #ffebee; border-radius: 8px; margin-bottom: 15px;">
@@ -632,8 +720,11 @@ function showPermissionsModal(permissions, statusInfo) {
     `;
   }
   
-  // 渲染Token状态信息
-  renderTokenStatusInfo(statusInfo);
+  // 渲染Token状态信息并获取是否允许访问
+  const allowAccess = renderTokenStatusInfo(permissions, statusInfo);
+  
+  // 根据是否允许访问设置确认按钮的显示状态
+  confirmBtn.style.display = allowAccess ? 'inline-block' : 'none';
   
   // 显示弹窗
   document.getElementById('permissionsModal').classList.add('show');
@@ -651,6 +742,12 @@ function confirmPermissionsAndNavigate() {
   const token = sessionStorage.getItem('pending_admin_token');
   const module = sessionStorage.getItem('pending_selected_module');
   const permissions = JSON.parse(sessionStorage.getItem('token_permissions') || '{}');
+  
+  // 再次验证是否有gist权限（这是必需的）
+  if (!permissions.gist) {
+    showModal('权限不足', '缺少必要的gist权限，无法进入管理后台。', 'error');
+    return;
+  }
   
   // 保存验证信息
   sessionStorage.setItem('admin_token', token);
