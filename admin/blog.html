@@ -123,16 +123,6 @@ word-break: break-all;
 margin-top: 8px;
 color: #4a6fa5;
 }
-/* 权限不足提示 */
-.permission-disabled {
-background: #f8d7da;
-border: 1px solid #f5c6cb;
-color: #721c24;
-padding: 10px;
-border-radius: 6px;
-margin-bottom: 15px;
-font-size: 13px;
-}
 /* 开关控件 */
 .toggle-switch {
 display: flex;
@@ -208,15 +198,6 @@ box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 background: #adb5bd;
 cursor: not-allowed;
 opacity: 0.6;
-}
-/* API错误提示 */
-.api-error-message {
-background: #f8d7da;
-border-left: 4px solid #dc3545;
-padding: 12px 15px;
-margin: 10px 0;
-border-radius: 4px;
-font-size: 13px;
 }
 /* 移动端优化 */
 @media (max-width: 768px) {
@@ -431,21 +412,6 @@ width: 100%;
 </div>
 </div>
 </div>
-<!-- API错误提示弹窗 -->
-<div class="custom-modal" id="apiErrorModal">
-<div class="modal-content">
-<div class="modal-header">
-<i class="fas fa-exclamation-triangle" style="color: #dc3545;"></i>
-</div>
-<div class="modal-title" id="apiErrorTitle">API请求失败</div>
-<div class="modal-message" id="apiErrorMessage">
-<p>无法连接到GitHub API，可能是网络问题或CORS限制。</p>
-</div>
-<div class="modal-buttons">
-<button class="modal-btn btn-primary" id="closeApiErrorBtn">确定</button>
-</div>
-</div>
-</div>
 <!-- 加载弹窗 -->
 <div class="custom-modal" id="loadingModal">
 <div class="modal-content">
@@ -479,7 +445,7 @@ window.location.href = 'index.html';
 const GIST_ID = '73cc78400c25eb9effed665e2c89843d';
 const GIST_URL = `https://api.github.com/gists/${GIST_ID}`;
 const REPO_OWNER = 'xiao305';
-const REPO_NAME = 'zcfi.cn';
+const REPO_NAME = 'zcfi';  // ✅ 修正：仓库名是 zcfi，不是 zcfi.cn
 const REPO_BRANCH = 'main';
 const token = sessionStorage.getItem('admin_token');
 const permissions = JSON.parse(sessionStorage.getItem('admin_permissions') || '{}');
@@ -488,18 +454,17 @@ let currentBlogData = [];
 let pendingAction = null;
 let pendingActionData = null;
 let hasRepoPermission = false;
-// CORS代理列表（多个备选）
+// CORS代理列表
 const CORS_PROXIES = [
 'https://api.allorigins.win/raw?url=',
 'https://corsproxy.io/?',
-'https://api.codetabs.com/v1/proxy?quest=',
-'https://cors-anywhere.herokuapp.com/'
+'https://api.codetabs.com/v1/proxy?quest='
 ];
 // 页面加载时初始化
 document.addEventListener('DOMContentLoaded', function() {
 initEventListeners();
 checkAndDisplayPermissions();
-loadBlogData(true); // 页面加载时不显示刷新提示
+loadBlogData(true);
 });
 // 检查并显示权限
 function checkAndDisplayPermissions() {
@@ -508,7 +473,6 @@ const permissionLevel = document.getElementById('tokenPermissionLevel');
 const permissionGistStatus = document.getElementById('permissionGistStatus');
 const permissionRepoStatus = document.getElementById('permissionRepoStatus');
 const permissionActions = document.getElementById('permissionActions');
-// 显示权限状态
 if (permissions.gist && permissions.repo) {
 banner.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
 permissionLevel.innerHTML = '<i class="fas fa-check-circle"></i> 完整权限 (Gist + Repo)';
@@ -521,7 +485,6 @@ permissionLevel.innerHTML = '<i class="fas fa-exclamation-triangle"></i> 基础�
 permissionGistStatus.innerHTML = '<span style="color: #28a745;">✓ 已授权</span>';
 permissionRepoStatus.innerHTML = '<span style="color: #dc3545;">✗ 未授权</span>';
 hasRepoPermission = false;
-// 显示升级按钮
 permissionActions.innerHTML = `
 <button class="admin-btn btn-warning" onclick="showPermissionDetails()" style="padding: 6px 15px; font-size: 13px;">
 <i class="fas fa-info-circle"></i> 查看权限详情
@@ -534,49 +497,37 @@ permissionGistStatus.innerHTML = '<span style="color: #dc3545;">✗ 未授权</s
 permissionRepoStatus.innerHTML = '<span style="color: #dc3545;">✗ 未授权</span>';
 hasRepoPermission = false;
 }
-// 点击权限信息显示详情
 document.querySelector('.permissions-info').addEventListener('click', showPermissionDetails);
 }
 // 显示权限详情
 function showPermissionDetails() {
 showModal('permissionDetailsModal');
 }
-// 初始化所有事件监听器
+// 初始化事件监听器
 function initEventListeners() {
-// 主按钮
 document.getElementById('addArticleBtn').addEventListener('click', openAddModal);
 document.getElementById('refreshBtn').addEventListener('click', function() {
-loadBlogData(false, true); // 手动刷新时显示提示
+loadBlogData(false, true);
 });
-// 文章弹窗按钮
 document.getElementById('cancelArticleBtn').addEventListener('click', closeArticleModal);
 document.getElementById('saveArticleBtn').addEventListener('click', saveArticle);
-// 高级配置弹窗按钮
 document.getElementById('cancelAdvancedConfigBtn').addEventListener('click', closeAdvancedConfigModal);
 document.getElementById('saveAdvancedConfigBtn').addEventListener('click', saveAdvancedConfig);
-// 权限详情弹窗按钮
 document.getElementById('closePermissionDetailsBtn').addEventListener('click', closePermissionDetailsModal);
-// API错误弹窗按钮
-document.getElementById('closeApiErrorBtn').addEventListener('click', closeApiErrorModal);
-// 确认弹窗按钮
 document.getElementById('cancelConfirmBtn').addEventListener('click', closeConfirmModal);
 document.getElementById('confirmActionBtn').addEventListener('click', executeConfirmedAction);
-// 结果弹窗按钮
 document.getElementById('closeResultBtn').addEventListener('click', closeResultModal);
-// 生成页面开关
 document.getElementById('generatePageToggle').addEventListener('change', function() {
 document.getElementById('generatePageLabel').textContent = 
 this.checked ? '生成独立页面' : '不生成 (仅在博客列表显示)';
 document.getElementById('pageUrlSection').style.display = this.checked ? 'block' : 'none';
 updatePageUrlPreview();
 });
-// 监听ESC键关闭弹窗
 document.addEventListener('keydown', function(e) {
 if (e.key === 'Escape') {
 closeAllModals();
 }
 });
-// 点击背景关闭弹窗
 document.querySelectorAll('.custom-modal').forEach(modal => {
 modal.addEventListener('click', function(e) {
 if (e.target === this) {
@@ -598,7 +549,6 @@ function openAddModal() {
 document.getElementById('modalTitle').textContent = '添加新文章';
 document.getElementById('editPostId').value = '';
 document.getElementById('saveArticleBtn').textContent = '保存文章';
-// 清空表单
 document.getElementById('postId').value = '';
 document.getElementById('title').value = '';
 document.getElementById('date').value = '';
@@ -606,13 +556,10 @@ document.getElementById('customUrl').value = '';
 document.getElementById('excerpt').value = '';
 document.getElementById('content').value = '';
 document.getElementById('status').value = 'published';
-// 建议下一个ID
 suggestNextPostId(currentBlogData);
-// 显示弹窗
 showModal('articleModal');
 }
 function openEditModal(postId) {
-// 找到对应的文章数据
 const post = currentBlogData.find(p => p.id === postId);
 if (!post) {
 showResult('error', '错误', '未找到指定文章');
@@ -635,30 +582,24 @@ hideModal('articleModal');
 }
 // 高级配置弹窗
 function openAdvancedConfigModal(postId) {
-// 找到对应的文章数据
 const post = currentBlogData.find(p => p.id === postId);
 if (!post) {
 showResult('error', '错误', '未找到指定文章');
 return;
 }
-// 检查权限
 if (!hasRepoPermission) {
 showResult('info', '权限不足', '当前Token缺少repo权限，无法使用页面生成功能。请在GitHub Token设置中添加repo权限。');
 return;
 }
 document.getElementById('advancedConfigPostId').textContent = postId;
-// 设置生成页面开关
 const generatePageToggle = document.getElementById('generatePageToggle');
 generatePageToggle.checked = post.generatePage || false;
 document.getElementById('generatePageLabel').textContent = 
 (post.generatePage ? '生成独立页面' : '不生成 (仅在博客列表显示)');
 document.getElementById('pageUrlSection').style.display = post.generatePage ? 'block' : 'none';
-// 设置SEO信息
 document.getElementById('seoKeywords').value = post.seoKeywords || '';
 document.getElementById('seoDescription').value = post.seoDescription || '';
-// 更新URL预览
 updatePageUrlPreview();
-// 显示弹窗
 showModal('advancedConfigModal');
 }
 function closeAdvancedConfigModal() {
@@ -669,43 +610,33 @@ const postId = document.getElementById('advancedConfigPostId').textContent;
 const generatePage = document.getElementById('generatePageToggle').checked;
 const seoKeywords = document.getElementById('seoKeywords').value.trim();
 const seoDescription = document.getElementById('seoDescription').value.trim();
-// 找到对应的文章
 const postIndex = currentBlogData.findIndex(p => p.id === postId);
 if (postIndex === -1) {
 showResult('error', '错误', '未找到指定文章');
 closeAdvancedConfigModal();
 return;
 }
-// 显示加载
 showLoading('保存配置', '正在保存高级配置...');
-// 异步保存
 setTimeout(async () => {
 try {
-// 获取当前数据
 const currentData = await fetchCurrentData();
 const post = currentData.find(p => p.id === postId);
 if (!post) {
 throw new Error('未找到指定文章');
 }
-// 更新配置
 post.generatePage = generatePage;
 post.seoKeywords = seoKeywords;
 post.seoDescription = seoDescription;
-// 如果启用生成页面，需要创建/更新文件
 if (generatePage) {
 await createOrUpdatePageFile(post);
 } else {
-// 如果关闭生成页面，删除文件
 await deletePageFile(postId);
 }
-// 保存到Gist
 await updateGistData(currentData);
-// 更新本地数据
 currentBlogData = currentData;
 hideLoading();
 showResult('success', '保存成功', '高级配置已保存');
 closeAdvancedConfigModal();
-// 刷新列表
 displayArticlesList(currentBlogData);
 } catch (error) {
 hideLoading();
@@ -713,17 +644,14 @@ showResult('error', '保存失败', error.message);
 }
 }, 100);
 }
-// 创建/更新页面文件（修复CORS问题）
+// 创建/更新页面文件
 async function createOrUpdatePageFile(post) {
 if (!hasRepoPermission) {
 throw new Error('缺少repo权限，无法生成页面文件');
 }
 try {
-// 构建页面内容
 const pageContent = buildPageContent(post);
-// 文件路径
 const filePath = `blogs/${post.id}.html`;
-// 检查文件是否存在
 let currentFile = null;
 let fileExists = false;
 try {
@@ -739,25 +667,19 @@ currentFile = await checkResponse.json();
 fileExists = true;
 } else if (checkResponse.status === 404) {
 fileExists = false;
-} else {
-console.warn('检查文件状态返回:', checkResponse.status);
 }
 } catch (error) {
-console.log('文件不存在或无法检查:', error.message);
 fileExists = false;
 }
-// 准备文件数据（Base64编码）
 const contentBase64 = btoa(unescape(encodeURIComponent(pageContent)));
 const requestData = {
 message: `Update blog page: ${post.title}`,
 content: contentBase64,
 branch: REPO_BRANCH
 };
-// 如果文件已存在，需要提供SHA
 if (fileExists && currentFile && currentFile.sha) {
 requestData.sha = currentFile.sha;
 }
-// 使用代理解决CORS问题
 const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}`;
 const response = await fetchWithRetry(apiUrl, {
 method: 'PUT',
@@ -769,8 +691,8 @@ headers: {
 body: JSON.stringify(requestData)
 });
 if (!response.ok) {
-const errorText = await response.text();
-throw new Error(`创建/更新页面文件失败: ${response.status} ${errorText}`);
+const errorData = await response.json();
+throw new Error(`创建/更新页面文件失败: ${response.status} ${errorData.message || response.statusText}`);
 }
 return await response.json();
 } catch (error) {
@@ -778,7 +700,7 @@ console.error('创建/更新页面文件失败:', error);
 throw error;
 }
 }
-// 删除页面文件（修复CORS问题）
+// 删除页面文件
 async function deletePageFile(postId) {
 if (!hasRepoPermission) {
 console.log('缺少repo权限，跳过删除页面文件');
@@ -786,7 +708,6 @@ return;
 }
 try {
 const filePath = `blogs/${postId}.html`;
-// 检查文件是否存在
 const checkUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}?ref=${REPO_BRANCH}`;
 const checkResponse = await fetchWithRetry(checkUrl, {
 headers: {
@@ -799,7 +720,6 @@ console.log('文件不存在，无需删除');
 return;
 }
 const currentFile = await checkResponse.json();
-// 删除文件
 const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}`;
 const response = await fetchWithRetry(apiUrl, {
 method: 'DELETE',
@@ -815,13 +735,11 @@ branch: REPO_BRANCH
 })
 });
 if (!response.ok) {
-const errorText = await response.text();
-console.error(`删除页面文件失败: ${response.status} ${errorText}`);
-// 不抛出错误，继续执行
+const errorData = await response.json();
+console.error(`删除页面文件失败: ${response.status} ${errorData.message}`);
 }
 } catch (error) {
 console.error('删除页面文件失败:', error);
-// 不抛出错误，继续执行
 }
 }
 // 构建页面内容
@@ -979,11 +897,10 @@ ${post.content || '<p>暂无内容</p>'}
 </body>
 </html>`;
 }
-// 带重试机制的fetch（修复CORS问题）
+// 带重试机制的fetch
 async function fetchWithRetry(url, options = {}, retryCount = 0) {
 const maxRetries = CORS_PROXIES.length;
 try {
-// 首先尝试直接请求（如果环境允许）
 if (retryCount === 0) {
 try {
 const directResponse = await fetch(url, options);
@@ -994,23 +911,18 @@ return directResponse;
 console.log('直接请求失败，尝试使用代理');
 }
 }
-// 使用代理
 if (retryCount < maxRetries) {
 const proxyUrl = CORS_PROXIES[retryCount];
 let fullUrl;
-// 处理不同的代理格式
 if (proxyUrl.includes('allorigins')) {
 fullUrl = `${proxyUrl}${encodeURIComponent(url)}`;
 } else if (proxyUrl.includes('corsproxy.io')) {
 fullUrl = `${proxyUrl}${encodeURIComponent(url)}`;
 } else if (proxyUrl.includes('codetabs')) {
 fullUrl = `${proxyUrl}${encodeURIComponent(url)}`;
-} else if (proxyUrl.includes('cors-anywhere')) {
-fullUrl = `${proxyUrl}${url}`;
 }
 console.log(`尝试代理 ${retryCount + 1}/${maxRetries}: ${proxyUrl}`);
 const proxyResponse = await fetch(fullUrl, options);
-// 检查响应
 if (proxyResponse.ok) {
 return proxyResponse;
 } else {
@@ -1019,18 +931,15 @@ console.warn(`代理 ${retryCount + 1} 返回错误:`, proxyResponse.status, err
 throw new Error(`HTTP ${proxyResponse.status}`);
 }
 } else {
-// 所有代理都失败
-throw new Error('所有CORS代理都失败，请检查网络连接');
+throw new Error('所有CORS代理都失败');
 }
 } catch (error) {
 if (retryCount < maxRetries - 1) {
-// 等待一段时间后重试
 const delayTime = 500 * (retryCount + 1);
 console.log(`等待 ${delayTime}ms 后重试...`);
 await new Promise(resolve => setTimeout(resolve, delayTime));
 return await fetchWithRetry(url, options, retryCount + 1);
 } else {
-// 所有重试都失败
 throw error;
 }
 }
@@ -1051,20 +960,11 @@ pendingActionData = null;
 function closePermissionDetailsModal() {
 hideModal('permissionDetailsModal');
 }
-function closeApiErrorModal() {
-hideModal('apiErrorModal');
-}
 function executeConfirmedAction() {
 if (pendingAction) {
 pendingAction(pendingActionData);
 closeConfirmModal();
 }
-}
-// API错误处理
-function showApiError(title, message) {
-document.getElementById('apiErrorTitle').textContent = title;
-document.getElementById('apiErrorMessage').innerHTML = message;
-showModal('apiErrorModal');
 }
 // 加载弹窗
 function showLoading(title = '处理中', message = '正在处理您的请求，请稍候...') {
@@ -1078,7 +978,6 @@ hideModal('loadingModal');
 // 结果弹窗
 function showResult(type, title, message) {
 const icon = document.getElementById('resultIcon');
-// 设置图标和样式
 if (type === 'success') {
 icon.className = 'fas fa-check-circle';
 icon.style.color = '#28a745';
@@ -1120,17 +1019,14 @@ const customUrl = document.getElementById('customUrl').value.trim();
 const status = document.getElementById('status').value;
 const excerpt = document.getElementById('excerpt').value.trim();
 const content = document.getElementById('content').value.trim();
-// 验证必填字段
 if (!postId || !title || !date || !excerpt || !content) {
 showResult('error', '输入错误', '请填写所有必填字段');
 return;
 }
 try {
 showLoading('保存文章', editPostId ? '正在更新文章...' : '正在保存文章...');
-// 获取当前数据
 const currentData = await fetchCurrentData();
 if (!editPostId) {
-// 添加新文章
 if (currentData.some(post => post.id === postId)) {
 throw new Error('文章 ID 已存在，请使用不同的 ID');
 }
@@ -1148,12 +1044,10 @@ seoDescription: ''
 };
 currentData.unshift(newPost);
 } else {
-// 更新现有文章
 const postIndex = currentData.findIndex(post => post.id === editPostId);
 if (postIndex === -1) {
 throw new Error('未找到指定文章');
 }
-// 检查ID是否被其他文章使用
 const otherPost = currentData.find(post => post.id === postId && post.id !== editPostId);
 if (otherPost) {
 throw new Error('文章 ID 已被其他文章使用');
@@ -1172,19 +1066,14 @@ seoKeywords: oldPost.seoKeywords || '',
 seoDescription: oldPost.seoDescription || ''
 };
 }
-// 更新Gist
 await updateGistData(currentData);
 hideLoading();
 showResult('success', '操作成功', editPostId ? '文章更新成功！' : '文章保存成功！');
 closeArticleModal();
-loadBlogData(false, false); // 静默刷新，不显示刷新结果
+loadBlogData(false, false);
 } catch (error) {
 hideLoading();
-if (error.message.includes('CORS') || error.message.includes('fetch')) {
-showApiError('网络错误', '无法连接到GitHub API。请检查您的网络连接，或稍后重试。');
-} else {
 showResult('error', '操作失败', error.message);
-}
 }
 }
 async function toggleArticleStatus(postId, currentStatus) {
@@ -1197,7 +1086,6 @@ const postIndex = currentData.findIndex(post => post.id === postId);
 if (postIndex === -1) {
 throw new Error('未找到指定文章');
 }
-// 如果文章已生成页面且要下架，删除页面文件
 if (currentData[postIndex].generatePage && newStatus === 'draft') {
 await deletePageFile(postId);
 }
@@ -1205,7 +1093,7 @@ currentData[postIndex].status = newStatus;
 await updateGistData(currentData);
 hideLoading();
 showResult('success', '操作成功', `文章已${actionText}`);
-loadBlogData(false, false); // 静默刷新，不显示刷新结果
+loadBlogData(false, false);
 } catch (error) {
 hideLoading();
 showResult('error', '操作失败', error.message);
@@ -1219,7 +1107,6 @@ const postIndex = currentData.findIndex(post => post.id === postId);
 if (postIndex === -1) {
 throw new Error('未找到指定文章');
 }
-// 如果文章已生成页面，删除页面文件
 if (currentData[postIndex].generatePage) {
 await deletePageFile(postId);
 }
@@ -1227,7 +1114,7 @@ const filteredData = currentData.filter(post => post.id !== postId);
 await updateGistData(filteredData);
 hideLoading();
 showResult('success', '操作成功', '文章删除成功！');
-loadBlogData(false, false); // 静默刷新，不显示刷新结果
+loadBlogData(false, false);
 } catch (error) {
 hideLoading();
 showResult('error', '操作失败', error.message);
@@ -1246,7 +1133,6 @@ throw new Error(`获取数据失败: ${response.status} ${response.statusText}`)
 }
 const gist = await response.json();
 const data = JSON.parse(gist.files['blog.json'].content);
-// 兼容两种数据格式
 let blogData;
 if (Array.isArray(data)) {
 blogData = data;
@@ -1288,21 +1174,15 @@ throw new Error(`更新失败: ${updateResponse.status} ${errorText}`);
 // 主加载函数
 async function loadBlogData(isInitialLoad = false, showRefreshResult = false) {
 try {
-// 如果是手动刷新，显示加载弹窗
 if (!isInitialLoad && showRefreshResult) {
 showLoading('刷新文章', '正在从服务器获取最新文章列表...');
 }
-// 保存刷新前的文章数量
 const beforeCount = currentBlogData.length;
-// 获取最新数据
 const data = await fetchCurrentData();
 currentBlogData = data;
-// 显示文章列表
 displayArticlesList(data);
-// 计算变化
 const afterCount = data.length;
 const changeCount = afterCount - beforeCount;
-// 如果是手动刷新且需要显示结果，显示结果弹窗
 if (!isInitialLoad && showRefreshResult) {
 hideLoading();
 let message = '';
@@ -1315,19 +1195,16 @@ message = `刷新完成！文章数量无变化，共有 ${afterCount} 篇文章
 }
 showResult('success', '刷新成功', message);
 } else if (!isInitialLoad && !showRefreshResult) {
-// 静默刷新，只隐藏加载弹窗（如果显示了的话）
 hideLoading();
 }
 } catch (error) {
 console.error('加载文章失败:', error);
-// 如果是手动刷新，显示错误
 if (!isInitialLoad) {
 hideLoading();
 if (showRefreshResult) {
 showResult('error', '刷新失败', `刷新文章列表失败: ${error.message}`);
 }
 } else {
-// 页面加载时失败，显示在列表区域
 document.getElementById('articlesCount').textContent = '加载失败';
 document.getElementById('articlesList').innerHTML = `
 <div class="admin-card">
@@ -1415,18 +1292,15 @@ ${hasRepoPermission ? `
 </div>
 </div>
 `).join('');
-// 为动态生成的按钮添加事件监听器
 attachArticleEventListeners();
 }
 function attachArticleEventListeners() {
-// 编辑按钮
 document.querySelectorAll('.edit-btn').forEach(btn => {
 btn.addEventListener('click', function() {
 const postId = this.getAttribute('data-post-id');
 openEditModal(postId);
 });
 });
-// 状态切换按钮
 document.querySelectorAll('.toggle-status-btn').forEach(btn => {
 btn.addEventListener('click', function() {
 const postId = this.getAttribute('data-post-id');
@@ -1439,7 +1313,6 @@ showConfirm(
 );
 });
 });
-// 删除按钮
 document.querySelectorAll('.delete-btn').forEach(btn => {
 btn.addEventListener('click', function() {
 const postId = this.getAttribute('data-post-id');
@@ -1450,7 +1323,6 @@ showConfirm(
 );
 });
 });
-// 高级配置按钮
 document.querySelectorAll('.advanced-btn:not([disabled])').forEach(btn => {
 btn.addEventListener('click', function() {
 const postId = this.getAttribute('data-post-id');
