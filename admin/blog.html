@@ -123,6 +123,16 @@ word-break: break-all;
 margin-top: 8px;
 color: #4a6fa5;
 }
+/* 权限不足提示 */
+.permission-disabled {
+background: #f8d7da;
+border: 1px solid #f5c6cb;
+color: #721c24;
+padding: 10px;
+border-radius: 6px;
+margin-bottom: 15px;
+font-size: 13px;
+}
 /* 开关控件 */
 .toggle-switch {
 display: flex;
@@ -198,6 +208,15 @@ box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 background: #adb5bd;
 cursor: not-allowed;
 opacity: 0.6;
+}
+/* API错误提示 */
+.api-error-message {
+background: #f8d7da;
+border-left: 4px solid #dc3545;
+padding: 12px 15px;
+margin: 10px 0;
+border-radius: 4px;
+font-size: 13px;
 }
 /* 移动端优化 */
 @media (max-width: 768px) {
@@ -412,6 +431,21 @@ width: 100%;
 </div>
 </div>
 </div>
+<!-- API错误提示弹窗 -->
+<div class="custom-modal" id="apiErrorModal">
+<div class="modal-content">
+<div class="modal-header">
+<i class="fas fa-exclamation-triangle" style="color: #dc3545;"></i>
+</div>
+<div class="modal-title" id="apiErrorTitle">API请求失败</div>
+<div class="modal-message" id="apiErrorMessage">
+<p>无法连接到GitHub API，可能是网络问题或CORS限制。</p>
+</div>
+<div class="modal-buttons">
+<button class="modal-btn btn-primary" id="closeApiErrorBtn">确定</button>
+</div>
+</div>
+</div>
 <!-- 加载弹窗 -->
 <div class="custom-modal" id="loadingModal">
 <div class="modal-content">
@@ -454,6 +488,13 @@ let currentBlogData = [];
 let pendingAction = null;
 let pendingActionData = null;
 let hasRepoPermission = false;
+// CORS代理列表（多个备选）
+const CORS_PROXIES = [
+'https://api.allorigins.win/raw?url=',
+'https://corsproxy.io/?',
+'https://api.codetabs.com/v1/proxy?quest=',
+'https://cors-anywhere.herokuapp.com/'
+];
 // 页面加载时初始化
 document.addEventListener('DOMContentLoaded', function() {
 initEventListeners();
@@ -471,14 +512,12 @@ const permissionActions = document.getElementById('permissionActions');
 if (permissions.gist && permissions.repo) {
 banner.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
 permissionLevel.innerHTML = '<i class="fas fa-check-circle"></i> 完整权限 (Gist + Repo)';
-permissionLevel.title = '具有完整权限，可使用所有功能';
 permissionGistStatus.innerHTML = '<span style="color: #28a745;">✓ 已授权</span>';
 permissionRepoStatus.innerHTML = '<span style="color: #28a745;">✓ 已授权</span>';
 hasRepoPermission = true;
 } else if (permissions.gist && !permissions.repo) {
 banner.style.background = 'linear-gradient(135deg, #ffc107 0%, #fd7e14 100%)';
 permissionLevel.innerHTML = '<i class="fas fa-exclamation-triangle"></i> 基础权限 (仅Gist)';
-permissionLevel.title = '缺少Repo权限，无法使用自动生成页面功能';
 permissionGistStatus.innerHTML = '<span style="color: #28a745;">✓ 已授权</span>';
 permissionRepoStatus.innerHTML = '<span style="color: #dc3545;">✗ 未授权</span>';
 hasRepoPermission = false;
@@ -491,7 +530,6 @@ permissionActions.innerHTML = `
 } else {
 banner.style.background = 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)';
 permissionLevel.innerHTML = '<i class="fas fa-times-circle"></i> 权限不足';
-permissionLevel.title = 'Token权限不足，无法使用后台功能';
 permissionGistStatus.innerHTML = '<span style="color: #dc3545;">✗ 未授权</span>';
 permissionRepoStatus.innerHTML = '<span style="color: #dc3545;">✗ 未授权</span>';
 hasRepoPermission = false;
@@ -518,6 +556,8 @@ document.getElementById('cancelAdvancedConfigBtn').addEventListener('click', clo
 document.getElementById('saveAdvancedConfigBtn').addEventListener('click', saveAdvancedConfig);
 // 权限详情弹窗按钮
 document.getElementById('closePermissionDetailsBtn').addEventListener('click', closePermissionDetailsModal);
+// API错误弹窗按钮
+document.getElementById('closeApiErrorBtn').addEventListener('click', closeApiErrorModal);
 // 确认弹窗按钮
 document.getElementById('cancelConfirmBtn').addEventListener('click', closeConfirmModal);
 document.getElementById('confirmActionBtn').addEventListener('click', executeConfirmedAction);
@@ -673,7 +713,7 @@ showResult('error', '保存失败', error.message);
 }
 }, 100);
 }
-// 创建/更新页面文件
+// 创建/更新页面文件（修复CORS问题）
 async function createOrUpdatePageFile(post) {
 if (!hasRepoPermission) {
 throw new Error('缺少repo权限，无法生成页面文件');
@@ -685,9 +725,10 @@ const pageContent = buildPageContent(post);
 const filePath = `blogs/${post.id}.html`;
 // 检查文件是否存在
 let currentFile = null;
+let fileExists = false;
 try {
 const checkUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}?ref=${REPO_BRANCH}`;
-const checkResponse = await fetch(checkUrl, {
+const checkResponse = await fetchWithRetry(checkUrl, {
 headers: {
 'Authorization': `token ${token}`,
 'Accept': 'application/vnd.github.v3+json'
@@ -695,9 +736,15 @@ headers: {
 });
 if (checkResponse.ok) {
 currentFile = await checkResponse.json();
+fileExists = true;
+} else if (checkResponse.status === 404) {
+fileExists = false;
+} else {
+console.warn('检查文件状态返回:', checkResponse.status);
 }
 } catch (error) {
-console.log('文件不存在，将创建新文件');
+console.log('文件不存在或无法检查:', error.message);
+fileExists = false;
 }
 // 准备文件数据（Base64编码）
 const contentBase64 = btoa(unescape(encodeURIComponent(pageContent)));
@@ -707,14 +754,12 @@ content: contentBase64,
 branch: REPO_BRANCH
 };
 // 如果文件已存在，需要提供SHA
-if (currentFile && currentFile.sha) {
+if (fileExists && currentFile && currentFile.sha) {
 requestData.sha = currentFile.sha;
 }
 // 使用代理解决CORS问题
-const proxyUrl = 'https://corsproxy.io/?';
 const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}`;
-const encodedUrl = encodeURIComponent(apiUrl);
-const response = await fetch(`${proxyUrl}${encodedUrl}`, {
+const response = await fetchWithRetry(apiUrl, {
 method: 'PUT',
 headers: {
 'Authorization': `token ${token}`,
@@ -733,7 +778,7 @@ console.error('创建/更新页面文件失败:', error);
 throw error;
 }
 }
-// 删除页面文件
+// 删除页面文件（修复CORS问题）
 async function deletePageFile(postId) {
 if (!hasRepoPermission) {
 console.log('缺少repo权限，跳过删除页面文件');
@@ -743,7 +788,7 @@ try {
 const filePath = `blogs/${postId}.html`;
 // 检查文件是否存在
 const checkUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}?ref=${REPO_BRANCH}`;
-const checkResponse = await fetch(checkUrl, {
+const checkResponse = await fetchWithRetry(checkUrl, {
 headers: {
 'Authorization': `token ${token}`,
 'Accept': 'application/vnd.github.v3+json'
@@ -755,10 +800,8 @@ return;
 }
 const currentFile = await checkResponse.json();
 // 删除文件
-const proxyUrl = 'https://corsproxy.io/?';
 const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}`;
-const encodedUrl = encodeURIComponent(apiUrl);
-const response = await fetch(`${proxyUrl}${encodedUrl}`, {
+const response = await fetchWithRetry(apiUrl, {
 method: 'DELETE',
 headers: {
 'Authorization': `token ${token}`,
@@ -936,6 +979,62 @@ ${post.content || '<p>暂无内容</p>'}
 </body>
 </html>`;
 }
+// 带重试机制的fetch（修复CORS问题）
+async function fetchWithRetry(url, options = {}, retryCount = 0) {
+const maxRetries = CORS_PROXIES.length;
+try {
+// 首先尝试直接请求（如果环境允许）
+if (retryCount === 0) {
+try {
+const directResponse = await fetch(url, options);
+if (directResponse.ok || directResponse.status !== 0) {
+return directResponse;
+}
+} catch (directError) {
+console.log('直接请求失败，尝试使用代理');
+}
+}
+// 使用代理
+if (retryCount < maxRetries) {
+const proxyUrl = CORS_PROXIES[retryCount];
+let fullUrl;
+// 处理不同的代理格式
+if (proxyUrl.includes('allorigins')) {
+fullUrl = `${proxyUrl}${encodeURIComponent(url)}`;
+} else if (proxyUrl.includes('corsproxy.io')) {
+fullUrl = `${proxyUrl}${encodeURIComponent(url)}`;
+} else if (proxyUrl.includes('codetabs')) {
+fullUrl = `${proxyUrl}${encodeURIComponent(url)}`;
+} else if (proxyUrl.includes('cors-anywhere')) {
+fullUrl = `${proxyUrl}${url}`;
+}
+console.log(`尝试代理 ${retryCount + 1}/${maxRetries}: ${proxyUrl}`);
+const proxyResponse = await fetch(fullUrl, options);
+// 检查响应
+if (proxyResponse.ok) {
+return proxyResponse;
+} else {
+const errorText = await proxyResponse.text();
+console.warn(`代理 ${retryCount + 1} 返回错误:`, proxyResponse.status, errorText);
+throw new Error(`HTTP ${proxyResponse.status}`);
+}
+} else {
+// 所有代理都失败
+throw new Error('所有CORS代理都失败，请检查网络连接');
+}
+} catch (error) {
+if (retryCount < maxRetries - 1) {
+// 等待一段时间后重试
+const delayTime = 500 * (retryCount + 1);
+console.log(`等待 ${delayTime}ms 后重试...`);
+await new Promise(resolve => setTimeout(resolve, delayTime));
+return await fetchWithRetry(url, options, retryCount + 1);
+} else {
+// 所有重试都失败
+throw error;
+}
+}
+}
 // 确认弹窗
 function showConfirm(title, message, action, data = null) {
 pendingAction = action;
@@ -952,11 +1051,20 @@ pendingActionData = null;
 function closePermissionDetailsModal() {
 hideModal('permissionDetailsModal');
 }
+function closeApiErrorModal() {
+hideModal('apiErrorModal');
+}
 function executeConfirmedAction() {
 if (pendingAction) {
 pendingAction(pendingActionData);
 closeConfirmModal();
 }
+}
+// API错误处理
+function showApiError(title, message) {
+document.getElementById('apiErrorTitle').textContent = title;
+document.getElementById('apiErrorMessage').innerHTML = message;
+showModal('apiErrorModal');
 }
 // 加载弹窗
 function showLoading(title = '处理中', message = '正在处理您的请求，请稍候...') {
@@ -1034,7 +1142,7 @@ customUrl: customUrl || '',
 status: status,
 excerpt: excerpt,
 content: content,
-generatePage: false, // 默认不生成页面
+generatePage: false,
 seoKeywords: '',
 seoDescription: ''
 };
@@ -1072,7 +1180,11 @@ closeArticleModal();
 loadBlogData(false, false); // 静默刷新，不显示刷新结果
 } catch (error) {
 hideLoading();
+if (error.message.includes('CORS') || error.message.includes('fetch')) {
+showApiError('网络错误', '无法连接到GitHub API。请检查您的网络连接，或稍后重试。');
+} else {
 showResult('error', '操作失败', error.message);
+}
 }
 }
 async function toggleArticleStatus(postId, currentStatus) {
@@ -1123,7 +1235,7 @@ showResult('error', '操作失败', error.message);
 }
 // 数据操作函数
 async function fetchCurrentData() {
-const response = await fetch(GIST_URL, {
+const response = await fetchWithRetry(GIST_URL, {
 headers: {
 'Authorization': `token ${token}`,
 'Accept': 'application/vnd.github.v3+json'
@@ -1153,10 +1265,7 @@ seoDescription: post.seoDescription || ''
 }));
 }
 async function updateGistData(newData) {
-// 使用代理解决CORS问题
-const proxyUrl = 'https://corsproxy.io/?';
-const encodedUrl = encodeURIComponent(GIST_URL);
-const updateResponse = await fetch(`${proxyUrl}${encodedUrl}`, {
+const updateResponse = await fetchWithRetry(GIST_URL, {
 method: 'PATCH',
 headers: {
 'Authorization': `token ${token}`,
@@ -1222,7 +1331,7 @@ showResult('error', '刷新失败', `刷新文章列表失败: ${error.message}`
 document.getElementById('articlesCount').textContent = '加载失败';
 document.getElementById('articlesList').innerHTML = `
 <div class="admin-card">
-<p style="color: #dc3545;">❌ 加载失败: ${error.message}</p>
+<p style="color: #dc3545;">❌ ${error.message}</p>
 <p>请检查网络连接和Token权限，然后点击刷新按钮重试</p>
 </div>
 `;
