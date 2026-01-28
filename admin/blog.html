@@ -533,9 +533,10 @@ width: 100%;
 <script>
 // 安全验证
 if (!sessionStorage.getItem('admin_verified') || !sessionStorage.getItem('admin_token')) {
-alert('❌ 未授权访问！请通过后台首页登录。');
-window.location.href = 'index.html';
+    alert('❌ 未授权访问！请通过后台首页登录。');
+    window.location.href = 'index.html';
 }
+
 // 全局配置
 const GIST_ID = '73cc78400c25eb9effed665e2c89843d';
 const GIST_URL = `https://api.github.com/gists/${GIST_ID}`;
@@ -545,304 +546,351 @@ const REPO_BRANCH = 'main';
 const TEMPLATE_PATH = 'blogs/template.html';
 const token = sessionStorage.getItem('admin_token');
 const permissions = JSON.parse(sessionStorage.getItem('admin_permissions') || '{}');
+
 // 全局状态
 let currentBlogData = [];
 let pendingAction = null;
 let pendingActionData = null;
 let hasRepoPermission = false;
+
 // CORS代理列表
 const CORS_PROXIES = [
-'https://api.allorigins.win/raw?url=',
-'https://corsproxy.io/?',
-'https://api.codetabs.com/v1/proxy?quest='
+    'https://api.allorigins.win/raw?url=',
+    'https://corsproxy.io/?',
+    'https://api.codetabs.com/v1/proxy?quest='
 ];
+
 // 页面加载时初始化
 document.addEventListener('DOMContentLoaded', function() {
-initEventListeners();
-checkAndDisplayPermissions();
-loadBlogData(true);
+    initEventListeners();
+    checkAndDisplayPermissions();
+    loadBlogData(true);
 });
+
 // 检查并显示权限
 function checkAndDisplayPermissions() {
-const banner = document.getElementById('permissionsBanner');
-const permissionLevel = document.getElementById('tokenPermissionLevel');
-const permissionGistStatus = document.getElementById('permissionGistStatus');
-const permissionRepoStatus = document.getElementById('permissionRepoStatus');
-const permissionActions = document.getElementById('permissionActions');
-const manageTemplateBtn = document.getElementById('manageTemplateBtn');
-if (permissions.gist && permissions.repo) {
-banner.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
-permissionLevel.innerHTML = '<i class="fas fa-check-circle"></i> 完整权限 (Gist + Repo)';
-permissionGistStatus.innerHTML = '<span style="color: #28a745;">✓ 已授权</span>';
-permissionRepoStatus.innerHTML = '<span style="color: #28a745;">✓ 已授权</span>';
-hasRepoPermission = true;
-manageTemplateBtn.style.display = 'inline-flex';
-} else if (permissions.gist && !permissions.repo) {
-banner.style.background = 'linear-gradient(135deg, #ffc107 0%, #fd7e14 100%)';
-permissionLevel.innerHTML = '<i class="fas fa-exclamation-triangle"></i> 基础权限 (仅Gist)';
-permissionGistStatus.innerHTML = '<span style="color: #28a745;">✓ 已授权</span>';
-permissionRepoStatus.innerHTML = '<span style="color: #dc3545;">✗ 未授权</span>';
-hasRepoPermission = false;
-permissionActions.innerHTML = `
-<button class="admin-btn btn-warning" onclick="showPermissionDetails()" style="padding: 6px 15px; font-size: 13px;">
-<i class="fas fa-info-circle"></i> 查看权限详情
-</button>
-`;
-} else {
-banner.style.background = 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)';
-permissionLevel.innerHTML = '<i class="fas fa-times-circle"></i> 权限不足';
-permissionGistStatus.innerHTML = '<span style="color: #dc3545;">✗ 未授权</span>';
-permissionRepoStatus.innerHTML = '<span style="color: #dc3545;">✗ 未授权</span>';
-hasRepoPermission = false;
+    const banner = document.getElementById('permissionsBanner');
+    const permissionLevel = document.getElementById('tokenPermissionLevel');
+    const permissionGistStatus = document.getElementById('permissionGistStatus');
+    const permissionRepoStatus = document.getElementById('permissionRepoStatus');
+    const permissionActions = document.getElementById('permissionActions');
+    const manageTemplateBtn = document.getElementById('manageTemplateBtn');
+    
+    if (permissions.gist && permissions.repo) {
+        banner.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+        permissionLevel.innerHTML = '<i class="fas fa-check-circle"></i> 完整权限 (Gist + Repo)';
+        permissionGistStatus.innerHTML = '<span style="color: #28a745;">✓ 已授权</span>';
+        permissionRepoStatus.innerHTML = '<span style="color: #28a745;">✓ 已授权</span>';
+        hasRepoPermission = true;
+        manageTemplateBtn.style.display = 'inline-flex';
+    } else if (permissions.gist && !permissions.repo) {
+        banner.style.background = 'linear-gradient(135deg, #ffc107 0%, #fd7e14 100%)';
+        permissionLevel.innerHTML = '<i class="fas fa-exclamation-triangle"></i> 基础权限 (仅Gist)';
+        permissionGistStatus.innerHTML = '<span style="color: #28a745;">✓ 已授权</span>';
+        permissionRepoStatus.innerHTML = '<span style="color: #dc3545;">✗ 未授权</span>';
+        hasRepoPermission = false;
+        permissionActions.innerHTML = `
+            <button class="admin-btn btn-warning" onclick="showPermissionDetails()" style="padding: 6px 15px; font-size: 13px;">
+                <i class="fas fa-info-circle"></i> 查看权限详情
+            </button>
+        `;
+    } else {
+        banner.style.background = 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)';
+        permissionLevel.innerHTML = '<i class="fas fa-times-circle"></i> 权限不足';
+        permissionGistStatus.innerHTML = '<span style="color: #dc3545;">✗ 未授权</span>';
+        permissionRepoStatus.innerHTML = '<span style="color: #dc3545;">✗ 未授权</span>';
+        hasRepoPermission = false;
+    }
+    
+    document.querySelector('.permissions-info').addEventListener('click', showPermissionDetails);
 }
-document.querySelector('.permissions-info').addEventListener('click', showPermissionDetails);
-}
+
 // 显示权限详情
 function showPermissionDetails() {
-showModal('permissionDetailsModal');
+    showModal('permissionDetailsModal');
 }
+
 // 初始化事件监听器
 function initEventListeners() {
-document.getElementById('addArticleBtn').addEventListener('click', openAddModal);
-document.getElementById('refreshBtn').addEventListener('click', function() {
-loadBlogData(false, true);
-});
-document.getElementById('manageTemplateBtn').addEventListener('click', manageTemplate);
-document.getElementById('cancelArticleBtn').addEventListener('click', closeArticleModal);
-document.getElementById('saveArticleBtn').addEventListener('click', saveArticle);
-document.getElementById('cancelAdvancedConfigBtn').addEventListener('click', closeAdvancedConfigModal);
-document.getElementById('saveAdvancedConfigBtn').addEventListener('click', saveAdvancedConfig);
-document.getElementById('closePermissionDetailsBtn').addEventListener('click', closePermissionDetailsModal);
-document.getElementById('cancelConfirmBtn').addEventListener('click', closeConfirmModal);
-document.getElementById('confirmActionBtn').addEventListener('click', executeConfirmedAction);
-document.getElementById('cancelTemplateBtn').addEventListener('click', closeTemplateModal);
-document.getElementById('saveTemplateBtn').addEventListener('click', saveTemplate);
-document.getElementById('closeResultBtn').addEventListener('click', closeResultModal);
-document.getElementById('generatePageToggle').addEventListener('change', function() {
-document.getElementById('generatePageLabel').textContent = 
-this.checked ? '生成独立页面' : '不生成 (仅在博客列表显示)';
-document.getElementById('pageUrlSection').style.display = this.checked ? 'block' : 'none';
-updatePageUrlPreview();
-});
-document.getElementById('pageEnabledToggle').addEventListener('change', function() {
-document.getElementById('pageEnabledLabel').textContent = 
-this.checked ? '页面启用' : '页面禁用';
-updatePageStatusPreview();
-});
-document.addEventListener('keydown', function(e) {
-if (e.key === 'Escape') {
-closeAllModals();
+    document.getElementById('addArticleBtn').addEventListener('click', openAddModal);
+    document.getElementById('refreshBtn').addEventListener('click', function() {
+        loadBlogData(false, true);
+    });
+    document.getElementById('manageTemplateBtn').addEventListener('click', manageTemplate);
+    document.getElementById('cancelArticleBtn').addEventListener('click', closeArticleModal);
+    document.getElementById('saveArticleBtn').addEventListener('click', saveArticle);
+    document.getElementById('cancelAdvancedConfigBtn').addEventListener('click', closeAdvancedConfigModal);
+    document.getElementById('saveAdvancedConfigBtn').addEventListener('click', saveAdvancedConfig);
+    document.getElementById('closePermissionDetailsBtn').addEventListener('click', closePermissionDetailsModal);
+    document.getElementById('cancelConfirmBtn').addEventListener('click', closeConfirmModal);
+    document.getElementById('confirmActionBtn').addEventListener('click', executeConfirmedAction);
+    document.getElementById('cancelTemplateBtn').addEventListener('click', closeTemplateModal);
+    document.getElementById('saveTemplateBtn').addEventListener('click', saveTemplate);
+    document.getElementById('closeResultBtn').addEventListener('click', closeResultModal);
+    
+    document.getElementById('generatePageToggle').addEventListener('change', function() {
+        document.getElementById('generatePageLabel').textContent = 
+            this.checked ? '生成独立页面' : '不生成 (仅在博客列表显示)';
+        document.getElementById('pageUrlSection').style.display = this.checked ? 'block' : 'none';
+        updatePageUrlPreview();
+    });
+    
+    document.getElementById('pageEnabledToggle').addEventListener('change', function() {
+        document.getElementById('pageEnabledLabel').textContent = 
+            this.checked ? '页面启用' : '页面禁用';
+        updatePageStatusPreview();
+    });
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeAllModals();
+        }
+    });
+    
+    document.querySelectorAll('.custom-modal').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAllModals();
+            }
+        });
+    });
 }
-});
-document.querySelectorAll('.custom-modal').forEach(modal => {
-modal.addEventListener('click', function(e) {
-if (e.target === this) {
-closeAllModals();
-}
-});
-});
-}
+
 // 更新页面URL预览
 function updatePageUrlPreview() {
-const postId = document.getElementById('advancedConfigPostId').textContent;
-const previewElement = document.getElementById('pageUrlPreview');
-if (!postId) return;
-const pageUrl = `https://zcfi.cn/blogs/${postId}.html`;
-previewElement.textContent = pageUrl;
+    const postId = document.getElementById('advancedConfigPostId').textContent;
+    const previewElement = document.getElementById('pageUrlPreview');
+    if (!postId) return;
+    const pageUrl = `https://zcfi.cn/blogs/${postId}.html`;
+    previewElement.textContent = pageUrl;
 }
+
 // 更新页面状态预览
 function updatePageStatusPreview() {
-const postId = document.getElementById('advancedConfigPostId').textContent;
-const post = currentBlogData.find(p => p.id === postId);
-if (!post) return;
-const enabled = document.getElementById('pageEnabledToggle').checked;
-const status = post.status || 'published';
-const statusElement = document.getElementById('statusText');
-let statusText = '';
-let statusClass = '';
-if (!enabled) {
-statusText = '❌ 已禁用（页面不可访问）';
-statusClass = 'status-preview-disabled';
-} else if (status === 'published') {
-statusText = '✅ 已发布（页面正常访问）';
-statusClass = 'status-preview-published';
-} else if (status === 'draft') {
-statusText = '📝 草稿（仅管理员可见）';
-statusClass = 'status-preview-draft';
-} else if (status === 'archived') {
-statusText = '🗄️ 已归档（页面已存档）';
-statusClass = 'status-preview-archived';
+    const postId = document.getElementById('advancedConfigPostId').textContent;
+    const post = currentBlogData.find(p => p.id === postId);
+    if (!post) return;
+    
+    const enabled = document.getElementById('pageEnabledToggle').checked;
+    const status = post.status || 'published';
+    const statusElement = document.getElementById('statusText');
+    
+    let statusText = '';
+    let statusClass = '';
+    
+    if (!enabled) {
+        statusText = '❌ 已禁用（页面不可访问）';
+        statusClass = 'status-preview-disabled';
+    } else if (status === 'published') {
+        statusText = '✅ 已发布（页面正常访问）';
+        statusClass = 'status-preview-published';
+    } else if (status === 'draft') {
+        statusText = '📝 草稿（仅管理员可见）';
+        statusClass = 'status-preview-draft';
+    } else if (status === 'archived') {
+        statusText = '🗄️ 已归档（页面已存档）';
+        statusClass = 'status-preview-archived';
+    }
+    
+    statusElement.innerHTML = `<span class="${statusClass}">${statusText}</span>`;
 }
-statusElement.innerHTML = `<span class="${statusClass}">${statusText}</span>`;
-}
+
 // 弹窗控制函数
 function openAddModal() {
-document.getElementById('modalTitle').textContent = '添加新文章';
-document.getElementById('editPostId').value = '';
-document.getElementById('saveArticleBtn').textContent = '保存文章';
-document.getElementById('postId').value = '';
-document.getElementById('title').value = '';
-document.getElementById('date').value = '';
-document.getElementById('customUrl').value = '';
-document.getElementById('excerpt').value = '';
-document.getElementById('content').value = '';
-document.getElementById('status').value = 'published';
-suggestNextPostId(currentBlogData);
-showModal('articleModal');
+    document.getElementById('modalTitle').textContent = '添加新文章';
+    document.getElementById('editPostId').value = '';
+    document.getElementById('saveArticleBtn').textContent = '保存文章';
+    document.getElementById('postId').value = '';
+    document.getElementById('title').value = '';
+    document.getElementById('date').value = '';
+    document.getElementById('customUrl').value = '';
+    document.getElementById('excerpt').value = '';
+    document.getElementById('content').value = '';
+    document.getElementById('status').value = 'published';
+    suggestNextPostId(currentBlogData);
+    showModal('articleModal');
 }
+
 function openEditModal(postId) {
-const post = currentBlogData.find(p => p.id === postId);
-if (!post) {
-showResult('error', '错误', '未找到指定文章');
-return;
+    const post = currentBlogData.find(p => p.id === postId);
+    if (!post) {
+        showResult('error', '错误', '未找到指定文章');
+        return;
+    }
+    
+    document.getElementById('modalTitle').textContent = '编辑文章';
+    document.getElementById('editPostId').value = post.id;
+    document.getElementById('saveArticleBtn').textContent = '保存修改';
+    document.getElementById('postId').value = post.id;
+    document.getElementById('title').value = post.title;
+    document.getElementById('date').value = post.date;
+    document.getElementById('customUrl').value = post.customUrl || '';
+    document.getElementById('excerpt').value = post.excerpt;
+    document.getElementById('content').value = post.content;
+    document.getElementById('status').value = post.status || 'published';
+    
+    showModal('articleModal');
 }
-document.getElementById('modalTitle').textContent = '编辑文章';
-document.getElementById('editPostId').value = post.id;
-document.getElementById('saveArticleBtn').textContent = '保存修改';
-document.getElementById('postId').value = post.id;
-document.getElementById('title').value = post.title;
-document.getElementById('date').value = post.date;
-document.getElementById('customUrl').value = post.customUrl || '';
-document.getElementById('excerpt').value = post.excerpt;
-document.getElementById('content').value = post.content;
-document.getElementById('status').value = post.status || 'published';
-showModal('articleModal');
-}
+
 function closeArticleModal() {
-hideModal('articleModal');
+    hideModal('articleModal');
 }
+
 // 高级配置弹窗
 function openAdvancedConfigModal(postId) {
-const post = currentBlogData.find(p => p.id === postId);
-if (!post) {
-showResult('error', '错误', '未找到指定文章');
-return;
+    const post = currentBlogData.find(p => p.id === postId);
+    if (!post) {
+        showResult('error', '错误', '未找到指定文章');
+        return;
+    }
+    
+    if (!hasRepoPermission) {
+        showResult('info', '权限不足', '当前Token缺少repo权限，无法使用页面生成功能。请在GitHub Token设置中添加repo权限。');
+        return;
+    }
+    
+    document.getElementById('advancedConfigPostId').textContent = postId;
+    
+    const generatePageToggle = document.getElementById('generatePageToggle');
+    generatePageToggle.checked = post.generatePage || false;
+    document.getElementById('generatePageLabel').textContent = 
+        (post.generatePage ? '生成独立页面' : '不生成 (仅在博客列表显示)');
+    document.getElementById('pageUrlSection').style.display = post.generatePage ? 'block' : 'none';
+    
+    document.getElementById('pageEnabledToggle').checked = post.enabled !== false;
+    document.getElementById('pageEnabledLabel').textContent = 
+        (post.enabled !== false ? '页面启用' : '页面禁用');
+    
+    document.getElementById('seoKeywords').value = post.seoKeywords || '';
+    document.getElementById('seoDescription').value = post.seoDescription || '';
+    document.getElementById('pageAuthor').value = post.author || '';
+    document.getElementById('pageTags').value = (post.tags || []).join(', ');
+    
+    updatePageUrlPreview();
+    updatePageStatusPreview();
+    
+    showModal('advancedConfigModal');
 }
-if (!hasRepoPermission) {
-showResult('info', '权限不足', '当前Token缺少repo权限，无法使用页面生成功能。请在GitHub Token设置中添加repo权限。');
-return;
-}
-document.getElementById('advancedConfigPostId').textContent = postId;
-const generatePageToggle = document.getElementById('generatePageToggle');
-generatePageToggle.checked = post.generatePage || false;
-document.getElementById('generatePageLabel').textContent = 
-(post.generatePage ? '生成独立页面' : '不生成 (仅在博客列表显示)');
-document.getElementById('pageUrlSection').style.display = post.generatePage ? 'block' : 'none';
-document.getElementById('pageEnabledToggle').checked = post.enabled !== false;
-document.getElementById('pageEnabledLabel').textContent = 
-(post.enabled !== false ? '页面启用' : '页面禁用');
-document.getElementById('seoKeywords').value = post.seoKeywords || '';
-document.getElementById('seoDescription').value = post.seoDescription || '';
-document.getElementById('pageAuthor').value = post.author || '';
-document.getElementById('pageTags').value = (post.tags || []).join(', ');
-updatePageUrlPreview();
-updatePageStatusPreview();
-showModal('advancedConfigModal');
-}
+
 function closeAdvancedConfigModal() {
-hideModal('advancedConfigModal');
+    hideModal('advancedConfigModal');
 }
+
 function saveAdvancedConfig() {
-const postId = document.getElementById('advancedConfigPostId').textContent;
-const generatePage = document.getElementById('generatePageToggle').checked;
-const seoKeywords = document.getElementById('seoKeywords').value.trim();
-const seoDescription = document.getElementById('seoDescription').value.trim();
-const author = document.getElementById('pageAuthor').value.trim();
-const tags = document.getElementById('pageTags').value
-.split(',')
-.map(tag => tag.trim())
-.filter(tag => tag.length > 0);
-const enabled = document.getElementById('pageEnabledToggle').checked;
-const postIndex = currentBlogData.findIndex(p => p.id === postId);
-if (postIndex === -1) {
-showResult('error', '错误', '未找到指定文章');
-closeAdvancedConfigModal();
-return;
+    const postId = document.getElementById('advancedConfigPostId').textContent;
+    const generatePage = document.getElementById('generatePageToggle').checked;
+    const seoKeywords = document.getElementById('seoKeywords').value.trim();
+    const seoDescription = document.getElementById('seoDescription').value.trim();
+    const author = document.getElementById('pageAuthor').value.trim();
+    const tags = document.getElementById('pageTags').value
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(tag => tag.length > 0);
+    const enabled = document.getElementById('pageEnabledToggle').checked;
+    
+    const postIndex = currentBlogData.findIndex(p => p.id === postId);
+    if (postIndex === -1) {
+        showResult('error', '错误', '未找到指定文章');
+        closeAdvancedConfigModal();
+        return;
+    }
+    
+    showLoading('保存配置', '正在保存高级配置...');
+    
+    setTimeout(async () => {
+        try {
+            const currentData = await fetchCurrentData();
+            const post = currentData.find(p => p.id === postId);
+            if (!post) {
+                throw new Error('未找到指定文章');
+            }
+            
+            post.generatePage = generatePage;
+            post.seoKeywords = seoKeywords;
+            post.seoDescription = seoDescription;
+            post.author = author;
+            post.tags = tags;
+            post.enabled = enabled;
+            post.lastUpdated = new Date().toISOString().split('T')[0];
+            
+            if (generatePage) {
+                await createOrUpdatePageFile(post);
+            } else {
+                await deletePageFile(postId);
+            }
+            
+            await updateGistData(currentData);
+            currentBlogData = currentData;
+            
+            hideLoading();
+            showResult('success', '保存成功', '高级配置已保存');
+            closeAdvancedConfigModal();
+            displayArticlesList(currentBlogData);
+        } catch (error) {
+            hideLoading();
+            showResult('error', '保存失败', error.message);
+        }
+    }, 100);
 }
-showLoading('保存配置', '正在保存高级配置...');
-setTimeout(async () => {
-try {
-const currentData = await fetchCurrentData();
-const post = currentData.find(p => p.id === postId);
-if (!post) {
-throw new Error('未找到指定文章');
-}
-post.generatePage = generatePage;
-post.seoKeywords = seoKeywords;
-post.seoDescription = seoDescription;
-post.author = author;
-post.tags = tags;
-post.enabled = enabled;
-post.lastUpdated = new Date().toISOString().split('T')[0];
-if (generatePage) {
-await createOrUpdatePageFile(post);
-} else {
-await deletePageFile(postId);
-}
-await updateGistData(currentData);
-currentBlogData = currentData;
-hideLoading();
-showResult('success', '保存成功', '高级配置已保存');
-closeAdvancedConfigModal();
-displayArticlesList(currentBlogData);
-} catch (error) {
-hideLoading();
-showResult('error', '保存失败', error.message);
-}
-}, 100);
-}
-// 构建页面内容函数 - 修复编码问题
+
+// 构建页面内容函数
 async function buildPageContent(post) {
-try {
+    try {
+        // 获取模板文件
+        let templateContent = await fetchTemplateFile();
+        
+        // 准备替换数据
+        const replacements = {
+            '##TITLE##': escapeHtml(post.title || '博客文章'),
+            '##SITENAME##': 'zcfi.cn',
+            '##SEO_KEYWORDS##': escapeHtml(post.seoKeywords || post.title || ''),
+            '##SEO_DESCRIPTION##': escapeHtml(post.seoDescription || post.excerpt || ''),
+            '##PAGE_URL##': `https://zcfi.cn/blogs/${post.id}.html`,
+            '##PUBLISH_DATE##': escapeHtml(post.date || ''),
+            '##POST_ID##': post.id
+        };
+        
+        // 执行简单的文本替换
+        Object.keys(replacements).forEach(key => {
+            templateContent = templateContent.replace(new RegExp(key, 'g'), replacements[key]);
+        });
+        
+        return templateContent;
+        
+    } catch (error) {
+        console.error('构建页面失败:', error);
+        // 使用备用模板
+        return buildFallbackPageContent(post);
+    }
+}
+
 // 获取模板文件
-let templateContent = await fetchTemplateFile();
-// 准备替换数据
-const replacements = {
-'##TITLE##': escapeHtml(post.title || '博客文章'),
-'##SITENAME##': 'zcfi.cn',
-'##SEO_KEYWORDS##': escapeHtml(post.seoKeywords || post.title || ''),
-'##SEO_DESCRIPTION##': escapeHtml(post.seoDescription || post.excerpt || ''),
-'##PAGE_URL##': `https://zcfi.cn/blogs/${post.id}.html`,
-'##PUBLISH_DATE##': escapeHtml(post.date || ''),
-'##POST_ID##': post.id
-};
-// 执行简单的文本替换
-Object.keys(replacements).forEach(key => {
-templateContent = templateContent.replace(new RegExp(key, 'g'), replacements[key]);
-});
-return templateContent;
-} catch (error) {
-console.error('构建页面失败:', error);
-// 使用备用模板
-return buildFallbackPageContent(post);
-}
-}
-// 获取模板文件 - 修复编码问题
 async function fetchTemplateFile() {
-try {
-const templateUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${TEMPLATE_PATH}`;
-const response = await fetchWithRetry(templateUrl, {
-headers: {
-'Authorization': `token ${token}`,
-'Accept': 'application/vnd.github.v3+json'
-}
-});
-if (response.ok) {
-const fileData = await response.json();
-// 正确处理base64编码的UTF-8内容
-const binaryString = atob(fileData.content);
-const bytes = new Uint8Array(binaryString.length);
-for (let i = 0; i < binaryString.length; i++) {
-bytes[i] = binaryString.charCodeAt(i);
-}
-return new TextDecoder('utf-8').decode(bytes);
-} else {
-throw new Error('模板文件获取失败');
-}
-} catch (error) {
-console.warn('无法获取模板文件，使用内置模板:', error);
-// 返回一个简单的基础模板
-return `<!DOCTYPE html>
+    try {
+        const templateUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${TEMPLATE_PATH}`;
+        const response = await fetchWithRetry(templateUrl, {
+            headers: {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+        
+        if (response.ok) {
+            const fileData = await response.json();
+            // 正确处理base64编码的UTF-8内容
+            const binaryString = atob(fileData.content);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return new TextDecoder('utf-8').decode(bytes);
+        } else {
+            throw new Error('模板文件获取失败');
+        }
+    } catch (error) {
+        console.warn('无法获取模板文件，使用内置模板:', error);
+        // 返回一个简单的基础模板
+        return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -886,12 +934,7 @@ return `<!DOCTYPE html>
                     
                     if (post) {
                         document.title = post.title + ' | zcfi.cn';
-                        document.getElementById('content-container').innerHTML = \`
-                            <h1>\${post.title}</h1>
-                            <p><i class="fas fa-calendar"></i> \${post.date}</p>
-                            <div>\${post.content || '<p>暂无内容</p>'}</div>
-                            <p><a href="../blog.html"><i class="fas fa-arrow-left"></i> 返回博客列表</a></p>
-                        \`;
+                        document.getElementById('content-container').innerHTML = \`<h1>\${post.title}</h1><p><i class="fas fa-calendar"></i> \${post.date}</p><div>\${post.content || '<p>暂无内容</p>'}</div><p><a href="../blog.html"><i class="fas fa-arrow-left"></i> 返回博客列表</a></p>\`;
                     } else {
                         document.getElementById('content-container').innerHTML = '<p>文章未找到</p>';
                     }
@@ -904,72 +947,84 @@ return `<!DOCTYPE html>
     </script>
 </body>
 </html>`;
+    }
 }
-}
-// 创建/更新页面文件 - 修复编码问题
+
+// 创建/更新页面文件
 async function createOrUpdatePageFile(post) {
-if (!hasRepoPermission) {
-throw new Error('缺少repo权限，无法生成页面文件');
+    if (!hasRepoPermission) {
+        throw new Error('缺少repo权限，无法生成页面文件');
+    }
+    
+    try {
+        const pageContent = await buildPageContent(post);
+        const filePath = `blogs/${post.id}.html`;
+        
+        // 检查文件是否存在
+        let currentFile = null;
+        try {
+            const checkUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}?ref=${REPO_BRANCH}`;
+            const checkResponse = await fetchWithRetry(checkUrl, {
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            
+            if (checkResponse.ok) {
+                currentFile = await checkResponse.json();
+            }
+        } catch (error) {
+            // 文件不存在，继续创建
+        }
+        
+        // 将内容转换为UTF-8的base64
+        const encoder = new TextEncoder();
+        const encoded = encoder.encode(pageContent);
+        let binaryString = '';
+        for (let i = 0; i < encoded.length; i++) {
+            binaryString += String.fromCharCode(encoded[i]);
+        }
+        const contentBase64 = btoa(binaryString);
+        
+        const requestData = {
+            message: `Update blog page: ${post.title}`,
+            content: contentBase64,
+            branch: REPO_BRANCH
+        };
+        
+        // 如果文件已存在，添加sha
+        if (currentFile && currentFile.sha) {
+            requestData.sha = currentFile.sha;
+        }
+        
+        const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}`;
+        const response = await fetchWithRetry(apiUrl, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`创建/更新页面文件失败: ${response.status} ${errorData.message || response.statusText}`);
+        }
+        
+        return await response.json();
+        
+    } catch (error) {
+        console.error('创建/更新页面文件失败:', error);
+        throw error;
+    }
 }
-try {
-const pageContent = await buildPageContent(post);
-const filePath = `blogs/${post.id}.html`;
-// 检查文件是否存在
-let currentFile = null;
-try {
-const checkUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}?ref=${REPO_BRANCH}`;
-const checkResponse = await fetchWithRetry(checkUrl, {
-headers: {
-'Authorization': `token ${token}`,
-'Accept': 'application/vnd.github.v3+json'
-}
-});
-if (checkResponse.ok) {
-currentFile = await checkResponse.json();
-}
-} catch (error) {
-// 文件不存在，继续创建
-}
-// 将内容转换为UTF-8的base64
-const encoder = new TextEncoder();
-const encoded = encoder.encode(pageContent);
-let binaryString = '';
-for (let i = 0; i < encoded.length; i++) {
-binaryString += String.fromCharCode(encoded[i]);
-}
-const contentBase64 = btoa(binaryString);
-const requestData = {
-message: `Update blog page: ${post.title}`,
-content: contentBase64,
-branch: REPO_BRANCH
-};
-// 如果文件已存在，添加sha
-if (currentFile && currentFile.sha) {
-requestData.sha = currentFile.sha;
-}
-const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}`;
-const response = await fetchWithRetry(apiUrl, {
-method: 'PUT',
-headers: {
-'Authorization': `token ${token}`,
-'Accept': 'application/vnd.github.v3+json',
-'Content-Type': 'application/json'
-},
-body: JSON.stringify(requestData)
-});
-if (!response.ok) {
-const errorData = await response.json();
-throw new Error(`创建/更新页面文件失败: ${response.status} ${errorData.message || response.statusText}`);
-}
-return await response.json();
-} catch (error) {
-console.error('创建/更新页面文件失败:', error);
-throw error;
-}
-}
+
 // 备用模板生成函数
 function buildFallbackPageContent(post) {
-return `<!DOCTYPE html>
+    return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -1002,588 +1057,665 @@ ${post.content || '<p>暂无内容</p>'}
 </body>
 </html>`;
 }
+
 // 删除页面文件
 async function deletePageFile(postId) {
-if (!hasRepoPermission) {
-console.log('缺少repo权限，跳过删除页面文件');
-return;
+    if (!hasRepoPermission) {
+        console.log('缺少repo权限，跳过删除页面文件');
+        return;
+    }
+    
+    try {
+        const filePath = `blogs/${postId}.html`;
+        const checkUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}?ref=${REPO_BRANCH}`;
+        const checkResponse = await fetchWithRetry(checkUrl, {
+            headers: {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+        
+        if (!checkResponse.ok) {
+            console.log('文件不存在，无需删除');
+            return;
+        }
+        
+        const currentFile = await checkResponse.json();
+        const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}`;
+        const response = await fetchWithRetry(apiUrl, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: `Delete blog page: ${postId}`,
+                sha: currentFile.sha,
+                branch: REPO_BRANCH
+            })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error(`删除页面文件失败: ${response.status} ${errorData.message}`);
+        }
+    } catch (error) {
+        console.error('删除页面文件失败:', error);
+    }
 }
-try {
-const filePath = `blogs/${postId}.html`;
-const checkUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}?ref=${REPO_BRANCH}`;
-const checkResponse = await fetchWithRetry(checkUrl, {
-headers: {
-'Authorization': `token ${token}`,
-'Accept': 'application/vnd.github.v3+json'
-}
-});
-if (!checkResponse.ok) {
-console.log('文件不存在，无需删除');
-return;
-}
-const currentFile = await checkResponse.json();
-const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}`;
-const response = await fetchWithRetry(apiUrl, {
-method: 'DELETE',
-headers: {
-'Authorization': `token ${token}`,
-'Accept': 'application/vnd.github.v3+json',
-'Content-Type': 'application/json'
-},
-body: JSON.stringify({
-message: `Delete blog page: ${postId}`,
-sha: currentFile.sha,
-branch: REPO_BRANCH
-})
-});
-if (!response.ok) {
-const errorData = await response.json();
-console.error(`删除页面文件失败: ${response.status} ${errorData.message}`);
-}
-} catch (error) {
-console.error('删除页面文件失败:', error);
-}
-}
+
 // 模板管理功能
 async function manageTemplate() {
-try {
-showLoading('模板管理', '正在加载模板...');
-const templateContent = await fetchTemplateFile();
-document.getElementById('templateContent').value = templateContent;
-hideLoading();
-showModal('templateModal');
-} catch (error) {
-hideLoading();
-showResult('error', '模板管理', error.message);
+    try {
+        showLoading('模板管理', '正在加载模板...');
+        const templateContent = await fetchTemplateFile();
+        document.getElementById('templateContent').value = templateContent;
+        hideLoading();
+        showModal('templateModal');
+    } catch (error) {
+        hideLoading();
+        showResult('error', '模板管理', error.message);
+    }
 }
-}
+
 function closeTemplateModal() {
-hideModal('templateModal');
+    hideModal('templateModal');
 }
+
 async function saveTemplate() {
-try {
-const templateContent = document.getElementById('templateContent').value;
-if (!templateContent.trim()) {
-showResult('error', '保存失败', '模板内容不能为空');
-return;
+    try {
+        const templateContent = document.getElementById('templateContent').value;
+        if (!templateContent.trim()) {
+            showResult('error', '保存失败', '模板内容不能为空');
+            return;
+        }
+        
+        showLoading('保存模板', '正在保存模板文件...');
+        
+        // 将内容转换为UTF-8的base64
+        const encoder = new TextEncoder();
+        const encoded = encoder.encode(templateContent);
+        let binaryString = '';
+        for (let i = 0; i < encoded.length; i++) {
+            binaryString += String.fromCharCode(encoded[i]);
+        }
+        const contentBase64 = btoa(binaryString);
+        
+        let currentFile = null;
+        let fileExists = false;
+        
+        try {
+            const checkUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${TEMPLATE_PATH}`;
+            const checkResponse = await fetchWithRetry(checkUrl, {
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            
+            if (checkResponse.ok) {
+                currentFile = await checkResponse.json();
+                fileExists = true;
+            }
+        } catch (error) {
+            fileExists = false;
+        }
+        
+        const requestData = {
+            message: 'Update blog page template',
+            content: contentBase64,
+            branch: REPO_BRANCH
+        };
+        
+        if (fileExists && currentFile && currentFile.sha) {
+            requestData.sha = currentFile.sha;
+        }
+        
+        const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${TEMPLATE_PATH}`;
+        const response = await fetchWithRetry(apiUrl, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        });
+        
+        if (!response.ok) {
+            throw new Error('保存模板失败');
+        }
+        
+        hideLoading();
+        showResult('success', '保存成功', '模板已保存');
+        closeTemplateModal();
+    } catch (error) {
+        hideLoading();
+        showResult('error', '保存失败', error.message);
+    }
 }
-showLoading('保存模板', '正在保存模板文件...');
-// 将内容转换为UTF-8的base64
-const encoder = new TextEncoder();
-const encoded = encoder.encode(templateContent);
-let binaryString = '';
-for (let i = 0; i < encoded.length; i++) {
-binaryString += String.fromCharCode(encoded[i]);
-}
-const contentBase64 = btoa(binaryString);
-let currentFile = null;
-let fileExists = false;
-try {
-const checkUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${TEMPLATE_PATH}`;
-const checkResponse = await fetchWithRetry(checkUrl, {
-headers: {
-'Authorization': `token ${token}`,
-'Accept': 'application/vnd.github.v3+json'
-}
-});
-if (checkResponse.ok) {
-currentFile = await checkResponse.json();
-fileExists = true;
-}
-} catch (error) {
-fileExists = false;
-}
-const requestData = {
-message: 'Update blog page template',
-content: contentBase64,
-branch: REPO_BRANCH
-};
-if (fileExists && currentFile && currentFile.sha) {
-requestData.sha = currentFile.sha;
-}
-const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${TEMPLATE_PATH}`;
-const response = await fetchWithRetry(apiUrl, {
-method: 'PUT',
-headers: {
-'Authorization': `token ${token}`,
-'Accept': 'application/vnd.github.v3+json',
-'Content-Type': 'application/json'
-},
-body: JSON.stringify(requestData)
-});
-if (!response.ok) {
-throw new Error('保存模板失败');
-}
-hideLoading();
-showResult('success', '保存成功', '模板已保存');
-closeTemplateModal();
-} catch (error) {
-hideLoading();
-showResult('error', '保存失败', error.message);
-}
-}
+
 // 带重试机制的fetch
 async function fetchWithRetry(url, options = {}, retryCount = 0) {
-const maxRetries = CORS_PROXIES.length;
-try {
-if (retryCount === 0) {
-try {
-const directResponse = await fetch(url, options);
-if (directResponse.ok || directResponse.status !== 0) {
-return directResponse;
+    const maxRetries = CORS_PROXIES.length;
+    
+    try {
+        if (retryCount === 0) {
+            try {
+                const directResponse = await fetch(url, options);
+                if (directResponse.ok || directResponse.status !== 0) {
+                    return directResponse;
+                }
+            } catch (directError) {
+                console.log('直接请求失败，尝试使用代理');
+            }
+        }
+        
+        if (retryCount < maxRetries) {
+            const proxyUrl = CORS_PROXIES[retryCount];
+            let fullUrl;
+            if (proxyUrl.includes('allorigins')) {
+                fullUrl = `${proxyUrl}${encodeURIComponent(url)}`;
+            } else if (proxyUrl.includes('corsproxy.io')) {
+                fullUrl = `${proxyUrl}${encodeURIComponent(url)}`;
+            } else if (proxyUrl.includes('codetabs')) {
+                fullUrl = `${proxyUrl}${encodeURIComponent(url)}`;
+            }
+            
+            console.log(`尝试代理 ${retryCount + 1}/${maxRetries}: ${proxyUrl}`);
+            const proxyResponse = await fetch(fullUrl, options);
+            
+            if (proxyResponse.ok) {
+                return proxyResponse;
+            } else {
+                const errorText = await proxyResponse.text();
+                console.warn(`代理 ${retryCount + 1} 返回错误:`, proxyResponse.status, errorText);
+                throw new Error(`HTTP ${proxyResponse.status}`);
+            }
+        } else {
+            throw new Error('所有CORS代理都失败');
+        }
+    } catch (error) {
+        if (retryCount < maxRetries - 1) {
+            const delayTime = 500 * (retryCount + 1);
+            console.log(`等待 ${delayTime}ms 后重试...`);
+            await new Promise(resolve => setTimeout(resolve, delayTime));
+            return await fetchWithRetry(url, options, retryCount + 1);
+        } else {
+            throw error;
+        }
+    }
 }
-} catch (directError) {
-console.log('直接请求失败，尝试使用代理');
-}
-}
-if (retryCount < maxRetries) {
-const proxyUrl = CORS_PROXIES[retryCount];
-let fullUrl;
-if (proxyUrl.includes('allorigins')) {
-fullUrl = `${proxyUrl}${encodeURIComponent(url)}`;
-} else if (proxyUrl.includes('corsproxy.io')) {
-fullUrl = `${proxyUrl}${encodeURIComponent(url)}`;
-} else if (proxyUrl.includes('codetabs')) {
-fullUrl = `${proxyUrl}${encodeURIComponent(url)}`;
-}
-console.log(`尝试代理 ${retryCount + 1}/${maxRetries}: ${proxyUrl}`);
-const proxyResponse = await fetch(fullUrl, options);
-if (proxyResponse.ok) {
-return proxyResponse;
-} else {
-const errorText = await proxyResponse.text();
-console.warn(`代理 ${retryCount + 1} 返回错误:`, proxyResponse.status, errorText);
-throw new Error(`HTTP ${proxyResponse.status}`);
-}
-} else {
-throw new Error('所有CORS代理都失败');
-}
-} catch (error) {
-if (retryCount < maxRetries - 1) {
-const delayTime = 500 * (retryCount + 1);
-console.log(`等待 ${delayTime}ms 后重试...`);
-await new Promise(resolve => setTimeout(resolve, delayTime));
-return await fetchWithRetry(url, options, retryCount + 1);
-} else {
-throw error;
-}
-}
-}
+
 // 确认弹窗
 function showConfirm(title, message, action, data = null) {
-pendingAction = action;
-pendingActionData = data;
-document.getElementById('confirmTitle').textContent = title;
-document.getElementById('confirmMessage').textContent = message;
-showModal('confirmModal');
+    pendingAction = action;
+    pendingActionData = data;
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmMessage').textContent = message;
+    showModal('confirmModal');
 }
+
 function closeConfirmModal() {
-hideModal('confirmModal');
-pendingAction = null;
-pendingActionData = null;
+    hideModal('confirmModal');
+    pendingAction = null;
+    pendingActionData = null;
 }
+
 function closePermissionDetailsModal() {
-hideModal('permissionDetailsModal');
+    hideModal('permissionDetailsModal');
 }
+
 function executeConfirmedAction() {
-if (pendingAction) {
-pendingAction(pendingActionData);
-closeConfirmModal();
+    if (pendingAction) {
+        pendingAction(pendingActionData);
+        closeConfirmModal();
+    }
 }
-}
+
 // 加载弹窗
 function showLoading(title = '处理中', message = '正在处理您的请求，请稍候...') {
-document.getElementById('loadingTitle').textContent = title;
-document.getElementById('loadingMessage').textContent = message;
-showModal('loadingModal');
+    document.getElementById('loadingTitle').textContent = title;
+    document.getElementById('loadingMessage').textContent = message;
+    showModal('loadingModal');
 }
+
 function hideLoading() {
-hideModal('loadingModal');
+    hideModal('loadingModal');
 }
+
 // 结果弹窗
 function showResult(type, title, message) {
-const icon = document.getElementById('resultIcon');
-if (type === 'success') {
-icon.className = 'fas fa-check-circle';
-icon.style.color = '#28a745';
-} else if (type === 'error') {
-icon.className = 'fas fa-exclamation-circle';
-icon.style.color = '#dc3545';
-} else {
-icon.className = 'fas fa-info-circle';
-icon.style.color = '#4a6fa5';
+    const icon = document.getElementById('resultIcon');
+    if (type === 'success') {
+        icon.className = 'fas fa-check-circle';
+        icon.style.color = '#28a745';
+    } else if (type === 'error') {
+        icon.className = 'fas fa-exclamation-circle';
+        icon.style.color = '#dc3545';
+    } else {
+        icon.className = 'fas fa-info-circle';
+        icon.style.color = '#4a6fa5';
+    }
+    
+    document.getElementById('resultTitle').textContent = title;
+    document.getElementById('resultMessage').textContent = message;
+    showModal('resultModal');
 }
-document.getElementById('resultTitle').textContent = title;
-document.getElementById('resultMessage').textContent = message;
-showModal('resultModal');
-}
+
 function closeResultModal() {
-hideModal('resultModal');
+    hideModal('resultModal');
 }
+
 // 通用弹窗控制
 function showModal(modalId) {
-document.getElementById(modalId).classList.add('show');
+    document.getElementById(modalId).classList.add('show');
 }
+
 function hideModal(modalId) {
-document.getElementById(modalId).classList.remove('show');
+    document.getElementById(modalId).classList.remove('show');
 }
+
 function closeAllModals() {
-document.querySelectorAll('.custom-modal.show').forEach(modal => {
-modal.classList.remove('show');
-});
-pendingAction = null;
-pendingActionData = null;
+    document.querySelectorAll('.custom-modal.show').forEach(modal => {
+        modal.classList.remove('show');
+    });
+    pendingAction = null;
+    pendingActionData = null;
 }
+
 // 文章操作函数
 async function saveArticle() {
-const editPostId = document.getElementById('editPostId').value;
-const postId = document.getElementById('postId').value.trim();
-const title = document.getElementById('title').value.trim();
-const date = document.getElementById('date').value.trim();
-const customUrl = document.getElementById('customUrl').value.trim();
-const status = document.getElementById('status').value;
-const excerpt = document.getElementById('excerpt').value.trim();
-const content = document.getElementById('content').value.trim();
-if (!postId || !title || !date || !excerpt || !content) {
-showResult('error', '输入错误', '请填写所有必填字段');
-return;
+    const editPostId = document.getElementById('editPostId').value;
+    const postId = document.getElementById('postId').value.trim();
+    const title = document.getElementById('title').value.trim();
+    const date = document.getElementById('date').value.trim();
+    const customUrl = document.getElementById('customUrl').value.trim();
+    const status = document.getElementById('status').value;
+    const excerpt = document.getElementById('excerpt').value.trim();
+    const content = document.getElementById('content').value.trim();
+    
+    if (!postId || !title || !date || !excerpt || !content) {
+        showResult('error', '输入错误', '请填写所有必填字段');
+        return;
+    }
+    
+    try {
+        showLoading('保存文章', editPostId ? '正在更新文章...' : '正在保存文章...');
+        const currentData = await fetchCurrentData();
+        
+        if (!editPostId) {
+            if (currentData.some(post => post.id === postId)) {
+                throw new Error('文章 ID 已存在，请使用不同的 ID');
+            }
+            
+            const newPost = {
+                id: postId,
+                title: title,
+                date: date,
+                customUrl: customUrl || '',
+                status: status,
+                excerpt: excerpt,
+                content: content,
+                author: '',
+                tags: [],
+                enabled: true,
+                lastUpdated: date,
+                generatePage: false,
+                seoKeywords: '',
+                seoDescription: ''
+            };
+            currentData.unshift(newPost);
+        } else {
+            const postIndex = currentData.findIndex(post => post.id === editPostId);
+            if (postIndex === -1) {
+                throw new Error('未找到指定文章');
+            }
+            
+            const otherPost = currentData.find(post => post.id === postId && post.id !== editPostId);
+            if (otherPost) {
+                throw new Error('文章 ID 已被其他文章使用');
+            }
+            
+            const oldPost = currentData[postIndex];
+            currentData[postIndex] = {
+                id: postId,
+                title: title,
+                date: date,
+                customUrl: customUrl || '',
+                status: status,
+                excerpt: excerpt,
+                content: content,
+                author: oldPost.author || '',
+                tags: oldPost.tags || [],
+                enabled: oldPost.enabled !== false,
+                lastUpdated: date,
+                generatePage: oldPost.generatePage || false,
+                seoKeywords: oldPost.seoKeywords || '',
+                seoDescription: oldPost.seoDescription || ''
+            };
+        }
+        
+        await updateGistData(currentData);
+        hideLoading();
+        showResult('success', '操作成功', editPostId ? '文章更新成功！' : '文章保存成功！');
+        closeArticleModal();
+        loadBlogData(false, false);
+    } catch (error) {
+        hideLoading();
+        showResult('error', '操作失败', error.message);
+    }
 }
-try {
-showLoading('保存文章', editPostId ? '正在更新文章...' : '正在保存文章...');
-const currentData = await fetchCurrentData();
-if (!editPostId) {
-if (currentData.some(post => post.id === postId)) {
-throw new Error('文章 ID 已存在，请使用不同的 ID');
-}
-const newPost = {
-id: postId,
-title: title,
-date: date,
-customUrl: customUrl || '',
-status: status,
-excerpt: excerpt,
-content: content,
-author: '',
-tags: [],
-enabled: true,
-lastUpdated: date,
-generatePage: false,
-seoKeywords: '',
-seoDescription: ''
-};
-currentData.unshift(newPost);
-} else {
-const postIndex = currentData.findIndex(post => post.id === editPostId);
-if (postIndex === -1) {
-throw new Error('未找到指定文章');
-}
-const otherPost = currentData.find(post => post.id === postId && post.id !== editPostId);
-if (otherPost) {
-throw new Error('文章 ID 已被其他文章使用');
-}
-const oldPost = currentData[postIndex];
-currentData[postIndex] = {
-id: postId,
-title: title,
-date: date,
-customUrl: customUrl || '',
-status: status,
-excerpt: excerpt,
-content: content,
-author: oldPost.author || '',
-tags: oldPost.tags || [],
-enabled: oldPost.enabled !== false,
-lastUpdated: date,
-generatePage: oldPost.generatePage || false,
-seoKeywords: oldPost.seoKeywords || '',
-seoDescription: oldPost.seoDescription || ''
-};
-}
-await updateGistData(currentData);
-hideLoading();
-showResult('success', '操作成功', editPostId ? '文章更新成功！' : '文章保存成功！');
-closeArticleModal();
-loadBlogData(false, false);
-} catch (error) {
-hideLoading();
-showResult('error', '操作失败', error.message);
-}
-}
+
 async function toggleArticleStatus(postId, currentStatus) {
-const newStatus = currentStatus === 'published' ? 'draft' : 'published';
-const actionText = newStatus === 'published' ? '上架' : '下架';
-try {
-showLoading('更新状态', '正在更新文章状态...');
-const currentData = await fetchCurrentData();
-const postIndex = currentData.findIndex(post => post.id === postId);
-if (postIndex === -1) {
-throw new Error('未找到指定文章');
+    const newStatus = currentStatus === 'published' ? 'draft' : 'published';
+    const actionText = newStatus === 'published' ? '上架' : '下架';
+    
+    try {
+        showLoading('更新状态', '正在更新文章状态...');
+        const currentData = await fetchCurrentData();
+        const postIndex = currentData.findIndex(post => post.id === postId);
+        
+        if (postIndex === -1) {
+            throw new Error('未找到指定文章');
+        }
+        
+        if (currentData[postIndex].generatePage && newStatus === 'draft') {
+            await deletePageFile(postId);
+        }
+        
+        currentData[postIndex].status = newStatus;
+        currentData[postIndex].lastUpdated = new Date().toISOString().split('T')[0];
+        
+        await updateGistData(currentData);
+        hideLoading();
+        showResult('success', '操作成功', `文章已${actionText}`);
+        loadBlogData(false, false);
+    } catch (error) {
+        hideLoading();
+        showResult('error', '操作失败', error.message);
+    }
 }
-if (currentData[postIndex].generatePage && newStatus === 'draft') {
-await deletePageFile(postId);
-}
-currentData[postIndex].status = newStatus;
-currentData[postIndex].lastUpdated = new Date().toISOString().split('T')[0];
-await updateGistData(currentData);
-hideLoading();
-showResult('success', '操作成功', `文章已${actionText}`);
-loadBlogData(false, false);
-} catch (error) {
-hideLoading();
-showResult('error', '操作失败', error.message);
-}
-}
+
 async function deleteArticle(postId) {
-try {
-showLoading('删除文章', '正在删除文章...');
-const currentData = await fetchCurrentData();
-const postIndex = currentData.findIndex(post => post.id === postId);
-if (postIndex === -1) {
-throw new Error('未找到指定文章');
+    try {
+        showLoading('删除文章', '正在删除文章...');
+        const currentData = await fetchCurrentData();
+        const postIndex = currentData.findIndex(post => post.id === postId);
+        
+        if (postIndex === -1) {
+            throw new Error('未找到指定文章');
+        }
+        
+        if (currentData[postIndex].generatePage) {
+            await deletePageFile(postId);
+        }
+        
+        const filteredData = currentData.filter(post => post.id !== postId);
+        await updateGistData(filteredData);
+        hideLoading();
+        showResult('success', '操作成功', '文章删除成功！');
+        loadBlogData(false, false);
+    } catch (error) {
+        hideLoading();
+        showResult('error', '操作失败', error.message);
+    }
 }
-if (currentData[postIndex].generatePage) {
-await deletePageFile(postId);
-}
-const filteredData = currentData.filter(post => post.id !== postId);
-await updateGistData(filteredData);
-hideLoading();
-showResult('success', '操作成功', '文章删除成功！');
-loadBlogData(false, false);
-} catch (error) {
-hideLoading();
-showResult('error', '操作失败', error.message);
-}
-}
+
 // 数据操作函数
 async function fetchCurrentData() {
-const response = await fetchWithRetry(GIST_URL, {
-headers: {
-'Authorization': `token ${token}`,
-'Accept': 'application/vnd.github.v3+json'
+    const response = await fetchWithRetry(GIST_URL, {
+        headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json'
+        }
+    });
+    
+    if (!response.ok) {
+        throw new Error(`获取数据失败: ${response.status} ${response.statusText}`);
+    }
+    
+    const gist = await response.json();
+    const data = JSON.parse(gist.files['blog.json'].content);
+    
+    let blogData;
+    if (Array.isArray(data)) {
+        blogData = data;
+    } else if (data && typeof data === 'object' && Array.isArray(data.blog)) {
+        blogData = data.blog;
+    } else {
+        throw new Error('数据格式无效');
+    }
+    
+    return blogData.map(post => ({
+        ...post,
+        status: post.status || 'published',
+        customUrl: post.customUrl || '',
+        author: post.author || '',
+        tags: post.tags || [],
+        enabled: post.enabled !== false,
+        lastUpdated: post.lastUpdated || post.date || '',
+        generatePage: post.generatePage || false,
+        seoKeywords: post.seoKeywords || '',
+        seoDescription: post.seoDescription || ''
+    }));
 }
-});
-if (!response.ok) {
-throw new Error(`获取数据失败: ${response.status} ${response.statusText}`);
-}
-const gist = await response.json();
-const data = JSON.parse(gist.files['blog.json'].content);
-let blogData;
-if (Array.isArray(data)) {
-blogData = data;
-} else if (data && typeof data === 'object' && Array.isArray(data.blog)) {
-blogData = data.blog;
-} else {
-throw new Error('数据格式无效');
-}
-return blogData.map(post => ({
-...post,
-status: post.status || 'published',
-customUrl: post.customUrl || '',
-author: post.author || '',
-tags: post.tags || [],
-enabled: post.enabled !== false,
-lastUpdated: post.lastUpdated || post.date || '',
-generatePage: post.generatePage || false,
-seoKeywords: post.seoKeywords || '',
-seoDescription: post.seoDescription || ''
-}));
-}
+
 async function updateGistData(newData) {
-const updateResponse = await fetchWithRetry(GIST_URL, {
-method: 'PATCH',
-headers: {
-'Authorization': `token ${token}`,
-'Accept': 'application/vnd.github.v3+json',
-'Content-Type': 'application/json'
-},
-body: JSON.stringify({
-files: {
-'blog.json': {
-content: JSON.stringify(newData, null, 2)
+    const updateResponse = await fetchWithRetry(GIST_URL, {
+        method: 'PATCH',
+        headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            files: {
+                'blog.json': {
+                    content: JSON.stringify(newData, null, 2)
+                }
+            }
+        })
+    });
+    
+    if (!updateResponse.ok) {
+        const errorText = await updateResponse.text();
+        throw new Error(`更新失败: ${updateResponse.status} ${errorText}`);
+    }
 }
-}
-})
-});
-if (!updateResponse.ok) {
-const errorText = await updateResponse.text();
-throw new Error(`更新失败: ${updateResponse.status} ${errorText}`);
-}
-}
+
 // 主加载函数
 async function loadBlogData(isInitialLoad = false, showRefreshResult = false) {
-try {
-if (!isInitialLoad && showRefreshResult) {
-showLoading('刷新文章', '正在从服务器获取最新文章列表...');
+    try {
+        if (!isInitialLoad && showRefreshResult) {
+            showLoading('刷新文章', '正在从服务器获取最新文章列表...');
+        }
+        
+        const beforeCount = currentBlogData.length;
+        const data = await fetchCurrentData();
+        currentBlogData = data;
+        displayArticlesList(data);
+        
+        const afterCount = data.length;
+        const changeCount = afterCount - beforeCount;
+        
+        if (!isInitialLoad && showRefreshResult) {
+            hideLoading();
+            let message = '';
+            if (changeCount > 0) {
+                message = `刷新完成！新增 ${changeCount} 篇文章，现在共有 ${afterCount} 篇文章。`;
+            } else if (changeCount < 0) {
+                message = `刷新完成！删除了 ${Math.abs(changeCount)} 篇文章，现在共有 ${afterCount} 篇文章。`;
+            } else {
+                message = `刷新完成！文章数量无变化，共有 ${afterCount} 篇文章。`;
+            }
+            showResult('success', '刷新成功', message);
+        } else if (!isInitialLoad && !showRefreshResult) {
+            hideLoading();
+        }
+    } catch (error) {
+        console.error('加载文章失败:', error);
+        if (!isInitialLoad) {
+            hideLoading();
+            if (showRefreshResult) {
+                showResult('error', '刷新失败', `刷新文章列表失败: ${error.message}`);
+            }
+        } else {
+            document.getElementById('articlesCount').textContent = '加载失败';
+            document.getElementById('articlesList').innerHTML = `
+                <div class="admin-card">
+                    <p style="color: #dc3545;">❌ ${error.message}</p>
+                    <p>请检查网络连接和Token权限，然后点击刷新按钮重试</p>
+                </div>
+            `;
+        }
+    }
 }
-const beforeCount = currentBlogData.length;
-const data = await fetchCurrentData();
-currentBlogData = data;
-displayArticlesList(data);
-const afterCount = data.length;
-const changeCount = afterCount - beforeCount;
-if (!isInitialLoad && showRefreshResult) {
-hideLoading();
-let message = '';
-if (changeCount > 0) {
-message = `刷新完成！新增 ${changeCount} 篇文章，现在共有 ${afterCount} 篇文章。`;
-} else if (changeCount < 0) {
-message = `刷新完成！删除了 ${Math.abs(changeCount)} 篇文章，现在共有 ${afterCount} 篇文章。`;
-} else {
-message = `刷新完成！文章数量无变化，共有 ${afterCount} 篇文章。`;
-}
-showResult('success', '刷新成功', message);
-} else if (!isInitialLoad && !showRefreshResult) {
-hideLoading();
-}
-} catch (error) {
-console.error('加载文章失败:', error);
-if (!isInitialLoad) {
-hideLoading();
-if (showRefreshResult) {
-showResult('error', '刷新失败', `刷新文章列表失败: ${error.message}`);
-}
-} else {
-document.getElementById('articlesCount').textContent = '加载失败';
-document.getElementById('articlesList').innerHTML = `
-<div class="admin-card">
-<p style="color: #dc3545;">❌ ${error.message}</p>
-<p>请检查网络连接和Token权限，然后点击刷新按钮重试</p>
-</div>
-`;
-}
-}
-}
+
 function suggestNextPostId(data) {
-if (data.length === 0) {
-document.getElementById('postId').value = 'post1';
-return;
+    if (data.length === 0) {
+        document.getElementById('postId').value = 'post1';
+        return;
+    }
+    
+    let maxNum = 0;
+    data.forEach(post => {
+        if (post.id && post.id.startsWith('post')) {
+            const num = parseInt(post.id.replace('post', ''));
+            if (!isNaN(num) && num > maxNum) {
+                maxNum = num;
+            }
+        }
+    });
+    
+    document.getElementById('postId').value = `post${maxNum + 1}`;
 }
-let maxNum = 0;
-data.forEach(post => {
-if (post.id && post.id.startsWith('post')) {
-const num = parseInt(post.id.replace('post', ''));
-if (!isNaN(num) && num > maxNum) {
-maxNum = num;
-}
-}
-});
-document.getElementById('postId').value = `post${maxNum + 1}`;
-}
+
 function displayArticlesList(data) {
-const container = document.getElementById('articlesList');
-const countElement = document.getElementById('articlesCount');
-countElement.textContent = `${data.length} 篇文章`;
-if (data.length === 0) {
-container.innerHTML = `
-<div class="empty-state">
-<i class="fas fa-file-alt"></i>
-<h3>暂无文章</h3>
-<p>点击"添加新文章"按钮开始创建第一篇博客文章</p>
-</div>
-`;
-return;
+    const container = document.getElementById('articlesList');
+    const countElement = document.getElementById('articlesCount');
+    countElement.textContent = `${data.length} 篇文章`;
+    
+    if (data.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-file-alt"></i>
+                <h3>暂无文章</h3>
+                <p>点击"添加新文章"按钮开始创建第一篇博客文章</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = data.map(post => `
+        <div class="admin-card" data-post-id="${post.id}">
+            <div class="admin-card-header">
+                <div>
+                    <div class="admin-card-title">${escapeHtml(post.title)}</div>
+                    <div class="article-meta">
+                        <span><i class="fas fa-hashtag"></i> ID: ${escapeHtml(post.id)}</span>
+                        <span><i class="fas fa-calendar"></i> ${escapeHtml(post.date)}</span>
+                        ${post.customUrl ? `<span><i class="fas fa-link"></i> ${escapeHtml(post.customUrl)}</span>` : ''}
+                        ${post.author ? `<span><i class="fas fa-user"></i> ${escapeHtml(post.author)}</span>` : ''}
+                        ${post.tags && post.tags.length > 0 ? `<span><i class="fas fa-tags"></i> ${escapeHtml(post.tags.join(', '))}</span>` : ''}
+                    </div>
+                </div>
+                <div>
+                    <span class="article-status status-${post.status}">
+                        ${post.status === 'published' ? '已发布' : '草稿'}
+                    </span>
+                    ${post.generatePage ? `<span class="article-status status-page-generated">
+                        <i class="fas fa-file-code"></i> 已生成页面
+                    </span>` : ''}
+                    ${post.enabled === false ? `<span class="article-status" style="background-color: #dc3545; color: white;">
+                        <i class="fas fa-ban"></i> 已禁用
+                    </span>` : ''}
+                </div>
+            </div>
+            <p>${escapeHtml(post.excerpt.substring(0, 150))}${post.excerpt.length > 150 ? '...' : ''}</p>
+            <div class="action-buttons">
+                <button class="admin-btn btn-primary action-btn edit-btn" data-post-id="${post.id}">
+                    <i class="fas fa-edit"></i> 编辑
+                </button>
+                ${post.status === 'published' ?
+                    `<button class="admin-btn btn-warning action-btn toggle-status-btn" data-post-id="${post.id}" data-current-status="${post.status}">
+                        <i class="fas fa-eye-slash"></i> 下架
+                    </button>` :
+                    `<button class="admin-btn btn-success action-btn toggle-status-btn" data-post-id="${post.id}" data-current-status="${post.status}">
+                        <i class="fas fa-eye"></i> 上架
+                    </button>`}
+                <button class="admin-btn btn-danger action-btn delete-btn" data-post-id="${post.id}">
+                    <i class="fas fa-trash"></i> 删除
+                </button>
+                ${hasRepoPermission ? `
+                    <button class="advanced-btn" data-post-id="${post.id}" title="高级配置（页面生成、SEO等）">
+                        <i class="fas fa-cog"></i> 高级配置
+                    </button>
+                ` : `
+                    <button class="advanced-btn" disabled title="需要Repo权限才能使用此功能">
+                        <i class="fas fa-lock"></i> 高级配置
+                    </button>
+                `}
+            </div>
+        </div>
+    `).join('');
+    
+    attachArticleEventListeners();
 }
-container.innerHTML = data.map(post => `
-<div class="admin-card" data-post-id="${post.id}">
-<div class="admin-card-header">
-<div>
-<div class="admin-card-title">${escapeHtml(post.title)}</div>
-<div class="article-meta">
-<span><i class="fas fa-hashtag"></i> ID: ${escapeHtml(post.id)}</span>
-<span><i class="fas fa-calendar"></i> ${escapeHtml(post.date)}</span>
-${post.customUrl ? `<span><i class="fas fa-link"></i> ${escapeHtml(post.customUrl)}</span>` : ''}
-${post.author ? `<span><i class="fas fa-user"></i> ${escapeHtml(post.author)}</span>` : ''}
-${post.tags && post.tags.length > 0 ? `<span><i class="fas fa-tags"></i> ${escapeHtml(post.tags.join(', '))}</span>` : ''}
-</div>
-</div>
-<div>
-<span class="article-status status-${post.status}">
-${post.status === 'published' ? '已发布' : '草稿'}
-</span>
-${post.generatePage ? `<span class="article-status status-page-generated">
-<i class="fas fa-file-code"></i> 已生成页面
-</span>` : ''}
-${post.enabled === false ? `<span class="article-status" style="background-color: #dc3545; color: white;">
-<i class="fas fa-ban"></i> 已禁用
-</span>` : ''}
-</div>
-</div>
-<p>${escapeHtml(post.excerpt.substring(0, 150))}${post.excerpt.length > 150 ? '...' : ''}</p>
-<div class="action-buttons">
-<button class="admin-btn btn-primary action-btn edit-btn" data-post-id="${post.id}">
-<i class="fas fa-edit"></i> 编辑
-</button>
-${post.status === 'published' ?
-`<button class="admin-btn btn-warning action-btn toggle-status-btn" data-post-id="${post.id}" data-current-status="${post.status}">
-<i class="fas fa-eye-slash"></i> 下架
-</button>` :
-`<button class="admin-btn btn-success action-btn toggle-status-btn" data-post-id="${post.id}" data-current-status="${post.status}">
-<i class="fas fa-eye"></i> 上架
-</button>`}
-<button class="admin-btn btn-danger action-btn delete-btn" data-post-id="${post.id}">
-<i class="fas fa-trash"></i> 删除
-</button>
-${hasRepoPermission ? `
-<button class="advanced-btn" data-post-id="${post.id}" title="高级配置（页面生成、SEO等）">
-<i class="fas fa-cog"></i> 高级配置
-</button>
-` : `
-<button class="advanced-btn" disabled title="需要Repo权限才能使用此功能">
-<i class="fas fa-lock"></i> 高级配置
-</button>
-`}
-</div>
-</div>
-`).join('');
-attachArticleEventListeners();
-}
+
 function attachArticleEventListeners() {
-document.querySelectorAll('.edit-btn').forEach(btn => {
-btn.addEventListener('click', function() {
-const postId = this.getAttribute('data-post-id');
-openEditModal(postId);
-});
-});
-document.querySelectorAll('.toggle-status-btn').forEach(btn => {
-btn.addEventListener('click', function() {
-const postId = this.getAttribute('data-post-id');
-const currentStatus = this.getAttribute('data-current-status');
-const actionText = currentStatus === 'published' ? '下架' : '上架';
-showConfirm(
-`${actionText}文章`,
-`确定要将文章 ${postId} ${actionText}吗？`,
-() => toggleArticleStatus(postId, currentStatus)
-);
-});
-});
-document.querySelectorAll('.delete-btn').forEach(btn => {
-btn.addEventListener('click', function() {
-const postId = this.getAttribute('data-post-id');
-showConfirm(
-'删除文章',
-`确定要删除文章 ${postId} 吗？此操作不可恢复！`,
-() => deleteArticle(postId)
-);
-});
-});
-document.querySelectorAll('.advanced-btn:not([disabled])').forEach(btn => {
-btn.addEventListener('click', function() {
-const postId = this.getAttribute('data-post-id');
-openAdvancedConfigModal(postId);
-});
-});
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const postId = this.getAttribute('data-post-id');
+            openEditModal(postId);
+        });
+    });
+    
+    document.querySelectorAll('.toggle-status-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const postId = this.getAttribute('data-post-id');
+            const currentStatus = this.getAttribute('data-current-status');
+            const actionText = currentStatus === 'published' ? '下架' : '上架';
+            showConfirm(
+                `${actionText}文章`,
+                `确定要将文章 ${postId} ${actionText}吗？`,
+                () => toggleArticleStatus(postId, currentStatus)
+            );
+        });
+    });
+    
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const postId = this.getAttribute('data-post-id');
+            showConfirm(
+                '删除文章',
+                `确定要删除文章 ${postId} 吗？此操作不可恢复！`,
+                () => deleteArticle(postId)
+            );
+        });
+    });
+    
+    document.querySelectorAll('.advanced-btn:not([disabled])').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const postId = this.getAttribute('data-post-id');
+            openAdvancedConfigModal(postId);
+        });
+    });
 }
+
 // 辅助函数
 function escapeHtml(text) {
-if (!text) return '';
-const div = document.createElement('div');
-div.textContent = text;
-return div.innerHTML;
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
+
 // 页面卸载时清除敏感信息
 window.addEventListener('beforeunload', () => {
-sessionStorage.removeItem('admin_token');
-sessionStorage.removeItem('admin_verified');
+    sessionStorage.removeItem('admin_token');
+    sessionStorage.removeItem('admin_verified');
 });
 </script>
 </body>
