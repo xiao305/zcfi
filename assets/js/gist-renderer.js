@@ -2,7 +2,7 @@
 class GistRenderer {
     constructor() {
         this.CONFIG_GIST_ID = '983bb7371ddb439a2fcbfb4885e34d14';
-        this.CONFIG_URL = `https://gist.githubusercontent.com/xiao305/  ${this.CONFIG_GIST_ID}/raw/config.json`;
+        this.CONFIG_URL = `https://gist.githubusercontent.com/xiao305/${this.CONFIG_GIST_ID}/raw/config.json`;
         this.configData = null;
     }
 
@@ -53,8 +53,8 @@ class GistRenderer {
                     { name: '版权声明', url: 'copyright.html' }
                 ],
                 social: {
-                    github: 'https://github.com  ',
-                    weibo: 'https://weibo.com  '
+                    github: 'https://github.com',
+                    weibo: 'https://weibo.com'
                 },
                 copyright: `© ${new Date().getFullYear()} zcfi.cn 版权所有`
             }
@@ -314,68 +314,3 @@ class GistRenderer {
 
 // 创建全局实例
 window.gistRenderer = new GistRenderer();
-
-// 在gist-renderer.js中添加以下函数
-async function loadBlogData() {
-    try {
-        // 如果配置未加载，先加载配置
-        if (!window.gistRenderer || !window.gistRenderer.config) {
-            await loadConfig();
-        }
-        
-        // 使用博客数据的Gist ID（可以从配置中获取，或使用默认值）
-        const blogGistId = window.gistRenderer.config?.blogGistId || '73cc78400c25eb9effed665e2c89843d';
-        const blogGistUrl = `https://api.github.com/gists/  ${blogGistId}`;
-        
-        const response = await fetch(blogGistUrl, {
-            headers: {
-                'Accept': 'application/vnd.github.v3+json'
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error(`获取博客数据失败: ${response.status}`);
-        }
-        
-        const gist = await response.json();
-        const blogContent = gist.files['blog.json']?.content;
-        
-        if (!blogContent) {
-            throw new Error('博客数据文件不存在');
-        }
-        
-        const data = JSON.parse(blogContent);
-        
-        // 支持两种数据格式：直接数组或包含blog属性的对象
-        if (Array.isArray(data)) {
-            return data.map(post => ({
-                ...post,
-                status: post.status || 'published',
-                enabled: post.enabled !== false,
-                lastUpdated: post.lastUpdated || post.date || '',
-                tags: post.tags || [],
-                author: post.author || ''
-            }));
-        } else if (data && data.blog && Array.isArray(data.blog)) {
-            return data.blog.map(post => ({
-                ...post,
-                status: post.status || 'published',
-                enabled: post.enabled !== false,
-                lastUpdated: post.lastUpdated || post.date || '',
-                tags: post.tags || [],
-                author: post.author || ''
-            }));
-        } else {
-            throw new Error('博客数据格式无效');
-        }
-        
-    } catch (error) {
-        console.error('加载博客数据失败:', error);
-        throw error;
-    }
-}
-
-// 将函数添加到gistRenderer对象
-if (window.gistRenderer) {
-    window.gistRenderer.loadBlogData = loadBlogData;
-}
