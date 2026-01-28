@@ -491,27 +491,13 @@ width: 100%;
 <div class="form-group">
 <h4><i class="fas fa-info-circle"></i> 可用变量:</h4>
 <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; font-size: 13px;">
-<code>{{title}}</code> - 文章标题<br>
-<code>{{siteName}}</code> - 网站名称<br>
-<code>{{seoKeywords}}</code> - SEO关键词<br>
-<code>{{seoDescription}}</code> - SEO描述<br>
-<code>{{pageUrl}}</code> - 页面URL<br>
-<code>{{publishDate}}</code> - 发布日期<br>
-<code>{{lastUpdated}}</code> - 最后更新<br>
-<code>{{author}}</code> - 作者<br>
-<code>{{postId}}</code> - 文章ID<br>
-<code>{{status}}</code> - 状态 (published/draft/archived)<br>
-<code>{{enabled}}</code> - 是否启用 (true/false)<br>
-<code>{{content}}</code> - 文章内容<br>
-<code>{{tags}}</code> - 标签数组<br>
-<br>
-<strong>条件语句:</strong><br>
-<code>{{#if variable}}内容{{/if}}</code><br>
-<code>{{#unless variable}}内容{{/unless}}</code><br>
-<code>{{#if (eq variable "value")}}内容{{/if}}</code><br>
-<br>
-<strong>循环语句:</strong><br>
-<code>{{#each tags}}&lt;span&gt;{{this}}&lt;/span&gt;{{/each}}</code>
+<code>##TITLE##</code> - 文章标题<br>
+<code>##SITENAME##</code> - 网站名称<br>
+<code>##SEO_KEYWORDS##</code> - SEO关键词<br>
+<code>##SEO_DESCRIPTION##</code> - SEO描述<br>
+<code>##PAGE_URL##</code> - 页面URL<br>
+<code>##PUBLISH_DATE##</code> - 发布日期<br>
+<code>##POST_ID##</code> - 文章ID<br>
 </div>
 </div>
 </div>
@@ -805,7 +791,122 @@ showResult('error', '保存失败', error.message);
 }
 }, 100);
 }
-// 创建/更新页面文件
+// 构建页面内容函数 - 修复编码问题
+async function buildPageContent(post) {
+try {
+// 获取模板文件
+let templateContent = await fetchTemplateFile();
+// 准备替换数据
+const replacements = {
+'##TITLE##': escapeHtml(post.title || '博客文章'),
+'##SITENAME##': 'zcfi.cn',
+'##SEO_KEYWORDS##': escapeHtml(post.seoKeywords || post.title || ''),
+'##SEO_DESCRIPTION##': escapeHtml(post.seoDescription || post.excerpt || ''),
+'##PAGE_URL##': `https://zcfi.cn/blogs/${post.id}.html`,
+'##PUBLISH_DATE##': escapeHtml(post.date || ''),
+'##POST_ID##': post.id
+};
+// 执行简单的文本替换
+Object.keys(replacements).forEach(key => {
+templateContent = templateContent.replace(new RegExp(key, 'g'), replacements[key]);
+});
+return templateContent;
+} catch (error) {
+console.error('构建页面失败:', error);
+// 使用备用模板
+return buildFallbackPageContent(post);
+}
+}
+// 获取模板文件 - 修复编码问题
+async function fetchTemplateFile() {
+try {
+const templateUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${TEMPLATE_PATH}`;
+const response = await fetchWithRetry(templateUrl, {
+headers: {
+'Authorization': `token ${token}`,
+'Accept': 'application/vnd.github.v3+json'
+}
+});
+if (response.ok) {
+const fileData = await response.json();
+// 正确处理base64编码的UTF-8内容
+const binaryString = atob(fileData.content);
+const bytes = new Uint8Array(binaryString.length);
+for (let i = 0; i < binaryString.length; i++) {
+bytes[i] = binaryString.charCodeAt(i);
+}
+return new TextDecoder('utf-8').decode(bytes);
+} else {
+throw new Error('模板文件获取失败');
+}
+} catch (error) {
+console.warn('无法获取模板文件，使用内置模板:', error);
+// 返回一个简单的基础模板
+return `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>##TITLE## | ##SITENAME##</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        window.BLOG_CONFIG = {
+            postId: '##POST_ID##',
+            postData: null,
+            siteConfig: null
+        };
+    </script>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .loading { text-align: center; padding: 100px 0; color: #666; }
+    </style>
+</head>
+<body>
+    <div id="navbar-container"></div>
+    <main>
+        <div class="container">
+            <div id="content-container">
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>正在加载文章内容...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+    <div id="footer-container"></div>
+    <script src="../assets/js/gist-renderer.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            if (window.gistRenderer) {
+                try {
+                    await window.gistRenderer.renderAll();
+                    const blogData = await window.gistRenderer.loadBlogData();
+                    const postId = '##POST_ID##';
+                    const post = blogData.find(p => p.id === postId);
+                    
+                    if (post) {
+                        document.title = post.title + ' | zcfi.cn';
+                        document.getElementById('content-container').innerHTML = \`
+                            <h1>\${post.title}</h1>
+                            <p><i class="fas fa-calendar"></i> \${post.date}</p>
+                            <div>\${post.content || '<p>暂无内容</p>'}</div>
+                            <p><a href="../blog.html"><i class="fas fa-arrow-left"></i> 返回博客列表</a></p>
+                        \`;
+                    } else {
+                        document.getElementById('content-container').innerHTML = '<p>文章未找到</p>';
+                    }
+                } catch (error) {
+                    console.error('加载失败:', error);
+                    document.getElementById('content-container').innerHTML = '<p>加载文章失败</p>';
+                }
+            }
+        });
+    </script>
+</body>
+</html>`;
+}
+}
+// 创建/更新页面文件 - 修复编码问题
 async function createOrUpdatePageFile(post) {
 if (!hasRepoPermission) {
 throw new Error('缺少repo权限，无法生成页面文件');
@@ -813,8 +914,8 @@ throw new Error('缺少repo权限，无法生成页面文件');
 try {
 const pageContent = await buildPageContent(post);
 const filePath = `blogs/${post.id}.html`;
+// 检查文件是否存在
 let currentFile = null;
-let fileExists = false;
 try {
 const checkUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}?ref=${REPO_BRANCH}`;
 const checkResponse = await fetchWithRetry(checkUrl, {
@@ -825,20 +926,25 @@ headers: {
 });
 if (checkResponse.ok) {
 currentFile = await checkResponse.json();
-fileExists = true;
-} else if (checkResponse.status === 404) {
-fileExists = false;
 }
 } catch (error) {
-fileExists = false;
+// 文件不存在，继续创建
 }
-const contentBase64 = btoa(unescape(encodeURIComponent(pageContent)));
+// 将内容转换为UTF-8的base64
+const encoder = new TextEncoder();
+const encoded = encoder.encode(pageContent);
+let binaryString = '';
+for (let i = 0; i < encoded.length; i++) {
+binaryString += String.fromCharCode(encoded[i]);
+}
+const contentBase64 = btoa(binaryString);
 const requestData = {
 message: `Update blog page: ${post.title}`,
 content: contentBase64,
 branch: REPO_BRANCH
 };
-if (fileExists && currentFile && currentFile.sha) {
+// 如果文件已存在，添加sha
+if (currentFile && currentFile.sha) {
 requestData.sha = currentFile.sha;
 }
 const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}`;
@@ -860,121 +966,6 @@ return await response.json();
 console.error('创建/更新页面文件失败:', error);
 throw error;
 }
-}
-// 构建页面内容
-async function buildPageContent(post) {
-try {
-// 获取模板内容
-let templateContent = await fetchTemplateFile();
-// 准备模板数据
-const templateData = {
-title: escapeHtml(post.title || '博客文章'),
-siteName: 'zcfi.cn',
-seoKeywords: escapeHtml(post.seoKeywords || post.title || ''),
-seoDescription: escapeHtml(post.seoDescription || post.excerpt || ''),
-pageUrl: `https://zcfi.cn/blogs/${post.id}.html`,
-publishDate: escapeHtml(post.date || ''),
-lastUpdated: escapeHtml(post.lastUpdated || post.date || ''),
-author: escapeHtml(post.author || ''),
-content: post.content || '<p>暂无内容</p>',
-postId: post.id,
-status: post.status || 'published',
-enabled: (post.enabled !== false).toString(),
-tags: post.tags || []
-};
-// 模板变量替换
-let pageContent = templateContent;
-// 基本变量替换
-Object.keys(templateData).forEach(key => {
-const value = templateData[key];
-const regex = new RegExp(`{{${key}}}`, 'g');
-if (typeof value === 'string') {
-pageContent = pageContent.replace(regex, value);
-} else if (Array.isArray(value)) {
-// 数组处理
-const arrayRegex = new RegExp(`{{#each ${key}}}([\\s\\S]*?){{/each}}`, 'g');
-pageContent = pageContent.replace(arrayRegex, (match, innerContent) => {
-if (value.length === 0) return '';
-return value.map(item => {
-let result = innerContent;
-result = result.replace(/\{\{this\}\}/g, escapeHtml(item));
-return result;
-}).join('');
-});
-}
-});
-// 条件语句处理
-pageContent = processTemplateConditionals(pageContent, templateData);
-return pageContent;
-} catch (error) {
-console.error('构建页面失败，使用备用模板:', error);
-return buildFallbackPageContent(post);
-}
-}
-// 获取模板文件
-async function fetchTemplateFile() {
-try {
-const templateUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${TEMPLATE_PATH}`;
-const response = await fetchWithRetry(templateUrl, {
-headers: {
-'Authorization': `token ${token}`,
-'Accept': 'application/vnd.github.v3+json'
-}
-});
-if (response.ok) {
-const fileData = await response.json();
-const content = atob(fileData.content);
-return content;
-} else {
-throw new Error('模板文件获取失败');
-}
-} catch (error) {
-console.warn('无法获取模板文件，使用内置模板:', error);
-return `<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{title}} | {{siteName}}</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<style>
-body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-.article-title { color: #333; margin-bottom: 20px; }
-.article-meta { color: #666; margin-bottom: 30px; }
-.article-content { line-height: 1.6; }
-</style>
-</head>
-<body>
-<h1 class="article-title">{{title}}</h1>
-<div class="article-meta">
-<p>发布时间: {{publishDate}} | 最后更新: {{lastUpdated}}</p>
-</div>
-<div class="article-content">
-{{{content}}}
-</div>
-<p><a href="../blog.html">← 返回博客列表</a></p>
-</body>
-</html>`;
-}
-}
-// 处理模板条件语句
-function processTemplateConditionals(content, data) {
-// 处理 {{#if variable}} ... {{/if}}
-const ifRegex = /\{\{#if\s+(\w+)\}\}([\s\S]*?)\{\{\/if\}\}/g;
-content = content.replace(ifRegex, (match, variable, innerContent) => {
-return data[variable] ? innerContent : '';
-});
-// 处理 {{#unless variable}} ... {{/unless}}
-const unlessRegex = /\{\{#unless\s+(\w+)\}\}([\s\S]*?)\{\{\/unless\}\}/g;
-content = content.replace(unlessRegex, (match, variable, innerContent) => {
-return !data[variable] ? innerContent : '';
-});
-// 处理 {{#if (eq variable value)}} ... {{/if}}
-const eqRegex = /\{\{#if\s+\(eq\s+(\w+)\s+"([^"]+)"\)\}\}([\s\S]*?)\{\{\/if\}\}/g;
-content = content.replace(eqRegex, (match, variable, value, innerContent) => {
-return data[variable] === value ? innerContent : '';
-});
-return content;
 }
 // 备用模板生成函数
 function buildFallbackPageContent(post) {
@@ -1077,7 +1068,14 @@ showResult('error', '保存失败', '模板内容不能为空');
 return;
 }
 showLoading('保存模板', '正在保存模板文件...');
-const contentBase64 = btoa(unescape(encodeURIComponent(templateContent)));
+// 将内容转换为UTF-8的base64
+const encoder = new TextEncoder();
+const encoded = encoder.encode(templateContent);
+let binaryString = '';
+for (let i = 0; i < encoded.length; i++) {
+binaryString += String.fromCharCode(encoded[i]);
+}
+const contentBase64 = btoa(binaryString);
 let currentFile = null;
 let fileExists = false;
 try {
