@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{title}} | {{siteName}}</title>
+    <title>##TITLE## | ##SITENAME##</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="../favicon/favicon.svg">
@@ -25,16 +25,24 @@
     <link rel="stylesheet" href="../assets/css/components.css">
     
     <!-- SEO Meta Tags -->
-    <meta name="keywords" content="{{seoKeywords}}">
-    <meta name="description" content="{{seoDescription}}">
-    <meta property="og:title" content="{{title}}">
-    <meta property="og:description" content="{{seoDescription}}">
+    <meta name="keywords" content="##SEO_KEYWORDS##">
+    <meta name="description" content="##SEO_DESCRIPTION##">
+    <meta property="og:title" content="##TITLE##">
+    <meta property="og:description" content="##SEO_DESCRIPTION##">
     <meta property="og:type" content="article">
-    <meta property="og:url" content="{{pageUrl}}">
-    <meta property="article:published_time" content="{{publishDate}}">
-    {{#if author}}<meta property="article:author" content="{{author}}">{{/if}}
+    <meta property="og:url" content="##PAGE_URL##">
+    <meta property="article:published_time" content="##PUBLISH_DATE##">
     
-    <!-- 文章页面专属样式 -->
+    <!-- 页面初始化脚本 -->
+    <script>
+        // 全局配置变量，将在页面生成时替换
+        window.BLOG_CONFIG = {
+            postId: '##POST_ID##',
+            postData: null,
+            siteConfig: null
+        };
+    </script>
+    
     <style>
         /* 文章页面特定样式 */
         .article-container {
@@ -253,6 +261,36 @@
             margin-bottom: 15px;
         }
         
+        /* 加载状态 */
+        .loading-state {
+            text-align: center;
+            padding: 60px 40px;
+            color: #666;
+        }
+        
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #4a6fa5;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 错误状态 */
+        .error-state {
+            text-align: center;
+            padding: 60px 40px;
+            background: #fdf2f2;
+            border-radius: 8px;
+            margin: 40px auto;
+            max-width: 800px;
+            color: #dc3545;
+        }
+        
         /* 响应式调整 */
         @media (max-width: 768px) {
             .article-container {
@@ -312,81 +350,14 @@
     <!-- 主内容 -->
     <main>
         <div class="container">
-            {{#if (eq enabled "false")}}
-            <div class="page-disabled-message">
-                <i class="fas fa-lock"></i>
-                <h2>页面不可访问</h2>
-                <p style="margin-bottom: 20px; color: #6c757d;">
-                    {{#if (eq status "draft")}}
-                    该博客文章当前为草稿状态，暂时无法访问。
-                    {{else}}
-                    该博客文章已被管理员禁用，暂时无法访问。
-                    {{/if}}
-                </p>
-                <p style="margin-bottom: 30px; color: #6c757d;">
-                    您可以返回博客列表查看其他文章。
-                </p>
-                <a href="../blog.html" class="back-to-blog">
-                    <i class="fas fa-arrow-left"></i> 返回博客列表
-                </a>
-            </div>
-            {{else}}
-            <div class="article-container">
-                <h1 class="article-title">{{title}}</h1>
-                
-                <div class="article-meta">
-                    <div class="article-meta-item">
-                        <i class="fas fa-calendar-alt"></i>
-                        <span>发布时间: {{publishDate}}</span>
-                    </div>
-                    <div class="article-meta-item">
-                        <i class="fas fa-history"></i>
-                        <span>最后更新: {{lastUpdated}}</span>
-                    </div>
-                    {{#if author}}
-                    <div class="article-meta-item">
-                        <i class="fas fa-user"></i>
-                        <span>作者: {{author}}</span>
-                    </div>
-                    {{/if}}
-                    <div class="article-meta-item">
-                        <i class="fas fa-toggle-{{#if (eq status "published")}}on{{else}}off{{/if}}"></i>
-                        <span>状态: 
-                            <span class="page-status status-{{status}}">
-                                {{#if (eq status "published")}}已发布{{/if}}
-                                {{#if (eq status "draft")}}草稿{{/if}}
-                                {{#if (eq status "archived")}}已归档{{/if}}
-                            </span>
-                        </span>
-                    </div>
-                </div>
-                
-                {{#if tags}}
-                <div class="article-tags">
-                    {{#each tags}}
-                    <a href="../blog.html?tag={{this}}" class="article-tag">
-                        <i class="fas fa-tag"></i> {{this}}
-                    </a>
-                    {{/each}}
-                </div>
-                {{/if}}
-                
-                <div class="article-content">
-                    {{{content}}}
-                </div>
-                
-                <div class="article-actions">
-                    <a href="../blog.html" class="back-to-blog">
-                        <i class="fas fa-arrow-left"></i> 返回博客列表
-                    </a>
-                    <div>
-                        <a href="#top" class="back-to-blog" style="background: #6c757d;">
-                            <i class="fas fa-arrow-up"></i> 返回顶部
-                        </a>
-                    </div>
+            <div id="content-container">
+                <!-- 动态内容将在这里渲染 -->
+                <div class="loading-state">
+                    <i class="fas fa-spinner loading-spinner"></i>
+                    <h2>正在加载文章...</h2>
+                    <p>请稍候，正在从服务器获取文章内容</p>
                 </div>
             </div>
-            {{/if}}
         </div>
     </main>
 
@@ -396,7 +367,7 @@
     <!-- Gist渲染器 -->
     <script src="../assets/js/gist-renderer.js"></script>
     
-    <!-- 页面初始化脚本 -->
+    <!-- 文章渲染脚本 -->
     <script>
         // 页面加载完成后执行
         document.addEventListener('DOMContentLoaded', async function() {
@@ -405,38 +376,264 @@
             // 确保GistRenderer已加载
             if (!window.gistRenderer) {
                 console.error('gist-renderer.js未正确加载');
-                showErrorFallback();
+                showError('无法加载页面渲染器，请刷新页面重试');
                 return;
             }
             
             try {
                 // 加载网站配置
-                const configData = await window.gistRenderer.loadConfig();
-                
-                // 更新页面标题
-                if (configData.site && configData.site.name) {
-                    const currentTitle = document.querySelector('title');
-                    if (currentTitle) {
-                        currentTitle.textContent = currentTitle.textContent.replace('{{siteName}}', configData.site.name);
-                    }
-                }
+                const siteConfig = await window.gistRenderer.loadConfig();
+                window.BLOG_CONFIG.siteConfig = siteConfig;
                 
                 // 渲染导航栏和页脚
                 await window.gistRenderer.renderAll();
                 
-                // 初始化页面交互
-                initPageInteractions();
-                
-                // 更新页面元信息
-                updatePageMetaInfo();
+                // 加载文章数据并渲染
+                await loadAndRenderArticle();
                 
             } catch (error) {
                 console.error('页面初始化失败:', error);
-                showErrorFallback();
+                showError('页面加载失败，请刷新页面重试');
             }
         });
         
-        // 页面交互初始化
+        // 加载文章数据
+        async function loadAndRenderArticle() {
+            try {
+                // 从Gist加载博客数据
+                const blogData = await window.gistRenderer.loadBlogData();
+                
+                // 根据当前页面URL获取文章ID
+                const pathSegments = window.location.pathname.split('/');
+                const filename = pathSegments[pathSegments.length - 1];
+                const postId = filename.replace('.html', '');
+                
+                // 查找对应的文章
+                const post = blogData.find(p => p.id === postId);
+                
+                if (!post) {
+                    showNotFound();
+                    return;
+                }
+                
+                // 检查页面是否启用
+                if (post.enabled === false) {
+                    showDisabledMessage(post);
+                    return;
+                }
+                
+                // 检查文章状态（草稿/归档等）
+                if (post.status === 'draft' || post.status === 'archived') {
+                    showStatusMessage(post);
+                    return;
+                }
+                
+                // 更新页面标题和元信息
+                updatePageMeta(post);
+                
+                // 渲染文章内容
+                renderArticle(post);
+                
+                // 初始化页面交互
+                initPageInteractions();
+                
+            } catch (error) {
+                console.error('加载文章失败:', error);
+                showError('加载文章内容失败，请稍后重试');
+            }
+        }
+        
+        // 更新页面元信息
+        function updatePageMeta(post) {
+            // 更新页面标题
+            const siteName = window.BLOG_CONFIG.siteConfig?.site?.name || 'zcfi.cn';
+            document.title = `${post.title} | ${siteName}`;
+            
+            // 更新SEO元信息
+            const metaKeywords = document.querySelector('meta[name="keywords"]');
+            const metaDescription = document.querySelector('meta[name="description"]');
+            const ogTitle = document.querySelector('meta[property="og:title"]');
+            const ogDescription = document.querySelector('meta[property="og:description"]');
+            const ogUrl = document.querySelector('meta[property="og:url"]');
+            
+            if (metaKeywords) metaKeywords.content = post.seoKeywords || post.title;
+            if (metaDescription) metaDescription.content = post.seoDescription || post.excerpt || post.title;
+            if (ogTitle) ogTitle.content = post.title;
+            if (ogDescription) ogDescription.content = post.seoDescription || post.excerpt || post.title;
+            if (ogUrl) ogUrl.content = window.location.href;
+        }
+        
+        // 渲染文章内容
+        function renderArticle(post) {
+            const container = document.getElementById('content-container');
+            
+            // 构建元信息HTML
+            let metaHTML = `
+                <div class="article-meta">
+                    <div class="article-meta-item">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>发布时间: ${post.date}</span>
+                    </div>
+                    <div class="article-meta-item">
+                        <i class="fas fa-history"></i>
+                        <span>最后更新: ${post.lastUpdated || post.date}</span>
+                    </div>`;
+            
+            if (post.author) {
+                metaHTML += `
+                    <div class="article-meta-item">
+                        <i class="fas fa-user"></i>
+                        <span>作者: ${post.author}</span>
+                    </div>`;
+            }
+            
+            metaHTML += `
+                    <div class="article-meta-item">
+                        <i class="fas fa-toggle-${post.status === 'published' ? 'on' : 'off'}"></i>
+                        <span>状态: 
+                            <span class="page-status status-${post.status}">
+                                ${getStatusText(post.status)}
+                            </span>
+                        </span>
+                    </div>
+                </div>`;
+            
+            // 构建标签HTML
+            let tagsHTML = '';
+            if (post.tags && post.tags.length > 0) {
+                tagsHTML = `
+                <div class="article-tags">
+                    ${post.tags.map(tag => 
+                        `<a href="../blog.html?tag=${encodeURIComponent(tag)}" class="article-tag">
+                            <i class="fas fa-tag"></i> ${tag}
+                        </a>`
+                    ).join('')}
+                </div>`;
+            }
+            
+            // 构建完整文章HTML
+            const articleHTML = `
+                <div class="article-container">
+                    <h1 class="article-title">${post.title}</h1>
+                    ${metaHTML}
+                    ${tagsHTML}
+                    <div class="article-content">
+                        ${post.content || '<p>暂无内容</p>'}
+                    </div>
+                    <div class="article-actions">
+                        <a href="../blog.html" class="back-to-blog">
+                            <i class="fas fa-arrow-left"></i> 返回博客列表
+                        </a>
+                        <div>
+                            <a href="#top" class="back-to-blog" style="background: #6c757d;">
+                                <i class="fas fa-arrow-up"></i> 返回顶部
+                            </a>
+                        </div>
+                    </div>
+                </div>`;
+            
+            container.innerHTML = articleHTML;
+        }
+        
+        // 获取状态文本
+        function getStatusText(status) {
+            const statusMap = {
+                'published': '已发布',
+                'draft': '草稿',
+                'archived': '已归档'
+            };
+            return statusMap[status] || status;
+        }
+        
+        // 显示禁用消息
+        function showDisabledMessage(post) {
+            const container = document.getElementById('content-container');
+            const siteName = window.BLOG_CONFIG.siteConfig?.site?.name || 'zcfi.cn';
+            
+            container.innerHTML = `
+                <div class="page-disabled-message">
+                    <i class="fas fa-lock"></i>
+                    <h2>页面不可访问</h2>
+                    <p style="margin-bottom: 20px; color: #6c757d;">
+                        ${post.status === 'draft' ? 
+                            '该博客文章当前为草稿状态，暂时无法访问。' : 
+                            '该博客文章已被管理员禁用，暂时无法访问。'}
+                    </p>
+                    <p style="margin-bottom: 30px; color: #6c757d;">
+                        您可以返回博客列表查看其他文章。
+                    </p>
+                    <a href="../blog.html" class="back-to-blog">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                </div>`;
+            
+            document.title = `页面不可访问 | ${siteName}`;
+        }
+        
+        // 显示状态消息
+        function showStatusMessage(post) {
+            const container = document.getElementById('content-container');
+            const siteName = window.BLOG_CONFIG.siteConfig?.site?.name || 'zcfi.cn';
+            
+            container.innerHTML = `
+                <div class="page-disabled-message">
+                    <i class="fas fa-eye-slash"></i>
+                    <h2>${getStatusText(post.status)}状态</h2>
+                    <p style="margin-bottom: 20px; color: #6c757d;">
+                        ${post.status === 'draft' ? 
+                            '这篇文章当前为草稿状态，仅管理员可见。' : 
+                            '这篇文章已归档，暂时不可访问。'}
+                    </p>
+                    <p style="margin-bottom: 30px; color: #6c757d;">
+                        如有需要，请联系管理员。
+                    </p>
+                    <a href="../blog.html" class="back-to-blog">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                </div>`;
+            
+            document.title = `${getStatusText(post.status)} | ${siteName}`;
+        }
+        
+        // 显示未找到消息
+        function showNotFound() {
+            const container = document.getElementById('content-container');
+            const siteName = window.BLOG_CONFIG.siteConfig?.site?.name || 'zcfi.cn';
+            
+            container.innerHTML = `
+                <div class="page-disabled-message">
+                    <i class="fas fa-search"></i>
+                    <h2>文章未找到</h2>
+                    <p style="margin-bottom: 20px; color: #6c757d;">
+                        抱歉，您访问的文章不存在或已被删除。
+                    </p>
+                    <p style="margin-bottom: 30px; color: #6c757d;">
+                        您可以返回博客列表查看其他文章。
+                    </p>
+                    <a href="../blog.html" class="back-to-blog">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                </div>`;
+            
+            document.title = `文章未找到 | ${siteName}`;
+        }
+        
+        // 显示错误消息
+        function showError(message) {
+            const container = document.getElementById('content-container');
+            
+            container.innerHTML = `
+                <div class="error-state">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h2>加载失败</h2>
+                    <p style="margin-bottom: 20px;">${message}</p>
+                    <button onclick="location.reload()" class="back-to-blog" style="background: #4a6fa5; border: none; cursor: pointer;">
+                        <i class="fas fa-redo"></i> 重新加载
+                    </button>
+                </div>`;
+        }
+        
+        // 初始化页面交互
         function initPageInteractions() {
             // 图片灯箱效果
             document.querySelectorAll('.article-content img').forEach(img => {
@@ -498,18 +695,6 @@
                 pre.style.position = 'relative';
                 pre.appendChild(copyBtn);
             });
-        }
-        
-        // 更新页面元信息
-        function updatePageMetaInfo() {
-            // 更新Open Graph信息
-            const ogTitle = document.querySelector('meta[property="og:title"]');
-            const ogDesc = document.querySelector('meta[property="og:description"]');
-            const ogUrl = document.querySelector('meta[property="og:url"]');
-            
-            if (ogTitle) ogTitle.content = document.title;
-            if (ogDesc) ogDesc.content = document.querySelector('meta[name="description"]')?.content || '';
-            if (ogUrl) ogUrl.content = window.location.href;
             
             // 添加结构化数据（SEO优化）
             const articleTitle = document.querySelector('.article-title')?.textContent;
@@ -518,15 +703,15 @@
                     "@context": "https://schema.org",
                     "@type": "BlogPosting",
                     "headline": articleTitle,
-                    "datePublished": "{{publishDate}}",
-                    "dateModified": "{{lastUpdated}}",
+                    "datePublished": document.querySelector('[property="article:published_time"]')?.content || '',
+                    "dateModified": document.querySelector('.article-meta-item:nth-child(2) span')?.textContent?.replace('最后更新: ', '') || '',
                     "author": {
                         "@type": "Person",
-                        "name": "{{author}}" || "{{siteName}}"
+                        "name": document.querySelector('.article-meta-item:nth-child(3) span')?.textContent?.replace('作者: ', '') || window.BLOG_CONFIG.siteConfig?.site?.name || 'zcfi.cn'
                     },
                     "publisher": {
                         "@type": "Organization",
-                        "name": "{{siteName}}",
+                        "name": window.BLOG_CONFIG.siteConfig?.site?.name || 'zcfi.cn',
                         "logo": {
                             "@type": "ImageObject",
                             "url": "../favicon/favicon-512x512.png"
@@ -538,26 +723,6 @@
                 script.type = 'application/ld+json';
                 script.textContent = JSON.stringify(structuredData);
                 document.head.appendChild(script);
-            }
-        }
-        
-        // 全局加载失败处理
-        function showErrorFallback() {
-            const mainElement = document.querySelector('main');
-            if (mainElement) {
-                const errorDiv = document.createElement('div');
-                errorDiv.style.background = '#fdf2f2';
-                errorDiv.style.padding = '20px';
-                errorDiv.style.borderRadius = '8px';
-                errorDiv.style.marginTop = '20px';
-                errorDiv.style.color = '#dc3545';
-                errorDiv.innerHTML = `
-                    <p><i class="fas fa-exclamation-triangle"></i> 页面部分功能加载失败，但不影响主要内容阅读。</p>
-                    <button onclick="location.reload()" style="margin-top: 10px; padding: 8px 15px; background: #4a6fa5; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                        <i class="fas fa-redo"></i> 重试加载
-                    </button>
-                `;
-                mainElement.appendChild(errorDiv);
             }
         }
     </script>
