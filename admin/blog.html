@@ -65,6 +65,9 @@ align-items: center;
 gap: 8px;
 cursor: help;
 }
+.permissions-info:hover .tooltip-text {
+display: block;
+}
 .tooltip-text {
 display: none;
 position: absolute;
@@ -196,11 +199,28 @@ background: #adb5bd;
 cursor: not-allowed;
 opacity: 0.6;
 }
-/* URL锁定样式 */
-.custom-url-locked {
-background-color: #e9ecef;
-color: #6c757d;
-cursor: not-allowed;
+/* 状态预览 */
+.page-status-preview {
+padding: 6px 12px;
+border-radius: 20px;
+font-size: 12px;
+font-weight: 500;
+}
+.status-preview-published {
+background: #d4edda;
+color: #155724;
+}
+.status-preview-draft {
+background: #fff3cd;
+color: #856404;
+}
+.status-preview-archived {
+background: #e2e3e5;
+color: #383d41;
+}
+.status-preview-disabled {
+background: #dc3545;
+color: white;
 }
 /* 移动端优化 */
 @media (max-width: 768px) {
@@ -256,6 +276,9 @@ width: 100%;
 <button class="admin-btn btn-secondary" id="refreshBtn">
 <i class="fas fa-sync-alt"></i> 刷新文章列表
 </button>
+<button class="admin-btn btn-info" id="manageTemplateBtn" style="display: none;">
+<i class="fas fa-file-code"></i> 管理模板
+</button>
 </div>
 <div class="admin-section">
 <div class="section-header">
@@ -297,17 +320,15 @@ width: 100%;
 <input type="text" id="date" placeholder="例如: 2026年1月25日">
 </div>
 <div class="form-group">
-<label for="customUrl"><i class="fas fa-link"></i> 网址路径:</label>
-<input type="text" id="customUrl" placeholder="启用页面生成后自动设置" readonly class="custom-url-locked">
-<div style="font-size: 12px; color: #6c757d; margin-top: 5px;">
-启用"生成独立页面"后，此路径将自动设置为 <code>/blogs/{文章ID}.html</code> 且不可修改
-</div>
+<label for="customUrl"><i class="fas fa-link"></i> 自定义网址 (可选):</label>
+<input type="text" id="customUrl" placeholder="例如: /blog/my-article.html (留空使用默认)">
 </div>
 <div class="form-group">
 <label for="status"><i class="fas fa-toggle-on"></i> 文章状态:</label>
 <select id="status">
 <option value="published">已发布 (展示中)</option>
 <option value="draft">草稿 (隐藏)</option>
+<option value="archived">已归档</option>
 </select>
 </div>
 <div class="form-group">
@@ -333,6 +354,26 @@ width: 100%;
 </div>
 <div class="modal-title">高级配置 - <span id="advancedConfigPostId"></span></div>
 <div class="modal-message">
+<!-- 页面状态预览 -->
+<div class="config-option">
+<h4><i class="fas fa-eye"></i> 页面状态</h4>
+<p>当前页面状态预览:</p>
+<div id="pageStatusPreview" style="margin: 10px 0; padding: 8px 15px; border-radius: 6px; background: #f1f3f4; font-size: 14px;">
+<span id="statusText">检查中...</span>
+</div>
+</div>
+<!-- 页面启用开关 -->
+<div class="config-option">
+<h4><i class="fas fa-toggle-on"></i> 页面启用</h4>
+<p>控制页面是否可访问</p>
+<div class="toggle-switch">
+<label class="toggle-container">
+<input type="checkbox" id="pageEnabledToggle" class="toggle-checkbox" checked>
+<span class="toggle-slider"></span>
+</label>
+<span class="toggle-label" id="pageEnabledLabel">页面启用</span>
+</div>
+</div>
 <!-- 页面生成配置 -->
 <div class="config-option">
 <h4><i class="fas fa-file-code"></i> 生成独立页面</h4>
@@ -349,8 +390,26 @@ width: 100%;
 页面URL: <span class="page-url-preview" id="pageUrlPreview"></span>
 </p>
 <p style="font-size: 12px; color: #6c757d;">
-✓ 启用后，文章将生成独立页面，内容从Gist动态加载，修改后自动更新
+注意：启用页面生成功能后，自定义URL将被忽略，使用默认路径
 </p>
+</div>
+</div>
+<!-- 作者信息 -->
+<div class="config-option">
+<h4><i class="fas fa-user"></i> 作者信息</h4>
+<p>设置文章作者（可选）</p>
+<div class="form-group" style="margin-bottom: 0;">
+<label for="pageAuthor" style="font-size: 13px; margin-bottom: 4px;">作者:</label>
+<input type="text" id="pageAuthor" placeholder="例如: 张三" style="padding: 8px 12px; font-size: 13px;">
+</div>
+</div>
+<!-- 标签管理 -->
+<div class="config-option">
+<h4><i class="fas fa-tags"></i> 文章标签</h4>
+<p>用逗号分隔多个标签</p>
+<div class="form-group" style="margin-bottom: 0;">
+<label for="pageTags" style="font-size: 13px; margin-bottom: 4px;">标签:</label>
+<input type="text" id="pageTags" placeholder="例如: 技术,前端,JavaScript" style="padding: 8px 12px; font-size: 13px;">
 </div>
 </div>
 <!-- SEO配置 -->
@@ -418,6 +477,50 @@ width: 100%;
 </div>
 </div>
 </div>
+<!-- 模板管理弹窗 -->
+<div class="custom-modal" id="templateModal">
+<div class="modal-content form-modal">
+<div class="modal-header">
+<div class="modal-title" id="templateModalTitle">管理页面模板</div>
+</div>
+<div class="modal-body">
+<div class="form-group">
+<label><i class="fas fa-code"></i> 模板内容 (HTML):</label>
+<textarea id="templateContent" style="height: 400px; font-family: monospace; font-size: 13px; width: 100%;" placeholder="请输入HTML模板内容..."></textarea>
+</div>
+<div class="form-group">
+<h4><i class="fas fa-info-circle"></i> 可用变量:</h4>
+<div style="background: #f8f9fa; padding: 15px; border-radius: 6px; font-size: 13px;">
+<code>{{title}}</code> - 文章标题<br>
+<code>{{siteName}}</code> - 网站名称<br>
+<code>{{seoKeywords}}</code> - SEO关键词<br>
+<code>{{seoDescription}}</code> - SEO描述<br>
+<code>{{pageUrl}}</code> - 页面URL<br>
+<code>{{publishDate}}</code> - 发布日期<br>
+<code>{{lastUpdated}}</code> - 最后更新<br>
+<code>{{author}}</code> - 作者<br>
+<code>{{postId}}</code> - 文章ID<br>
+<code>{{status}}</code> - 状态 (published/draft/archived)<br>
+<code>{{enabled}}</code> - 是否启用 (true/false)<br>
+<code>{{content}}</code> - 文章内容<br>
+<code>{{tags}}</code> - 标签数组<br>
+<br>
+<strong>条件语句:</strong><br>
+<code>{{#if variable}}内容{{/if}}</code><br>
+<code>{{#unless variable}}内容{{/unless}}</code><br>
+<code>{{#if (eq variable "value")}}内容{{/if}}</code><br>
+<br>
+<strong>循环语句:</strong><br>
+<code>{{#each tags}}&lt;span&gt;{{this}}&lt;/span&gt;{{/each}}</code>
+</div>
+</div>
+</div>
+<div class="modal-buttons">
+<button class="modal-btn btn-secondary" id="cancelTemplateBtn">取消</button>
+<button class="modal-btn btn-primary" id="saveTemplateBtn">保存模板</button>
+</div>
+</div>
+</div>
 <!-- 加载弹窗 -->
 <div class="custom-modal" id="loadingModal">
 <div class="modal-content">
@@ -453,6 +556,7 @@ const GIST_URL = `https://api.github.com/gists/${GIST_ID}`;
 const REPO_OWNER = 'xiao305';
 const REPO_NAME = 'zcfi';
 const REPO_BRANCH = 'main';
+const TEMPLATE_PATH = 'blogs/template.html';
 const token = sessionStorage.getItem('admin_token');
 const permissions = JSON.parse(sessionStorage.getItem('admin_permissions') || '{}');
 // 全局状态
@@ -479,12 +583,14 @@ const permissionLevel = document.getElementById('tokenPermissionLevel');
 const permissionGistStatus = document.getElementById('permissionGistStatus');
 const permissionRepoStatus = document.getElementById('permissionRepoStatus');
 const permissionActions = document.getElementById('permissionActions');
+const manageTemplateBtn = document.getElementById('manageTemplateBtn');
 if (permissions.gist && permissions.repo) {
 banner.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
 permissionLevel.innerHTML = '<i class="fas fa-check-circle"></i> 完整权限 (Gist + Repo)';
 permissionGistStatus.innerHTML = '<span style="color: #28a745;">✓ 已授权</span>';
 permissionRepoStatus.innerHTML = '<span style="color: #28a745;">✓ 已授权</span>';
 hasRepoPermission = true;
+manageTemplateBtn.style.display = 'inline-flex';
 } else if (permissions.gist && !permissions.repo) {
 banner.style.background = 'linear-gradient(135deg, #ffc107 0%, #fd7e14 100%)';
 permissionLevel.innerHTML = '<i class="fas fa-exclamation-triangle"></i> 基础权限 (仅Gist)';
@@ -515,6 +621,7 @@ document.getElementById('addArticleBtn').addEventListener('click', openAddModal)
 document.getElementById('refreshBtn').addEventListener('click', function() {
 loadBlogData(false, true);
 });
+document.getElementById('manageTemplateBtn').addEventListener('click', manageTemplate);
 document.getElementById('cancelArticleBtn').addEventListener('click', closeArticleModal);
 document.getElementById('saveArticleBtn').addEventListener('click', saveArticle);
 document.getElementById('cancelAdvancedConfigBtn').addEventListener('click', closeAdvancedConfigModal);
@@ -522,12 +629,19 @@ document.getElementById('saveAdvancedConfigBtn').addEventListener('click', saveA
 document.getElementById('closePermissionDetailsBtn').addEventListener('click', closePermissionDetailsModal);
 document.getElementById('cancelConfirmBtn').addEventListener('click', closeConfirmModal);
 document.getElementById('confirmActionBtn').addEventListener('click', executeConfirmedAction);
+document.getElementById('cancelTemplateBtn').addEventListener('click', closeTemplateModal);
+document.getElementById('saveTemplateBtn').addEventListener('click', saveTemplate);
 document.getElementById('closeResultBtn').addEventListener('click', closeResultModal);
 document.getElementById('generatePageToggle').addEventListener('change', function() {
 document.getElementById('generatePageLabel').textContent = 
 this.checked ? '生成独立页面' : '不生成 (仅在博客列表显示)';
 document.getElementById('pageUrlSection').style.display = this.checked ? 'block' : 'none';
 updatePageUrlPreview();
+});
+document.getElementById('pageEnabledToggle').addEventListener('change', function() {
+document.getElementById('pageEnabledLabel').textContent = 
+this.checked ? '页面启用' : '页面禁用';
+updatePageStatusPreview();
 });
 document.addEventListener('keydown', function(e) {
 if (e.key === 'Escape') {
@@ -550,6 +664,31 @@ if (!postId) return;
 const pageUrl = `https://zcfi.cn/blogs/${postId}.html`;
 previewElement.textContent = pageUrl;
 }
+// 更新页面状态预览
+function updatePageStatusPreview() {
+const postId = document.getElementById('advancedConfigPostId').textContent;
+const post = currentBlogData.find(p => p.id === postId);
+if (!post) return;
+const enabled = document.getElementById('pageEnabledToggle').checked;
+const status = post.status || 'published';
+const statusElement = document.getElementById('statusText');
+let statusText = '';
+let statusClass = '';
+if (!enabled) {
+statusText = '❌ 已禁用（页面不可访问）';
+statusClass = 'status-preview-disabled';
+} else if (status === 'published') {
+statusText = '✅ 已发布（页面正常访问）';
+statusClass = 'status-preview-published';
+} else if (status === 'draft') {
+statusText = '📝 草稿（仅管理员可见）';
+statusClass = 'status-preview-draft';
+} else if (status === 'archived') {
+statusText = '🗄️ 已归档（页面已存档）';
+statusClass = 'status-preview-archived';
+}
+statusElement.innerHTML = `<span class="${statusClass}">${statusText}</span>`;
+}
 // 弹窗控制函数
 function openAddModal() {
 document.getElementById('modalTitle').textContent = '添加新文章';
@@ -559,8 +698,6 @@ document.getElementById('postId').value = '';
 document.getElementById('title').value = '';
 document.getElementById('date').value = '';
 document.getElementById('customUrl').value = '';
-document.getElementById('customUrl').readOnly = true;
-document.getElementById('customUrl').classList.add('custom-url-locked');
 document.getElementById('excerpt').value = '';
 document.getElementById('content').value = '';
 document.getElementById('status').value = 'published';
@@ -579,16 +716,7 @@ document.getElementById('saveArticleBtn').textContent = '保存修改';
 document.getElementById('postId').value = post.id;
 document.getElementById('title').value = post.title;
 document.getElementById('date').value = post.date;
-// 如果已生成页面，锁定自定义URL
-if (post.generatePage) {
-document.getElementById('customUrl').value = `/blogs/${post.id}.html`;
-document.getElementById('customUrl').readOnly = true;
-document.getElementById('customUrl').classList.add('custom-url-locked');
-} else {
 document.getElementById('customUrl').value = post.customUrl || '';
-document.getElementById('customUrl').readOnly = false;
-document.getElementById('customUrl').classList.remove('custom-url-locked');
-}
 document.getElementById('excerpt').value = post.excerpt;
 document.getElementById('content').value = post.content;
 document.getElementById('status').value = post.status || 'published';
@@ -605,7 +733,7 @@ showResult('error', '错误', '未找到指定文章');
 return;
 }
 if (!hasRepoPermission) {
-showResult('info', '权限不足', '当前Token缺少repo权限，无法使用页面生成功能。');
+showResult('info', '权限不足', '当前Token缺少repo权限，无法使用页面生成功能。请在GitHub Token设置中添加repo权限。');
 return;
 }
 document.getElementById('advancedConfigPostId').textContent = postId;
@@ -614,9 +742,15 @@ generatePageToggle.checked = post.generatePage || false;
 document.getElementById('generatePageLabel').textContent = 
 (post.generatePage ? '生成独立页面' : '不生成 (仅在博客列表显示)');
 document.getElementById('pageUrlSection').style.display = post.generatePage ? 'block' : 'none';
+document.getElementById('pageEnabledToggle').checked = post.enabled !== false;
+document.getElementById('pageEnabledLabel').textContent = 
+(post.enabled !== false ? '页面启用' : '页面禁用');
 document.getElementById('seoKeywords').value = post.seoKeywords || '';
 document.getElementById('seoDescription').value = post.seoDescription || '';
+document.getElementById('pageAuthor').value = post.author || '';
+document.getElementById('pageTags').value = (post.tags || []).join(', ');
 updatePageUrlPreview();
+updatePageStatusPreview();
 showModal('advancedConfigModal');
 }
 function closeAdvancedConfigModal() {
@@ -627,6 +761,12 @@ const postId = document.getElementById('advancedConfigPostId').textContent;
 const generatePage = document.getElementById('generatePageToggle').checked;
 const seoKeywords = document.getElementById('seoKeywords').value.trim();
 const seoDescription = document.getElementById('seoDescription').value.trim();
+const author = document.getElementById('pageAuthor').value.trim();
+const tags = document.getElementById('pageTags').value
+.split(',')
+.map(tag => tag.trim())
+.filter(tag => tag.length > 0);
+const enabled = document.getElementById('pageEnabledToggle').checked;
 const postIndex = currentBlogData.findIndex(p => p.id === postId);
 if (postIndex === -1) {
 showResult('error', '错误', '未找到指定文章');
@@ -644,15 +784,14 @@ throw new Error('未找到指定文章');
 post.generatePage = generatePage;
 post.seoKeywords = seoKeywords;
 post.seoDescription = seoDescription;
-// 如果启用生成页面，需要创建/更新文件
+post.author = author;
+post.tags = tags;
+post.enabled = enabled;
+post.lastUpdated = new Date().toISOString().split('T')[0];
 if (generatePage) {
 await createOrUpdatePageFile(post);
-// 更新自定义URL为固定路径
-post.customUrl = `/blogs/${post.id}.html`;
 } else {
-// 如果关闭生成页面，删除文件并清空自定义URL
 await deletePageFile(postId);
-post.customUrl = '';
 }
 await updateGistData(currentData);
 currentBlogData = currentData;
@@ -666,283 +805,13 @@ showResult('error', '保存失败', error.message);
 }
 }, 100);
 }
-// 构建动态加载内容的页面模板（安全转义版）
-function buildDynamicPageTemplate(post) {
-const pageTitle = escapeHtml(post.title || '博客文章');
-const siteName = 'zcfi.cn';
-const seoKeywords = escapeHtml(post.seoKeywords || post.title);
-const seoDescription = escapeHtml(post.seoDescription || post.excerpt || '');
-const pageUrl = `https://zcfi.cn/blogs/${escapeHtml(post.id)}.html`;
-const postId = escapeHtml(post.id);
-// 构建完整的HTML页面（使用安全的字符串拼接，避免模板字符串嵌套）
-return `<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${pageTitle} | ${siteName}</title>
-<!-- Favicon -->
-<link rel="icon" type="image/svg+xml" href="../favicon/favicon.svg">
-<link rel="icon" type="image/png" sizes="96x96" href="../favicon/favicon-96x96.png">
-<link rel="icon" type="image/x-icon" href="../favicon/favicon.ico">
-<!-- SEO Meta Tags -->
-<meta name="keywords" content="${seoKeywords}">
-<meta name="description" content="${seoDescription}">
-<meta property="og:title" content="${pageTitle}">
-<meta property="og:description" content="${seoDescription}">
-<meta property="og:type" content="article">
-<meta property="og:url" content="${pageUrl}">
-<!-- Font Awesome -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<!-- Google Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
-<style>
-body {
-font-family: 'Noto Sans SC', sans-serif;
-line-height: 1.6;
-color: #333;
-background: #f5f5f5;
-margin: 0;
-padding: 0;
-}
-.container {
-max-width: 1200px;
-margin: 0 auto;
-padding: 0 20px;
-}
-.article-container {
-background: white;
-padding: 40px;
-border-radius: 8px;
-box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-margin: 40px auto;
-max-width: 800px;
-}
-.article-title {
-font-size: 2rem;
-font-weight: 700;
-color: #333;
-margin-bottom: 15px;
-line-height: 1.3;
-}
-.article-meta {
-display: flex;
-gap: 20px;
-color: #666;
-font-size: 0.9rem;
-margin-bottom: 30px;
-padding-bottom: 20px;
-border-bottom: 1px solid #eee;
-}
-.article-meta-item {
-display: flex;
-align-items: center;
-gap: 8px;
-}
-.article-content {
-line-height: 1.8;
-font-size: 1.05rem;
-}
-.article-content p {
-margin-bottom: 20px;
-}
-.article-content h2 {
-margin: 40px 0 20px;
-color: #333;
-font-size: 1.6rem;
-}
-.article-content h3 {
-margin: 30px 0 15px;
-color: #333;
-font-size: 1.3rem;
-}
-.article-content a {
-color: #4a6fa5;
-text-decoration: none;
-}
-.article-content a:hover {
-text-decoration: underline;
-}
-.article-content img {
-max-width: 100%;
-height: auto;
-border-radius: 8px;
-margin: 20px 0;
-}
-.article-content blockquote {
-border-left: 4px solid #4a6fa5;
-background: #f8f9fa;
-padding: 20px;
-margin: 25px 0;
-border-radius: 4px;
-font-style: italic;
-}
-.back-to-blog {
-display: inline-block;
-margin-top: 30px;
-padding: 10px 20px;
-background: #4a6fa5;
-color: white;
-text-decoration: none;
-border-radius: 6px;
-transition: all 0.3s ease;
-}
-.back-to-blog:hover {
-background: #3a5a80;
-transform: translateY(-2px);
-}
-.loading-message {
-text-align: center;
-padding: 60px 20px;
-color: #777;
-font-style: italic;
-font-size: 1.1rem;
-}
-.error-message {
-text-align: center;
-padding: 60px 20px;
-color: #dc3545;
-background: #fdf2f2;
-border-radius: 8px;
-margin: 20px 0;
-}
-.error-message i {
-font-size: 2rem;
-margin-bottom: 15px;
-}
-@media (max-width: 768px) {
-.article-container {
-padding: 25px;
-margin: 20px;
-}
-.article-title {
-font-size: 1.6rem;
-}
-.article-meta {
-flex-direction: column;
-gap: 10px;
-}
-}
-</style>
-</head>
-<body>
-<div class="container">
-<div class="article-container" id="articleContainer">
-<div class="loading-message">
-<i class="fas fa-spinner fa-spin"></i><br><br>
-正在加载文章内容...
-</div>
-</div>
-</div>
-<script>
-// 从URL获取文章ID
-function getArticleIdFromUrl() {
-const path = window.location.pathname;
-const match = path.match(/\\/blogs\\/([^/]+)\\.html$/);
-return match ? match[1] : null;
-}
-// 从Gist加载博客数据
-async function loadBlogData() {
-const BLOG_GIST_ID = '73cc78400c25eb9effed665e2c89843d';
-const BLOG_RAW_URL = 'https://gist.githubusercontent.com/xiao305/' + BLOG_GIST_ID + '/raw/blog.json';
-const timestamp = new Date().getTime();
-const response = await fetch(BLOG_RAW_URL + '?t=' + timestamp);
-if (!response.ok) {
-throw new Error('无法加载博客数据: ' + response.status);
-}
-const data = await response.json();
-if (Array.isArray(data)) {
-return data;
-} else if (data && typeof data === 'object' && Array.isArray(data.blog)) {
-return data.blog;
-}
-throw new Error('博客数据格式无效');
-}
-// 渲染文章
-function renderArticle(article) {
-const container = document.getElementById('articleContainer');
-const articleHtml = 
-'<h1 class="article-title">' + escapeHtml(article.title) + '</h1>' +
-'<div class="article-meta">' +
-'  <div class="article-meta-item">' +
-'    <i class="fas fa-calendar"></i>' +
-'    <span>' + escapeHtml(article.date) + '</span>' +
-'  </div>' +
-'  <div class="article-meta-item">' +
-'    <i class="fas fa-hashtag"></i>' +
-'    <span>文章ID: ' + escapeHtml(article.id) + '</span>' +
-'  </div>' +
-(article.customUrl ? 
-'  <div class="article-meta-item">' +
-'    <i class="fas fa-link"></i>' +
-'    <span>自定义路径</span>' +
-'  </div>' : '') +
-'</div>' +
-'<div class="article-content">' +
-(article.content || '<p>暂无内容</p>') +
-'</div>' +
-'<a href="../blog.html" class="back-to-blog">' +
-'  <i class="fas fa-arrow-left"></i> 返回博客列表' +
-'</a>';
-container.innerHTML = articleHtml;
-document.title = article.title + ' | zcfi.cn';
-}
-// 显示错误
-function showError(message) {
-const container = document.getElementById('articleContainer');
-container.innerHTML = 
-'<div class="error-message">' +
-'  <i class="fas fa-exclamation-triangle"></i>' +
-'  <h3>加载失败</h3>' +
-'  <p>' + escapeHtml(message) + '</p>' +
-'  <a href="../blog.html" class="back-to-blog">' +
-'    <i class="fas fa-arrow-left"></i> 返回博客列表' +
-'  </a>' +
-'</div>';
-}
-// HTML转义
-function escapeHtml(text) {
-if (!text) return '';
-return text
-.replace(/&/g, '&amp;')
-.replace(/</g, '&lt;')
-.replace(/>/g, '&gt;')
-.replace(/"/g, '&quot;')
-.replace(/'/g, '&#039;');
-}
-// 页面加载
-document.addEventListener('DOMContentLoaded', async function() {
-const articleId = getArticleIdFromUrl();
-if (!articleId) {
-showError('无法获取文章ID');
-return;
-}
-try {
-const blogData = await loadBlogData();
-const article = blogData.find(post => post.id === articleId);
-if (!article) {
-showError('未找到ID为 "' + articleId + '" 的文章');
-} else if (article.status !== 'published') {
-showError('该文章当前处于草稿状态，暂不对外公开');
-} else {
-renderArticle(article);
-}
-} catch (error) {
-console.error('加载文章失败:', error);
-showError('加载文章失败，请检查网络连接或稍后重试');
-}
-});
-</script>
-</body>
-</html>`;
-}
-// 创建/更新页面文件（动态加载内容的模板）
+// 创建/更新页面文件
 async function createOrUpdatePageFile(post) {
 if (!hasRepoPermission) {
 throw new Error('缺少repo权限，无法生成页面文件');
 }
 try {
-const pageContent = buildDynamicPageTemplate(post);
+const pageContent = await buildPageContent(post);
 const filePath = `blogs/${post.id}.html`;
 let currentFile = null;
 let fileExists = false;
@@ -957,6 +826,8 @@ headers: {
 if (checkResponse.ok) {
 currentFile = await checkResponse.json();
 fileExists = true;
+} else if (checkResponse.status === 404) {
+fileExists = false;
 }
 } catch (error) {
 fileExists = false;
@@ -982,13 +853,163 @@ body: JSON.stringify(requestData)
 });
 if (!response.ok) {
 const errorData = await response.json();
-throw new Error(`创建/更新页面文件失败: ${response.status} ${errorData.message}`);
+throw new Error(`创建/更新页面文件失败: ${response.status} ${errorData.message || response.statusText}`);
 }
 return await response.json();
 } catch (error) {
 console.error('创建/更新页面文件失败:', error);
 throw error;
 }
+}
+// 构建页面内容
+async function buildPageContent(post) {
+try {
+// 获取模板内容
+let templateContent = await fetchTemplateFile();
+// 准备模板数据
+const templateData = {
+title: escapeHtml(post.title || '博客文章'),
+siteName: 'zcfi.cn',
+seoKeywords: escapeHtml(post.seoKeywords || post.title || ''),
+seoDescription: escapeHtml(post.seoDescription || post.excerpt || ''),
+pageUrl: `https://zcfi.cn/blogs/${post.id}.html`,
+publishDate: escapeHtml(post.date || ''),
+lastUpdated: escapeHtml(post.lastUpdated || post.date || ''),
+author: escapeHtml(post.author || ''),
+content: post.content || '<p>暂无内容</p>',
+postId: post.id,
+status: post.status || 'published',
+enabled: (post.enabled !== false).toString(),
+tags: post.tags || []
+};
+// 模板变量替换
+let pageContent = templateContent;
+// 基本变量替换
+Object.keys(templateData).forEach(key => {
+const value = templateData[key];
+const regex = new RegExp(`{{${key}}}`, 'g');
+if (typeof value === 'string') {
+pageContent = pageContent.replace(regex, value);
+} else if (Array.isArray(value)) {
+// 数组处理
+const arrayRegex = new RegExp(`{{#each ${key}}}([\\s\\S]*?){{/each}}`, 'g');
+pageContent = pageContent.replace(arrayRegex, (match, innerContent) => {
+if (value.length === 0) return '';
+return value.map(item => {
+let result = innerContent;
+result = result.replace(/\{\{this\}\}/g, escapeHtml(item));
+return result;
+}).join('');
+});
+}
+});
+// 条件语句处理
+pageContent = processTemplateConditionals(pageContent, templateData);
+return pageContent;
+} catch (error) {
+console.error('构建页面失败，使用备用模板:', error);
+return buildFallbackPageContent(post);
+}
+}
+// 获取模板文件
+async function fetchTemplateFile() {
+try {
+const templateUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${TEMPLATE_PATH}`;
+const response = await fetchWithRetry(templateUrl, {
+headers: {
+'Authorization': `token ${token}`,
+'Accept': 'application/vnd.github.v3+json'
+}
+});
+if (response.ok) {
+const fileData = await response.json();
+const content = atob(fileData.content);
+return content;
+} else {
+throw new Error('模板文件获取失败');
+}
+} catch (error) {
+console.warn('无法获取模板文件，使用内置模板:', error);
+return `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{title}} | {{siteName}}</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+.article-title { color: #333; margin-bottom: 20px; }
+.article-meta { color: #666; margin-bottom: 30px; }
+.article-content { line-height: 1.6; }
+</style>
+</head>
+<body>
+<h1 class="article-title">{{title}}</h1>
+<div class="article-meta">
+<p>发布时间: {{publishDate}} | 最后更新: {{lastUpdated}}</p>
+</div>
+<div class="article-content">
+{{{content}}}
+</div>
+<p><a href="../blog.html">← 返回博客列表</a></p>
+</body>
+</html>`;
+}
+}
+// 处理模板条件语句
+function processTemplateConditionals(content, data) {
+// 处理 {{#if variable}} ... {{/if}}
+const ifRegex = /\{\{#if\s+(\w+)\}\}([\s\S]*?)\{\{\/if\}\}/g;
+content = content.replace(ifRegex, (match, variable, innerContent) => {
+return data[variable] ? innerContent : '';
+});
+// 处理 {{#unless variable}} ... {{/unless}}
+const unlessRegex = /\{\{#unless\s+(\w+)\}\}([\s\S]*?)\{\{\/unless\}\}/g;
+content = content.replace(unlessRegex, (match, variable, innerContent) => {
+return !data[variable] ? innerContent : '';
+});
+// 处理 {{#if (eq variable value)}} ... {{/if}}
+const eqRegex = /\{\{#if\s+\(eq\s+(\w+)\s+"([^"]+)"\)\}\}([\s\S]*?)\{\{\/if\}\}/g;
+content = content.replace(eqRegex, (match, variable, value, innerContent) => {
+return data[variable] === value ? innerContent : '';
+});
+return content;
+}
+// 备用模板生成函数
+function buildFallbackPageContent(post) {
+return `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${escapeHtml(post.title)} | zcfi.cn</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+body { font-family: 'Noto Sans SC', sans-serif; background: #f5f5f5; margin: 0; padding: 0; }
+.container { max-width: 800px; margin: 0 auto; padding: 20px; }
+.article-card { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+.article-title { font-size: 2rem; color: #333; margin-bottom: 20px; }
+.article-meta { color: #666; margin-bottom: 30px; display: flex; gap: 20px; }
+.article-content { line-height: 1.8; font-size: 1.1rem; }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="article-card">
+<h1 class="article-title">${escapeHtml(post.title)}</h1>
+<div class="article-meta">
+<span><i class="fas fa-calendar"></i> ${escapeHtml(post.date || '')}</span>
+<span><i class="fas fa-hashtag"></i> ${escapeHtml(post.id)}</span>
+</div>
+<div class="article-content">
+${post.content || '<p>暂无内容</p>'}
+</div>
+<p style="margin-top: 30px;"><a href="../blog.html"><i class="fas fa-arrow-left"></i> 返回博客列表</a></p>
+</div>
+</div>
+</body>
+</html>`;
 }
 // 删除页面文件
 async function deletePageFile(postId) {
@@ -1032,6 +1053,77 @@ console.error(`删除页面文件失败: ${response.status} ${errorData.message}
 console.error('删除页面文件失败:', error);
 }
 }
+// 模板管理功能
+async function manageTemplate() {
+try {
+showLoading('模板管理', '正在加载模板...');
+const templateContent = await fetchTemplateFile();
+document.getElementById('templateContent').value = templateContent;
+hideLoading();
+showModal('templateModal');
+} catch (error) {
+hideLoading();
+showResult('error', '模板管理', error.message);
+}
+}
+function closeTemplateModal() {
+hideModal('templateModal');
+}
+async function saveTemplate() {
+try {
+const templateContent = document.getElementById('templateContent').value;
+if (!templateContent.trim()) {
+showResult('error', '保存失败', '模板内容不能为空');
+return;
+}
+showLoading('保存模板', '正在保存模板文件...');
+const contentBase64 = btoa(unescape(encodeURIComponent(templateContent)));
+let currentFile = null;
+let fileExists = false;
+try {
+const checkUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${TEMPLATE_PATH}`;
+const checkResponse = await fetchWithRetry(checkUrl, {
+headers: {
+'Authorization': `token ${token}`,
+'Accept': 'application/vnd.github.v3+json'
+}
+});
+if (checkResponse.ok) {
+currentFile = await checkResponse.json();
+fileExists = true;
+}
+} catch (error) {
+fileExists = false;
+}
+const requestData = {
+message: 'Update blog page template',
+content: contentBase64,
+branch: REPO_BRANCH
+};
+if (fileExists && currentFile && currentFile.sha) {
+requestData.sha = currentFile.sha;
+}
+const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${TEMPLATE_PATH}`;
+const response = await fetchWithRetry(apiUrl, {
+method: 'PUT',
+headers: {
+'Authorization': `token ${token}`,
+'Accept': 'application/vnd.github.v3+json',
+'Content-Type': 'application/json'
+},
+body: JSON.stringify(requestData)
+});
+if (!response.ok) {
+throw new Error('保存模板失败');
+}
+hideLoading();
+showResult('success', '保存成功', '模板已保存');
+closeTemplateModal();
+} catch (error) {
+hideLoading();
+showResult('error', '保存失败', error.message);
+}
+}
 // 带重试机制的fetch
 async function fetchWithRetry(url, options = {}, retryCount = 0) {
 const maxRetries = CORS_PROXIES.length;
@@ -1065,6 +1157,8 @@ const errorText = await proxyResponse.text();
 console.warn(`代理 ${retryCount + 1} 返回错误:`, proxyResponse.status, errorText);
 throw new Error(`HTTP ${proxyResponse.status}`);
 }
+} else {
+throw new Error('所有CORS代理都失败');
 }
 } catch (error) {
 if (retryCount < maxRetries - 1) {
@@ -1099,21 +1193,7 @@ pendingAction(pendingActionData);
 closeConfirmModal();
 }
 }
-// 弹窗控制
-function showModal(modalId) {
-document.getElementById(modalId).classList.add('show');
-}
-function hideModal(modalId) {
-document.getElementById(modalId).classList.remove('show');
-}
-function closeAllModals() {
-document.querySelectorAll('.custom-modal.show').forEach(modal => {
-modal.classList.remove('show');
-});
-pendingAction = null;
-pendingActionData = null;
-}
-// 加载和结果弹窗
+// 加载弹窗
 function showLoading(title = '处理中', message = '正在处理您的请求，请稍候...') {
 document.getElementById('loadingTitle').textContent = title;
 document.getElementById('loadingMessage').textContent = message;
@@ -1122,6 +1202,7 @@ showModal('loadingModal');
 function hideLoading() {
 hideModal('loadingModal');
 }
+// 结果弹窗
 function showResult(type, title, message) {
 const icon = document.getElementById('resultIcon');
 if (type === 'success') {
@@ -1140,6 +1221,20 @@ showModal('resultModal');
 }
 function closeResultModal() {
 hideModal('resultModal');
+}
+// 通用弹窗控制
+function showModal(modalId) {
+document.getElementById(modalId).classList.add('show');
+}
+function hideModal(modalId) {
+document.getElementById(modalId).classList.remove('show');
+}
+function closeAllModals() {
+document.querySelectorAll('.custom-modal.show').forEach(modal => {
+modal.classList.remove('show');
+});
+pendingAction = null;
+pendingActionData = null;
 }
 // 文章操作函数
 async function saveArticle() {
@@ -1170,6 +1265,10 @@ customUrl: customUrl || '',
 status: status,
 excerpt: excerpt,
 content: content,
+author: '',
+tags: [],
+enabled: true,
+lastUpdated: date,
 generatePage: false,
 seoKeywords: '',
 seoDescription: ''
@@ -1193,6 +1292,10 @@ customUrl: customUrl || '',
 status: status,
 excerpt: excerpt,
 content: content,
+author: oldPost.author || '',
+tags: oldPost.tags || [],
+enabled: oldPost.enabled !== false,
+lastUpdated: date,
 generatePage: oldPost.generatePage || false,
 seoKeywords: oldPost.seoKeywords || '',
 seoDescription: oldPost.seoDescription || ''
@@ -1222,6 +1325,7 @@ if (currentData[postIndex].generatePage && newStatus === 'draft') {
 await deletePageFile(postId);
 }
 currentData[postIndex].status = newStatus;
+currentData[postIndex].lastUpdated = new Date().toISOString().split('T')[0];
 await updateGistData(currentData);
 hideLoading();
 showResult('success', '操作成功', `文章已${actionText}`);
@@ -1277,6 +1381,10 @@ return blogData.map(post => ({
 ...post,
 status: post.status || 'published',
 customUrl: post.customUrl || '',
+author: post.author || '',
+tags: post.tags || [],
+enabled: post.enabled !== false,
+lastUpdated: post.lastUpdated || post.date || '',
 generatePage: post.generatePage || false,
 seoKeywords: post.seoKeywords || '',
 seoDescription: post.seoDescription || ''
@@ -1386,6 +1494,8 @@ container.innerHTML = data.map(post => `
 <span><i class="fas fa-hashtag"></i> ID: ${escapeHtml(post.id)}</span>
 <span><i class="fas fa-calendar"></i> ${escapeHtml(post.date)}</span>
 ${post.customUrl ? `<span><i class="fas fa-link"></i> ${escapeHtml(post.customUrl)}</span>` : ''}
+${post.author ? `<span><i class="fas fa-user"></i> ${escapeHtml(post.author)}</span>` : ''}
+${post.tags && post.tags.length > 0 ? `<span><i class="fas fa-tags"></i> ${escapeHtml(post.tags.join(', '))}</span>` : ''}
 </div>
 </div>
 <div>
@@ -1394,6 +1504,9 @@ ${post.status === 'published' ? '已发布' : '草稿'}
 </span>
 ${post.generatePage ? `<span class="article-status status-page-generated">
 <i class="fas fa-file-code"></i> 已生成页面
+</span>` : ''}
+${post.enabled === false ? `<span class="article-status" style="background-color: #dc3545; color: white;">
+<i class="fas fa-ban"></i> 已禁用
 </span>` : ''}
 </div>
 </div>
@@ -1465,12 +1578,9 @@ openAdvancedConfigModal(postId);
 // 辅助函数
 function escapeHtml(text) {
 if (!text) return '';
-return text
-.replace(/&/g, '&amp;')
-.replace(/</g, '&lt;')
-.replace(/>/g, '&gt;')
-.replace(/"/g, '&quot;')
-.replace(/'/g, '&#039;');
+const div = document.createElement('div');
+div.textContent = text;
+return div.innerHTML;
 }
 // 页面卸载时清除敏感信息
 window.addEventListener('beforeunload', () => {
