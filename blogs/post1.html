@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>博客系统测试 | zcfi.cn</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="../favicon/favicon.svg">
+    <link rel="icon" type="image/png" sizes="96x96" href="../favicon/favicon-96x96.png">
+    <link rel="icon" type="image/x-icon" href="../favicon/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="../favicon/apple-touch-icon.png">
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="../favicon/site.webmanifest">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- åç«¯å¬å±CSS -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+    
+    <!-- SEO Meta Tags -->
+    <meta name="keywords" content="博客系统测试">
+    <meta name="description" content="这是测试博客前后端系统所发布的文章-测试编号00001">
+    <meta property="og:title" content="博客系统测试">
+    <meta property="og:description" content="这是测试博客前后端系统所发布的文章-测试编号00001">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://zcfi.cn/blogs/post1.html">
+    <meta property="article:published_time" content="2026年1月24日">
+    <meta property="article:author" content="zcfi.cn">
+    
+    <!-- æç« é¡µé¢ä¸å±æ ·å¼ -->
+    <style>
+        /* æç« é¡µé¢ç¹å®æ ·å¼ */
+        .article-container {
+            background: white;
+            padding: 50px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            margin: 40px auto;
+            max-width: 800px;
+        }
+        
+        .article-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.3;
+            text-align: center;
+        }
+        
+        .article-meta {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 30px;
+            padding-bottom: 25px;
+            border-bottom: 2px solid #f0f0f0;
+            flex-wrap: wrap;
+        }
+        
+        .article-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f8f9fa;
+            padding: 6px 12px;
+            border-radius: 20px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .article-meta-item i {
+            color: #4a6fa5;
+        }
+        
+        .article-content {
+            line-height: 1.8;
+            font-size: 1.1rem;
+            color: #333;
+        }
+        
+        .article-content p {
+            margin-bottom: 25px;
+            text-align: justify;
+        }
+        
+        .article-content h2 {
+            margin: 45px 0 25px;
+            color: #333;
+            font-size: 1.7rem;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+        
+        .article-content h3 {
+            margin: 35px 0 20px;
+            color: #333;
+            font-size: 1.4rem;
+        }
+        
+        .article-content a {
+            color: #4a6fa5;
+            text-decoration: none;
+            border-bottom: 1px dotted #4a6fa5;
+            transition: all 0.3s ease;
+        }
+        
+        .article-content a:hover {
+            color: #166088;
+            border-bottom: 1px solid #166088;
+        }
+        
+        .article-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 25px 0;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .article-content blockquote {
+            border-left: 4px solid #4a6fa5;
+            padding: 15px 25px;
+            margin: 25px 0;
+            background: #f8f9fa;
+            font-style: italic;
+            color: #555;
+        }
+        
+        .article-content code {
+            background: #f6f8fa;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        .article-content pre {
+            background: #f6f8fa;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 25px 0;
+        }
+        
+        .article-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 30px 0;
+        }
+        
+        .article-tag {
+            background: #f0f0f0;
+            color: #333;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .article-tag:hover {
+            background: #4a6fa5;
+            color: white;
+        }
+        
+        .article-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            padding-top: 25px;
+            border-top: 2px solid #f0f0f0;
+        }
+        
+        .back-to-blog {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 25px;
+            background: #4a6fa5;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .back-to-blog:hover {
+            background: #333;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        /* é¡µé¢ç¶ææç¤ºå¨ */
+        .page-status {
+            display: inline-block;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-left: 15px;
+        }
+        
+        .status-published {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-draft {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-archived {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+        
+        .status-disabled {
+            background: #dc3545;
+            color: white;
+        }
+        
+        /* é¡µé¢ç¦ç¨æ ·å¼ */
+        .page-disabled-message {
+            text-align: center;
+            padding: 60px 40px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            margin: 40px auto;
+            max-width: 800px;
+        }
+        
+        .page-disabled-message i {
+            font-size: 3rem;
+            color: #ffc107;
+            margin-bottom: 20px;
+        }
+        
+        .page-disabled-message h2 {
+            color: #495057;
+            margin-bottom: 15px;
+        }
+        
+        /* ååºå¼è°æ´ */
+        @media (max-width: 768px) {
+            .article-container {
+                padding: 30px;
+                margin: 20px;
+            }
+            
+            .article-title {
+                font-size: 1.8rem;
+            }
+            
+            .article-meta {
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
+            }
+            
+            .article-meta-item {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .article-content {
+                font-size: 1rem;
+            }
+            
+            .article-actions {
+                flex-direction: column;
+                gap: 15px;
+                align-items: center;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .article-container {
+                padding: 20px;
+            }
+            
+            .article-title {
+                font-size: 1.5rem;
+            }
+            
+            .article-content h2 {
+                font-size: 1.4rem;
+            }
+            
+            .article-content h3 {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- å¤´é¨å¯¼èªå®¹å¨ -->
+    <div id="navbar-container"></div>
+
+    <!-- ä¸»åå®¹ -->
+    <main>
+        <div class="container">
+            
+                </p>
+                <p style="margin-bottom: 30px; color: #6c757d;">
+                    æ¨å¯ä»¥è¿ååå®¢åè¡¨æ¥çå¶ä»æç« ã
+                </p>
+                <a href="../blog.html" class="back-to-blog">
+                    <i class="fas fa-arrow-left"></i> è¿ååå®¢åè¡¨
+                </a>
+            </div>
+            {{else}}
+            <div class="article-container">
+                <h1 class="article-title">博客系统测试</h1>
+                
+                <div class="article-meta">
+                    <div class="article-meta-item">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>åå¸æ¶é´: 2026年1月24日</span>
+                    </div>
+                    <div class="article-meta-item">
+                        <i class="fas fa-history"></i>
+                        <span>æåæ´æ°: 2026-01-28</span>
+                    </div>
+                    
+                    <div class="article-meta-item">
+                        <i class="fas fa-user"></i>
+                        <span>ä½è: zcfi.cn</span>
+                    </div>
+                    
+                    <div class="article-meta-item">
+                        <i class="fas fa-toggle-on{{else}}off"></i>
+                        <span>ç¶æ: 
+                            <span class="page-status status-published">
+                                å·²åå¸
+                                
+                                
+                            </span>
+                        </span>
+                    </div>
+                </div>
+                
+                
+                <div class="article-tags">
+                    
+                </div>
+                
+                
+                <div class="article-content">
+                    {测试编号00001
+<h3>1. 测试小标题01</h3>
+<p>测试内容01</p>
+
+<h3>2. 测试小标题02</h3>
+<p>测试内容02</p>
+
+<h3>3. 测试小标题03</h3>
+<p>测试内容03</p>
+
+<h3>4. 测试小标题04</h3>
+<p>测试内容04</p>}
+                </div>
+                
+                <div class="article-actions">
+                    <a href="../blog.html" class="back-to-blog">
+                        <i class="fas fa-arrow-left"></i> è¿ååå®¢åè¡¨
+                    </a>
+                    <div>
+                        <a href="#top" class="back-to-blog" style="background: #6c757d;">
+                            <i class="fas fa-arrow-up"></i> è¿åé¡¶é¨
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {{/if}}
+        </div>
+    </main>
+
+    <!-- é¡µèå®¹å¨ -->
+    <div id="footer-container"></div>
+
+    <!-- Gistæ¸²æå¨ -->
+    <script src="../assets/js/gist-renderer.js"></script>
+    
+    <!-- é¡µé¢åå§åèæ¬ -->
+    <script>
+        // é¡µé¢å è½½å®æåæ§è¡
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('åå®¢æç« é¡µé¢å¼å§å è½½...');
+            
+            // ç¡®ä¿GistRendererå·²å è½½
+            if (!window.gistRenderer) {
+                console.error('gist-renderer.jsæªæ­£ç¡®å è½½');
+                showErrorFallback();
+                return;
+            }
+            
+            try {
+                // å è½½ç½ç«éç½®
+                const configData = await window.gistRenderer.loadConfig();
+                
+                // æ´æ°é¡µé¢æ é¢
+                if (configData.site && configData.site.name) {
+                    const currentTitle = document.querySelector('title');
+                    if (currentTitle) {
+                        currentTitle.textContent = currentTitle.textContent.replace('zcfi.cn', configData.site.name);
+                    }
+                }
+                
+                // æ¸²æå¯¼èªæ åé¡µè
+                await window.gistRenderer.renderAll();
+                
+                // åå§åé¡µé¢äº¤äº
+                initPageInteractions();
+                
+                // æ´æ°é¡µé¢åä¿¡æ¯
+                updatePageMetaInfo();
+                
+            } catch (error) {
+                console.error('é¡µé¢åå§åå¤±è´¥:', error);
+                showErrorFallback();
+            }
+        });
+        
+        // é¡µé¢äº¤äºåå§å
+        function initPageInteractions() {
+            // å¾çç¯ç®±ææ
+            document.querySelectorAll('.article-content img').forEach(img => {
+                img.style.cursor = 'zoom-in';
+                img.addEventListener('click', function() {
+                    const modal = document.createElement('div');
+                    modal.style.position = 'fixed';
+                    modal.style.top = '0';
+                    modal.style.left = '0';
+                    modal.style.width = '100%';
+                    modal.style.height = '100%';
+                    modal.style.backgroundColor = 'rgba(0,0,0,0.9)';
+                    modal.style.display = 'flex';
+                    modal.style.justifyContent = 'center';
+                    modal.style.alignItems = 'center';
+                    modal.style.zIndex = '9999';
+                    
+                    const modalImg = document.createElement('img');
+                    modalImg.src = this.src;
+                    modalImg.style.maxWidth = '90%';
+                    modalImg.style.maxHeight = '90%';
+                    modalImg.style.objectFit = 'contain';
+                    
+                    modal.appendChild(modalImg);
+                    document.body.appendChild(modal);
+                    
+                    modal.addEventListener('click', () => {
+                        document.body.removeChild(modal);
+                    });
+                });
+            });
+            
+            // å¤å¶ä»£ç ååè½
+            document.querySelectorAll('pre code').forEach(codeBlock => {
+                const pre = codeBlock.parentElement;
+                const copyBtn = document.createElement('button');
+                copyBtn.innerHTML = '<i class="fas fa-copy"></i> å¤å¶';
+                copyBtn.style.position = 'absolute';
+                copyBtn.style.top = '10px';
+                copyBtn.style.right = '10px';
+                copyBtn.style.padding = '5px 10px';
+                copyBtn.style.background = '#4a6fa5';
+                copyBtn.style.color = 'white';
+                copyBtn.style.border = 'none';
+                copyBtn.style.borderRadius = '4px';
+                copyBtn.style.cursor = 'pointer';
+                copyBtn.style.fontSize = '12px';
+                
+                copyBtn.addEventListener('click', () => {
+                    navigator.clipboard.writeText(codeBlock.textContent)
+                        .then(() => {
+                            copyBtn.innerHTML = '<i class="fas fa-check"></i> å·²å¤å¶';
+                            setTimeout(() => {
+                                copyBtn.innerHTML = '<i class="fas fa-copy"></i> å¤å¶';
+                            }, 2000);
+                        });
+                });
+                
+                pre.style.position = 'relative';
+                pre.appendChild(copyBtn);
+            });
+        }
+        
+        // æ´æ°é¡µé¢åä¿¡æ¯
+        function updatePageMetaInfo() {
+            // æ´æ°Open Graphä¿¡æ¯
+            const ogTitle = document.querySelector('meta[property="og:title"]');
+            const ogDesc = document.querySelector('meta[property="og:description"]');
+            const ogUrl = document.querySelector('meta[property="og:url"]');
+            
+            if (ogTitle) ogTitle.content = document.title;
+            if (ogDesc) ogDesc.content = document.querySelector('meta[name="description"]')?.content || '';
+            if (ogUrl) ogUrl.content = window.location.href;
+            
+            // æ·»å ç»æåæ°æ®ï¼SEOä¼åï¼
+            const articleTitle = document.querySelector('.article-title')?.textContent;
+            if (articleTitle) {
+                const structuredData = {
+                    "@context": "https://schema.org",
+                    "@type": "BlogPosting",
+                    "headline": articleTitle,
+                    "datePublished": "2026年1月24日",
+                    "dateModified": "2026-01-28",
+                    "author": {
+                        "@type": "Person",
+                        "name": "zcfi.cn" || "zcfi.cn"
+                    },
+                    "publisher": {
+                        "@type": "Organization",
+                        "name": "zcfi.cn",
+                        "logo": {
+                            "@type": "ImageObject",
+                            "url": "../favicon/favicon-512x512.png"
+                        }
+                    }
+                };
+                
+                const script = document.createElement('script');
+                script.type = 'application/ld+json';
+                script.textContent = JSON.stringify(structuredData);
+                document.head.appendChild(script);
+            }
+        }
+        
+        // å¨å±å è½½å¤±è´¥å¤ç
+        function showErrorFallback() {
+            const mainElement = document.querySelector('main');
+            if (mainElement) {
+                const errorDiv = document.createElement('div');
+                errorDiv.style.background = '#fdf2f2';
+                errorDiv.style.padding = '20px';
+                errorDiv.style.borderRadius = '8px';
+                errorDiv.style.marginTop = '20px';
+                errorDiv.style.color = '#dc3545';
+                errorDiv.innerHTML = `
+                    <p><i class="fas fa-exclamation-triangle"></i> é¡µé¢é¨ååè½å è½½å¤±è´¥ï¼ä½ä¸å½±åä¸»è¦åå®¹éè¯»ã</p>
+                    <button onclick="location.reload()" style="margin-top: 10px; padding: 8px 15px; background: #4a6fa5; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        <i class="fas fa-redo"></i> éè¯å è½½
+                    </button>
+                `;
+                mainElement.appendChild(errorDiv);
+            }
+        }
+    </script>
+    
+    <!-- ä¸»äº¤äºèæ¬ -->
+    <script src="../assets/js/main.js"></script>
+</body>
+</html>
