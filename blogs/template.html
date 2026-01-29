@@ -36,7 +36,7 @@
     
     <!-- 文章页面专属样式 -->
     <style>
-        /* 文章页面特定样式 */
+        /* 修复：添加 position 和 z-index 防止被导航栏覆盖 */
         .article-container {
             background: white;
             padding: 50px;
@@ -44,8 +44,8 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.08);
             margin: 40px auto;
             max-width: 800px;
-            position: relative; /* 修复按钮被覆盖问题 */
-            z-index: 10; /* 修复按钮被覆盖问题 */
+            position: relative; /* 修复按钮被覆盖 */
+            z-index: 10; /* 修复按钮被覆盖 */
         }
         
         .article-title {
@@ -245,8 +245,8 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.08);
             margin: 40px auto;
             max-width: 800px;
-            position: relative;
-            z-index: 10;
+            position: relative; /* 修复按钮被覆盖 */
+            z-index: 10; /* 修复按钮被覆盖 */
         }
         
         .page-disabled-message i {
@@ -319,12 +319,16 @@
     <!-- 主内容 -->
     <main>
         <div class="container">
-            <!-- 禁用页面提示 -->
-            <div class="page-disabled-message" style="display: none;" id="disabledMessage">
+            {{#if (eq enabled "false")}}
+            <div class="page-disabled-message">
                 <i class="fas fa-lock"></i>
                 <h2>页面不可访问</h2>
-                <p style="margin-bottom: 20px; color: #6c757d;" id="disabledReason">
+                <p style="margin-bottom: 20px; color: #6c757d;">
+                    {{#if (eq status "draft")}}
                     该博客文章当前为草稿状态，暂时无法访问。
+                    {{else}}
+                    该博客文章已被管理员禁用，暂时无法访问。
+                    {{/if}}
                 </p>
                 <p style="margin-bottom: 30px; color: #6c757d;">
                     您可以返回博客列表查看其他文章。
@@ -333,35 +337,50 @@
                     <i class="fas fa-arrow-left"></i> 返回博客列表
                 </a>
             </div>
-            
-            <!-- 正常文章内容 -->
-            <div class="article-container" style="display: none;" id="articleContent">
-                <h1 class="article-title" id="articleTitle"></h1>
+            {{else}}
+            <div class="article-container">
+                <h1 class="article-title">{{title}}</h1>
                 
-                <div class="article-meta" id="articleMeta">
+                <div class="article-meta">
                     <div class="article-meta-item">
                         <i class="fas fa-calendar-alt"></i>
-                        <span>发布时间: <span id="publishDate"></span></span>
+                        <span>发布时间: {{publishDate}}</span>
                     </div>
                     <div class="article-meta-item">
                         <i class="fas fa-history"></i>
-                        <span>最后更新: <span id="lastUpdated"></span></span>
+                        <span>最后更新: {{lastUpdated}}</span>
                     </div>
-                    <div class="article-meta-item" id="authorMeta" style="display: none;">
-                        <i class="fas fa-user"></i>
-                        <span>作者: <span id="authorName"></span></span>
-                    </div>
+                    {{#if author}}
                     <div class="article-meta-item">
-                        <i class="fas fa-toggle-on" id="statusIcon"></i>
+                        <i class="fas fa-user"></i>
+                        <span>作者: {{author}}</span>
+                    </div>
+                    {{/if}}
+                    <div class="article-meta-item">
+                        <i class="fas fa-toggle-{{#if (eq status "published")}}on{{else}}off{{/if}}"></i>
                         <span>状态: 
-                            <span class="page-status" id="statusBadge"></span>
+                            <span class="page-status status-{{status}}">
+                                {{#if (eq status "published")}}已发布{{/if}}
+                                {{#if (eq status "draft")}}草稿{{/if}}
+                                {{#if (eq status "archived")}}已归档{{/if}}
+                            </span>
                         </span>
                     </div>
                 </div>
                 
-                <div class="article-tags" id="articleTags" style="display: none;"></div>
+                {{#if tags}}
+                <div class="article-tags">
+                    {{#each tags}}
+                    <a href="../blog.html?tag={{this}}" class="article-tag">
+                        <i class="fas fa-tag"></i> {{this}}
+                    </a>
+                    {{/each}}
+                </div>
+                {{/if}}
                 
-                <div class="article-content" id="articleBody"></div>
+                <div class="article-content">
+                    {{{content}}}
+                </div>
                 
                 <div class="article-actions">
                     <a href="../blog.html" class="back-to-blog">
@@ -372,6 +391,7 @@
                     </a>
                 </div>
             </div>
+            {{/if}}
         </div>
     </main>
 
@@ -383,23 +403,6 @@
     
     <!-- 页面初始化脚本 -->
     <script>
-        // 页面数据（由后台生成时注入）
-        const PAGE_DATA = {
-            title: '{{title}}',
-            siteName: '{{siteName}}',
-            seoKeywords: '{{seoKeywords}}',
-            seoDescription: '{{seoDescription}}',
-            pageUrl: '{{pageUrl}}',
-            publishDate: '{{publishDate}}',
-            lastUpdated: '{{lastUpdated}}',
-            author: '{{author}}',
-            content: '{{{content}}}',
-            postId: '{{postId}}',
-            status: '{{status}}',
-            enabled: '{{enabled}}',
-            tags: {{#if tags}}["{{#each tags}}{{this}}{{#unless @last}}","{{/unless}}{{/each}}"]{{else}}[]{{/if}}
-        };
-        
         // 页面加载完成后执行
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('博客文章页面开始加载...');
@@ -417,14 +420,14 @@
                 
                 // 更新页面标题
                 if (configData.site && configData.site.name) {
-                    document.title = PAGE_DATA.title + ' | ' + configData.site.name;
+                    const currentTitle = document.querySelector('title');
+                    if (currentTitle) {
+                        currentTitle.textContent = currentTitle.textContent.replace('{{siteName}}', configData.site.name);
+                    }
                 }
                 
                 // 渲染导航栏和页脚
                 await window.gistRenderer.renderAll();
-                
-                // 显示页面内容
-                renderPageContent();
                 
                 // 初始化页面交互
                 initPageInteractions();
@@ -437,72 +440,6 @@
                 showErrorFallback();
             }
         });
-        
-        // 渲染页面内容
-        function renderPageContent() {
-            const enabled = PAGE_DATA.enabled === 'true';
-            const status = PAGE_DATA.status || 'published';
-            
-            if (!enabled) {
-                // 显示禁用提示
-                document.getElementById('disabledMessage').style.display = 'block';
-                
-                // 设置禁用原因
-                const reasonText = status === 'draft' 
-                    ? '该博客文章当前为草稿状态，暂时无法访问。'
-                    : '该博客文章已被管理员禁用，暂时无法访问。';
-                document.getElementById('disabledReason').textContent = reasonText;
-            } else {
-                // 显示正常内容
-                document.getElementById('articleContent').style.display = 'block';
-                
-                // 填充文章数据
-                document.getElementById('articleTitle').textContent = PAGE_DATA.title;
-                document.getElementById('publishDate').textContent = PAGE_DATA.publishDate;
-                document.getElementById('lastUpdated').textContent = PAGE_DATA.lastUpdated;
-                
-                // 作者信息
-                if (PAGE_DATA.author && PAGE_DATA.author.trim()) {
-                    document.getElementById('authorMeta').style.display = 'flex';
-                    document.getElementById('authorName').textContent = PAGE_DATA.author;
-                }
-                
-                // 状态图标和徽章
-                const statusIcon = document.getElementById('statusIcon');
-                const statusBadge = document.getElementById('statusBadge');
-                
-                if (status === 'published') {
-                    statusIcon.className = 'fas fa-toggle-on';
-                    statusBadge.textContent = '已发布';
-                    statusBadge.className = 'page-status status-published';
-                } else if (status === 'draft') {
-                    statusIcon.className = 'fas fa-toggle-off';
-                    statusBadge.textContent = '草稿';
-                    statusBadge.className = 'page-status status-draft';
-                } else if (status === 'archived') {
-                    statusIcon.className = 'fas fa-toggle-off';
-                    statusBadge.textContent = '已归档';
-                    statusBadge.className = 'page-status status-archived';
-                }
-                
-                // 标签
-                if (PAGE_DATA.tags && PAGE_DATA.tags.length > 0) {
-                    const tagsContainer = document.getElementById('articleTags');
-                    tagsContainer.style.display = 'flex';
-                    
-                    PAGE_DATA.tags.forEach(tag => {
-                        const tagLink = document.createElement('a');
-                        tagLink.href = '../blog.html?tag=' + encodeURIComponent(tag);
-                        tagLink.className = 'article-tag';
-                        tagLink.innerHTML = '<i class="fas fa-tag"></i> ' + escapeHtml(tag);
-                        tagsContainer.appendChild(tagLink);
-                    });
-                }
-                
-                // 文章内容（已经是 HTML，直接插入）
-                document.getElementById('articleBody').innerHTML = PAGE_DATA.content;
-            }
-        }
         
         // 页面交互初始化
         function initPageInteractions() {
@@ -574,47 +511,43 @@
         
         // 更新页面元信息
         function updatePageMetaInfo() {
-            // 更新SEO关键词和描述
-            const keywordsMeta = document.querySelector('meta[name="keywords"]');
-            const descriptionMeta = document.querySelector('meta[name="description"]');
-            
-            if (keywordsMeta) keywordsMeta.content = PAGE_DATA.seoKeywords;
-            if (descriptionMeta) descriptionMeta.content = PAGE_DATA.seoDescription;
-            
             // 更新Open Graph信息
             const ogTitle = document.querySelector('meta[property="og:title"]');
             const ogDesc = document.querySelector('meta[property="og:description"]');
             const ogUrl = document.querySelector('meta[property="og:url"]');
             
             if (ogTitle) ogTitle.content = document.title;
-            if (ogDesc) ogDesc.content = PAGE_DATA.seoDescription;
-            if (ogUrl) ogUrl.content = PAGE_DATA.pageUrl;
+            if (ogDesc) ogDesc.content = document.querySelector('meta[name="description"]')?.content || '';
+            if (ogUrl) ogUrl.content = window.location.href;
             
             // 添加结构化数据（SEO优化）
-            const structuredData = {
-                "@context": "https://schema.org",
-                "@type": "BlogPosting",
-                "headline": PAGE_DATA.title,
-                "datePublished": PAGE_DATA.publishDate,
-                "dateModified": PAGE_DATA.lastUpdated,
-                "author": {
-                    "@type": "Person",
-                    "name": PAGE_DATA.author || PAGE_DATA.siteName
-                },
-                "publisher": {
-                    "@type": "Organization",
-                    "name": PAGE_DATA.siteName,
-                    "logo": {
-                        "@type": "ImageObject",
-                        "url": "../favicon/favicon-512x512.png"
+            const articleTitle = document.querySelector('.article-title')?.textContent;
+            if (articleTitle) {
+                const structuredData = {
+                    "@context": "https://schema.org",
+                    "@type": "BlogPosting",
+                    "headline": articleTitle,
+                    "datePublished": "{{publishDate}}",
+                    "dateModified": "{{lastUpdated}}",
+                    "author": {
+                        "@type": "Person",
+                        "name": "{{author}}" || "{{siteName}}"
+                    },
+                    "publisher": {
+                        "@type": "Organization",
+                        "name": "{{siteName}}",
+                        "logo": {
+                            "@type": "ImageObject",
+                            "url": "../favicon/favicon-512x512.png"
+                        }
                     }
-                }
-            };
-            
-            const script = document.createElement('script');
-            script.type = 'application/ld+json';
-            script.textContent = JSON.stringify(structuredData);
-            document.head.appendChild(script);
+                };
+                
+                const script = document.createElement('script');
+                script.type = 'application/ld+json';
+                script.textContent = JSON.stringify(structuredData);
+                document.head.appendChild(script);
+            }
         }
         
         // 全局加载失败处理
@@ -635,14 +568,6 @@
                 `;
                 mainElement.appendChild(errorDiv);
             }
-        }
-        
-        // HTML转义函数
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
         }
     </script>
     
