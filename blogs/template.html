@@ -36,6 +36,11 @@
     
     <!-- 文章页面专属样式 -->
     <style>
+        /* 修复：为导航栏预留顶部空间 */
+        body {
+            padding-top: 80px; /* 导航栏高度 */
+        }
+        
         /* 文章页面特定样式 */
         .article-container {
             background: white;
@@ -238,6 +243,10 @@
         
         /* 响应式调整 */
         @media (max-width: 768px) {
+            body {
+                padding-top: 60px; /* 移动端导航栏高度 */
+            }
+            
             .article-container {
                 padding: 30px;
                 margin: 20px;
@@ -270,6 +279,10 @@
         }
         
         @media (max-width: 480px) {
+            body {
+                padding-top: 50px; /* 小屏幕导航栏高度 */
+            }
+            
             .article-container {
                 padding: 20px;
             }
@@ -332,7 +345,7 @@
                 {{/if}}
                 
                 <div class="article-content">
-                    {{{content}}}
+                    {{content}}
                 </div>
                 
                 <div class="article-actions">
@@ -358,17 +371,6 @@
         // 页面加载完成后执行
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('博客文章页面开始加载...');
-            
-            // ✅ 关键修复：检查页面是否启用
-            const enabledValue = document.title.split(' | ')[0];
-            if (enabledValue === '{{enabled}}') {
-                // 如果模板变量未替换，说明页面被禁用
-                if ('{{enabled}}' === 'false') {
-                    alert('该页面已被禁用，将返回博客列表');
-                    window.location.href = '../blog.html';
-                    return;
-                }
-            }
             
             // 确保GistRenderer已加载
             if (!window.gistRenderer) {
