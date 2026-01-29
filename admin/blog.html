@@ -466,7 +466,7 @@ width: 100%;
 <li><strong>Repo权限</strong>: 高级功能，自动生成博客独立页面</li>
 </ul>
 <p style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; font-size: 14px;">
-<strong>提示:</strong> 如需使用"自动生成博客页面"功能，请在 
+<strong>提示:</strong> 如需使用"自动生成博客页面"功能，请在
 <a href="https://github.com/settings/tokens" target="_blank" style="color: #4a6fa5; text-decoration: none;">GitHub Token设置</a>
 中重新生成Token，勾选 <code>repo</code> 权限。
 </p>
@@ -633,13 +633,13 @@ document.getElementById('cancelTemplateBtn').addEventListener('click', closeTemp
 document.getElementById('saveTemplateBtn').addEventListener('click', saveTemplate);
 document.getElementById('closeResultBtn').addEventListener('click', closeResultModal);
 document.getElementById('generatePageToggle').addEventListener('change', function() {
-document.getElementById('generatePageLabel').textContent = 
+document.getElementById('generatePageLabel').textContent =
 this.checked ? '生成独立页面' : '不生成 (仅在博客列表显示)';
 document.getElementById('pageUrlSection').style.display = this.checked ? 'block' : 'none';
 updatePageUrlPreview();
 });
 document.getElementById('pageEnabledToggle').addEventListener('change', function() {
-document.getElementById('pageEnabledLabel').textContent = 
+document.getElementById('pageEnabledLabel').textContent =
 this.checked ? '页面启用' : '页面禁用';
 updatePageStatusPreview();
 });
@@ -739,11 +739,11 @@ return;
 document.getElementById('advancedConfigPostId').textContent = postId;
 const generatePageToggle = document.getElementById('generatePageToggle');
 generatePageToggle.checked = post.generatePage || false;
-document.getElementById('generatePageLabel').textContent = 
+document.getElementById('generatePageLabel').textContent =
 (post.generatePage ? '生成独立页面' : '不生成 (仅在博客列表显示)');
 document.getElementById('pageUrlSection').style.display = post.generatePage ? 'block' : 'none';
 document.getElementById('pageEnabledToggle').checked = post.enabled !== false;
-document.getElementById('pageEnabledLabel').textContent = 
+document.getElementById('pageEnabledLabel').textContent =
 (post.enabled !== false ? '页面启用' : '页面禁用');
 document.getElementById('seoKeywords').value = post.seoKeywords || '';
 document.getElementById('seoDescription').value = post.seoDescription || '';
@@ -864,7 +864,7 @@ throw error;
 // 构建页面内容
 async function buildPageContent(post) {
 try {
-// 获取模板内容
+// ✅ 获取模板内容（已修复乱码问题）
 let templateContent = await fetchTemplateFile();
 // 准备模板数据
 const templateData = {
@@ -911,19 +911,20 @@ console.error('构建页面失败，使用备用模板:', error);
 return buildFallbackPageContent(post);
 }
 }
-// 获取模板文件
+// ✅ 修复后的获取模板文件函数（使用 Raw API，避免乱码）
 async function fetchTemplateFile() {
 try {
-const templateUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${TEMPLATE_PATH}`;
-const response = await fetchWithRetry(templateUrl, {
+// 使用 Raw API 获取模板文件（自动 UTF-8 解码）
+const rawUrl = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${REPO_BRANCH}/${TEMPLATE_PATH}`;
+const response = await fetchWithRetry(rawUrl, {
 headers: {
 'Authorization': `token ${token}`,
-'Accept': 'application/vnd.github.v3+json'
+'Accept': 'application/vnd.github.v3.raw'  // ⭐⭐⭐ 关键：获取原始内容
 }
 });
 if (response.ok) {
-const fileData = await response.json();
-const content = atob(fileData.content);
+// ✅ 直接获取文本，自动 UTF-8 解码
+const content = await response.text();
 return content;
 } else {
 throw new Error('模板文件获取失败');
