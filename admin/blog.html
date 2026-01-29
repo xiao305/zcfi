@@ -914,46 +914,195 @@ return buildFallbackPageContent(post);
 // ✅ 修复后的获取模板文件函数（使用 Raw API，避免乱码）
 async function fetchTemplateFile() {
 try {
-// 使用 Raw API 获取模板文件（自动 UTF-8 解码）
+// 使用 Raw API（公开仓库不需要 token）
 const rawUrl = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${REPO_BRANCH}/${TEMPLATE_PATH}`;
-const response = await fetchWithRetry(rawUrl, {
-headers: {
-'Authorization': `token ${token}`,
-'Accept': 'application/vnd.github.v3.raw'  // ⭐⭐⭐ 关键：获取原始内容
-}
-});
+// ⚠️ 关键：直接使用 fetch，不传递任何 headers（公开仓库不需要认证）
+const response = await fetch(rawUrl);
 if (response.ok) {
 // ✅ 直接获取文本，自动 UTF-8 解码
 const content = await response.text();
 return content;
+} else if (response.status === 404) {
+throw new Error('模板文件不存在，请先创建 blogs/template.html 文件');
 } else {
-throw new Error('模板文件获取失败');
+throw new Error(`获取模板失败: HTTP ${response.status}`);
 }
 } catch (error) {
 console.warn('无法获取模板文件，使用内置模板:', error);
 return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{title}} | {{siteName}}</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<style>
-body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-.article-title { color: #333; margin-bottom: 20px; }
-.article-meta { color: #666; margin-bottom: 30px; }
-.article-content { line-height: 1.6; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}} | {{siteName}}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="../favicon/favicon.svg">
+    <link rel="icon" type="image/png" sizes="96x96" href="../favicon/favicon-96x96.png">
+    <link rel="icon" type="image/x-icon" href="../favicon/favicon.ico">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Noto Sans SC', 'Microsoft YaHei', sans-serif; 
+            background: #f5f5f5; 
+            color: #333; 
+            line-height: 1.6;
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 40px auto; 
+            padding: 0 20px;
+        }
+        .article-card { 
+            background: white; 
+            padding: 50px; 
+            border-radius: 8px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        .article-title { 
+            font-size: 2.2rem; 
+            color: #333; 
+            margin-bottom: 20px; 
+            line-height: 1.3;
+            text-align: center;
+        }
+        .article-meta { 
+            display: flex; 
+            justify-content: center; 
+            gap: 25px; 
+            color: #666; 
+            font-size: 0.95rem;
+            margin-bottom: 30px; 
+            padding-bottom: 25px; 
+            border-bottom: 2px solid #f0f0f0;
+            flex-wrap: wrap;
+        }
+        .article-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f8f9fa;
+            padding: 6px 12px;
+            border-radius: 20px;
+            color: #333;
+            font-weight: 500;
+        }
+        .article-content { 
+            line-height: 1.8; 
+            font-size: 1.1rem; 
+            color: #333;
+        }
+        .article-content p { 
+            margin-bottom: 25px; 
+            text-align: justify;
+        }
+        .article-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 30px 0;
+        }
+        .article-tag {
+            background: #f0f0f0;
+            color: #333;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .article-tag:hover {
+            background: #4a6fa5;
+            color: white;
+        }
+        .article-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            padding-top: 25px;
+            border-top: 2px solid #f0f0f0;
+        }
+        .back-to-blog {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 25px;
+            background: #4a6fa5;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .back-to-blog:hover {
+            background: #333;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        @media (max-width: 768px) {
+            .article-card { padding: 30px; }
+            .article-title { font-size: 1.8rem; }
+            .article-meta { flex-direction: column; gap: 15px; }
+        }
+    </style>
 </head>
 <body>
-<h1 class="article-title">{{title}}</h1>
-<div class="article-meta">
-<p>发布时间: {{publishDate}} | 最后更新: {{lastUpdated}}</p>
-</div>
-<div class="article-content">
-{{{content}}}
-</div>
-<p><a href="../blog.html">← 返回博客列表</a></p>
+    <div class="container">
+        <div class="article-card">
+            <h1 class="article-title">{{title}}</h1>
+            
+            <div class="article-meta">
+                <div class="article-meta-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>发布时间: {{publishDate}}</span>
+                </div>
+                <div class="article-meta-item">
+                    <i class="fas fa-history"></i>
+                    <span>最后更新: {{lastUpdated}}</span>
+                </div>
+                {{#if author}}
+                <div class="article-meta-item">
+                    <i class="fas fa-user"></i>
+                    <span>作者: {{author}}</span>
+                </div>
+                {{/if}}
+                <div class="article-meta-item">
+                    <i class="fas fa-toggle-{{#if (eq status "published")}}on{{else}}off{{/if}}"></i>
+                    <span>状态: {{status}}</span>
+                </div>
+            </div>
+            
+            {{#if tags}}
+            <div class="article-tags">
+                {{#each tags}}
+                <a href="../blog.html?tag={{this}}" class="article-tag">
+                    <i class="fas fa-tag"></i> {{this}}
+                </a>
+                {{/each}}
+            </div>
+            {{/if}}
+            
+            <div class="article-content">
+                {{{content}}}
+            </div>
+            
+            <div class="article-actions">
+                <a href="../blog.html" class="back-to-blog">
+                    <i class="fas fa-arrow-left"></i> 返回博客列表
+                </a>
+                <a href="#top" class="back-to-blog" style="background: #6c757d;">
+                    <i class="fas fa-arrow-up"></i> 返回顶部
+                </a>
+            </div>
+        </div>
+    </div>
 </body>
 </html>`;
 }
