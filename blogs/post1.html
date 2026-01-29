@@ -36,7 +36,7 @@
     
     <!-- 文章页面专属样式 -->
     <style>
-        /* 修复：添加 position 和 z-index 防止被导航栏覆盖 */
+        /* 文章页面特定样式 */
         .article-container {
             background: white;
             padding: 50px;
@@ -44,8 +44,8 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.08);
             margin: 40px auto;
             max-width: 800px;
-            position: relative; /* 修复按钮被覆盖 */
-            z-index: 10; /* 修复按钮被覆盖 */
+            position: relative;
+            z-index: 10;
         }
         
         .article-title {
@@ -152,7 +152,7 @@
             border-radius: 8px;
             overflow-x: auto;
             margin: 25px 0;
-            position: relative; /* 为复制按钮定位 */
+            position: relative;
         }
         
         .article-tags {
@@ -196,8 +196,8 @@
             border-radius: 6px;
             font-weight: 500;
             transition: all 0.3s ease;
-            position: relative; /* 确保按钮在最上层 */
-            z-index: 20; /* 确保按钮在最上层 */
+            position: relative;
+            z-index: 20;
         }
         
         .back-to-blog:hover {
@@ -234,30 +234,6 @@
         .status-disabled {
             background: #dc3545;
             color: white;
-        }
-        
-        /* 页面禁用样式 */
-        .page-disabled-message {
-            text-align: center;
-            padding: 60px 40px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-            margin: 40px auto;
-            max-width: 800px;
-            position: relative; /* 修复按钮被覆盖 */
-            z-index: 10; /* 修复按钮被覆盖 */
-        }
-        
-        .page-disabled-message i {
-            font-size: 3rem;
-            color: #ffc107;
-            margin-bottom: 20px;
-        }
-        
-        .page-disabled-message h2 {
-            color: #495057;
-            margin-bottom: 15px;
         }
         
         /* 响应式调整 */
@@ -319,16 +295,6 @@
     <!-- 主内容 -->
     <main>
         <div class="container">
-            
-                </p>
-                <p style="margin-bottom: 30px; color: #6c757d;">
-                    您可以返回博客列表查看其他文章。
-                </p>
-                <a href="../blog.html" class="back-to-blog">
-                    <i class="fas fa-arrow-left"></i> 返回博客列表
-                </a>
-            </div>
-            {{else}}
             <div class="article-container">
                 <h1 class="article-title">博客系统测试</h1>
                 
@@ -348,13 +314,9 @@
                     </div>
                     
                     <div class="article-meta-item">
-                        <i class="fas fa-toggle-on{{else}}off"></i>
+                        <i class="fas fa-toggle-on"></i>
                         <span>状态: 
-                            <span class="page-status status-published">
-                                已发布
-                                
-                                
-                            </span>
+                            <span class="page-status status-published">已发布</span>
                         </span>
                     </div>
                 </div>
@@ -405,7 +367,6 @@
                     </a>
                 </div>
             </div>
-            {{/if}}
         </div>
     </main>
 
@@ -420,6 +381,17 @@
         // 页面加载完成后执行
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('博客文章页面开始加载...');
+            
+            // ✅ 关键修复：检查页面是否启用
+            const enabledValue = document.title.split(' | ')[0];
+            if (enabledValue === 'true') {
+                // 如果模板变量未替换，说明页面被禁用
+                if ('true' === 'false') {
+                    alert('该页面已被禁用，将返回博客列表');
+                    window.location.href = '../blog.html';
+                    return;
+                }
+            }
             
             // 确保GistRenderer已加载
             if (!window.gistRenderer) {
