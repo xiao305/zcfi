@@ -6,10 +6,10 @@
     <title>页面未找到 | zcfi.cn</title>
     
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
-    <link rel="icon" type="image/png" sizes="96x96" href="favicon/favicon-96x96.png">
-    <link rel="icon" type="image/x-icon" href="favicon/favicon.ico">
-    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon/favicon-96x96.png">
+    <link rel="icon" type="image/x-icon" href="/favicon/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -169,23 +169,52 @@
             font-family: monospace;
         }
 
-        .back-home {
+        /* 按钮组 */
+        .button-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
             display: inline-block;
-            background-color: var(--primary-color);
-            color: white;
             padding: 14px 32px;
             border-radius: var(--border-radius);
             text-decoration: none;
             font-weight: 600;
             transition: var(--transition);
-            box-shadow: 0 4px 15px rgba(74, 111, 165, 0.3);
-            margin-top: 20px;
+            text-align: center;
+            min-width: 160px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-family: inherit;
         }
 
-        .back-home:hover {
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 15px rgba(74, 111, 165, 0.3);
+        }
+
+        .btn-primary:hover {
             background-color: var(--secondary-color);
             transform: translateY(-3px);
             box-shadow: 0 6px 20px rgba(74, 111, 165, 0.4);
+        }
+
+        .btn-secondary {
+            background-color: var(--gray-color);
+            color: var(--text-color);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background-color: #d5d5d5;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         }
 
         /* 动画效果 */
@@ -253,6 +282,16 @@
                 flex-direction: column;
                 gap: 10px;
             }
+            
+            .button-group {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 280px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -275,7 +314,8 @@
     <header>
         <div class="container">
             <nav class="navbar">
-                <a href="index.html" class="logo">zcfi<span>.</span>cn</a>
+                <!-- 修改：使用根路径，不包含.html扩展名 -->
+                <a href="/" class="logo">zcfi<span>.</span>cn</a>
                 <div></div> <!-- 占位符，保持布局 -->
             </nav>
         </div>
@@ -300,7 +340,15 @@
                 </ul>
             </div>
             
-            <a href="index.html" class="back-home pulse">返回首页</a>
+            <!-- 修改：添加按钮组，包含返回上一页和返回首页 -->
+            <div class="button-group">
+                <button id="goBack" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> 返回上一页
+                </button>
+                <a href="/" class="btn btn-primary pulse">
+                    <i class="fas fa-home"></i> 返回首页
+                </a>
+            </div>
         </div>
     </div>
 
@@ -308,16 +356,17 @@
     <footer>
         <div class="container">
             <div class="footer-content">
-                <a href="index.html" class="footer-logo">zcfi<span>.</span>cn</a>
+                <!-- 修改：使用根路径 -->
+                <a href="/" class="footer-logo">zcfi<span>.</span>cn</a>
                 <p>© 2026 zcfi.cn 版权所有</p>
             </div>
         </div>
     </footer>
 
     <script>
-        // 添加一些有趣的交互
         document.addEventListener('DOMContentLoaded', function() {
             const errorCode = document.querySelector('.error-code');
+            const goBackBtn = document.getElementById('goBack');
             
             // 鼠标悬停时的微交互
             errorCode.addEventListener('mouseenter', function() {
@@ -329,11 +378,47 @@
                 this.style.transform = 'scale(1)';
             });
             
-            // 键盘事件：按 ESC 返回首页
+            // 返回上一页功能
+            goBackBtn.addEventListener('click', function() {
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    // 如果没有上一页历史，则跳转到首页
+                    window.location.href = '/';
+                }
+            });
+            
+            // 键盘事件：按 ESC 返回上一页，按 H 返回首页
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') {
-                    window.location.href = 'index.html';
+                    if (window.history.length > 1) {
+                        window.history.back();
+                    } else {
+                        window.location.href = '/';
+                    }
                 }
+                
+                // 可选：添加快捷键 H 返回首页
+                if (e.key === 'h' || e.key === 'H') {
+                    window.location.href = '/';
+                }
+            });
+            
+            // 检查是否有上一页历史记录，如果没有则禁用返回按钮
+            if (window.history.length <= 1) {
+                goBackBtn.disabled = true;
+                goBackBtn.innerHTML = '<i class="fas fa-ban"></i> 无历史记录';
+                goBackBtn.style.opacity = '0.6';
+                goBackBtn.style.cursor = 'not-allowed';
+                goBackBtn.title = '您直接访问了这个页面，没有上一页历史记录';
+            }
+            
+            // 添加访问日志（仅用于调试，生产环境应该移除或发送到服务器）
+            console.log('404页面被访问:', {
+                url: window.location.href,
+                referrer: document.referrer || '无来源',
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent
             });
         });
     </script>
