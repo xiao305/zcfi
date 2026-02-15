@@ -7,9 +7,37 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/style.css">
+    <style>
+        /* 临时状态样式（可以移到你的 style.css 中） */
+        #form-status {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            display: none;
+        }
+        #form-status.success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+            display: block;
+        }
+        #form-status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+            display: block;
+        }
+        #form-status.loading {
+            background: #e2f0ff;
+            color: #004085;
+            border-left: 4px solid #007bff;
+            display: block;
+        }
+    </style>
 </head>
 <body>
-    <!-- 头部导航 -->
+    <!-- 头部导航（保持不变） -->
     <header>
         <div class="container">
             <nav class="navbar">
@@ -57,20 +85,15 @@
                             <button type="submit" class="submit-btn" style="flex: 1; min-width: 200px;">发送消息</button>
                             <button type="button" id="emailBtn" class="cta-button" style="background: #6c757d; flex: 1; min-width: 200px;">通过邮箱发送</button>
                         </div>
-                        <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
-                            <p style="color: #856404; font-size: 0.95rem;">
-                                <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
-                                <strong>注意：</strong>当前网站尚未搭载后台系统，表单提交功能暂不可用。
-                                建议使用右侧“通过邮箱发送”按钮，将自动打开您的默认邮件客户端。
-                            </p>
-                        </div>
+                        <!-- 状态提示区域（原警告框已移除，替换为此动态状态区） -->
+                        <div id="form-status"></div>
                     </form>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- 页脚 -->
+    <!-- 页脚（保持不变） -->
     <footer>
         <div class="container">
             <div class="footer-content">
@@ -121,30 +144,73 @@
 
     <script src="../assets/js/main.js"></script>
     <script>
-        // 邮箱跳转功能
+        // 邮箱跳转功能（保持不变）
         document.getElementById('emailBtn').addEventListener('click', function() {
             const name = document.getElementById('name').value || '访客';
             const email = document.getElementById('email').value || '';
             const subject = document.getElementById('subject').value || '网站咨询';
             const message = document.getElementById('message').value || '';
             
-            // 构建邮件内容
             let body = `姓名: ${name}\n\n`;
             if (email) body += `联系方式: ${email}\n\n`;
             body += `留言内容:\n${message}`;
             
-            // URL 编码
             const mailtoUrl = `mailto:admin@zcfi.cn?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-            
-            // 打开邮件客户端
             window.location.href = mailtoUrl;
         });
-        
-        // 表单提交提示
-        document.getElementById('contactForm').addEventListener('submit', function(e) {
+
+        // 表单提交：通过 Worker 存入 Gist
+        document.getElementById('contactForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            alert('⚠️ 当前网站尚未搭载后台系统，表单提交功能暂不可用。\n\n建议点击"通过邮箱发送"按钮，将自动打开您的邮件客户端。');
+
+            // 获取表单字段
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const subject = document.getElementById('subject').value.trim();
+            const message = document.getElementById('message').value.trim();
+
+            if (!name || !email || !subject || !message) {
+                showStatus('请完整填写所有字段', 'error');
+                return;
+            }
+
+            // 构建要存入 Gist 的内容（将邮箱和主题合并到 content 中）
+            const content = `【主题】${subject}\n【邮箱】${email}\n【留言】${message}`;
+
+            // 显示加载状态
+            showStatus('正在发送...', 'loading');
+
+            try {
+                // 发送 POST 请求到 Worker 绑定的路径（与页面同域的 /留言板块）
+                const response = await fetch('/留言板块', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, content })
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || '提交失败');
+                }
+
+                // 成功
+                showStatus('留言发送成功！我会尽快回复您。', 'success');
+                // 清空表单
+                document.getElementById('contactForm').reset();
+            } catch (error) {
+                console.error(error);
+                showStatus('提交失败：' + error.message, 'error');
+            }
         });
+
+        // 显示状态信息的辅助函数
+        function showStatus(text, type) {
+            const statusDiv = document.getElementById('form-status');
+            statusDiv.textContent = text;
+            statusDiv.className = ''; // 清空原有类
+            statusDiv.classList.add(type);
+        }
     </script>
 </body>
 </html>
