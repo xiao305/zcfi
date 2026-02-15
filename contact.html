@@ -182,7 +182,7 @@
 
             try {
                 // 发送 POST 请求到 Worker 绑定的路径（与页面同域的 /留言板块）
-                const response = await fetch('/留言板块', {
+                const response = await fetch('/https://api.zcfi.cn', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, content })
