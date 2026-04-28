@@ -6,21 +6,21 @@
     <title>联系我 | zcfi.cn</title>
     
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="../.favicon/favicon.svg">
-    <link rel="icon" type="image/png" sizes="96x96" href="../.favicon/favicon-96x96.png">
-    <link rel="icon" type="image/x-icon" href="../.favicon/favicon.ico">
-    <link rel="apple-touch-icon" sizes="180x180" href="../.favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/svg+xml" href="./favicon/favicon.svg">
+    <link rel="icon" type="image/png" sizes="96x96" href="./favicon/favicon-96x96.png">
+    <link rel="icon" type="image/x-icon" href="./favicon/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="./favicon/apple-touch-icon.png">
     
     <!-- Web App Manifest -->
-    <link rel="manifest" href="../.favicon/site.webmanifest">
+    <link rel="manifest" href="./favicon/site.webmanifest">
     
     <!-- Web App Icons -->
-    <link rel="apple-touch-icon" sizes="192x192" href="../.favicon/web-app-manifest-192x192.png">
-    <link rel="apple-touch-icon" sizes="512x512" href="../.favicon/web-app-manifest-512x512.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="./favicon/web-app-manifest-192x192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="./favicon/web-app-manifest-512x512.png">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/style.css">
     <style>
         /* 弹窗样式 */
         .modal-overlay {
@@ -146,24 +146,8 @@
     </style>
 </head>
 <body>
-    <!-- 头部导航（保持不变） -->
-    <header>
-        <div class="container">
-            <nav class="navbar">
-                <a href="../index.html" class="logo">zcfi<span>.</span>cn</a>
-                <ul class="nav-links">
-                    <li><a href="../index.html">首页</a></li>
-                    <li><a href="../about.html">关于我</a></li>
-                    <li><a href="../portfolio.html">作品集</a></li>
-                    <li><a href="../blog.html">博客</a></li>
-                    <li><a href="../contact.html">联系我</a></li>
-                </ul>
-                <div class="mobile-menu-btn">
-                    <i class="fas fa-bars"></i>
-                </div>
-            </nav>
-        </div>
-    </header>
+    <!-- 头部导航容器 -->
+    <div id="navbar-container"></div>
 
     <main style="margin-top: 100px;">
         <section style="background-color: #f9fafc; padding: 80px 0;">
@@ -210,57 +194,39 @@
         </div>
     </div>
 
-    <!-- 页脚（保持不变） -->
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-about">
-                    <a href="../index.html" class="footer-logo">zcfi<span>.</span>cn</a>
-                    <p>这是我的个人网站，用于展示作品、分享知识和记录成长。</p>
-                    <div class="social-links">
-                        <a href="https://github.com/yourusername" target="_blank"><i class="fab fa-github"></i></a>
-                        <a href="#"><i class="fab fa-weibo"></i></a>
-                        <a href="#"><i class="fab fa-zhihu"></i></a>
-                    </div>
-                </div>
-                <div class="footer-links">
-                    <h3 class="footer-heading">快速链接</h3>
-                    <ul>
-                        <li><a href="../index.html">首页</a></li>
-                        <li><a href="../about.html">关于我</a></li>
-                        <li><a href="../portfolio.html">作品集</a></li>
-                        <li><a href="../blog.html">博客</a></li>
-                        <li><a href="../contact.html">联系我</a></li>
-                    </ul>
-                </div>
-                <div class="footer-links">
-                    <h3 class="footer-heading">法律声明</h3>
-                    <ul>
-                        <li><a href="../privacy.html">隐私政策</a></li>
-                        <li><a href="../terms.html">使用条款</a></li>
-                        <li><a href="../copyright.html">版权声明</a></li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="compliance">
-                <p>© 2026 zcfi.cn 版权所有</p>
-                <p>本网站为个人非商业网站，所有内容均为个人观点和原创作品。</p>
-                <div class="compliance-links">
-                    <a href="../privacy.html">隐私政策</a>
-                    <a href="../terms.html">使用条款</a>
-                    <a href="../copyright.html">版权声明</a>
-                    <a href="https://github.com/yourusername/zcfi" target="_blank">GitHub 仓库</a>
-                </div>
-                <p style="margin-top: 15px; font-size: 0.85rem; color: #aaa;">
-                    本网站源码托管于 GitHub，遵循开源精神，欢迎 Star 和 Fork。
-                </p>
-            </div>
-        </div>
-    </footer>
+    <!-- 页脚容器 -->
+    <div id="footer-container"></div>
 
-    <script src="../assets/js/main.js"></script>
+    <!-- Gist渲染器 -->
+    <script src="assets/js/gist-renderer.js"></script>
+    <script src="assets/js/main.js"></script>
     <script>
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('联系页面开始加载...');
+            
+            // 确保GistRenderer已加载
+            if (!window.gistRenderer) {
+                console.error('gist-renderer.js未正确加载');
+                return;
+            }
+            
+            try {
+                // 加载网站配置并更新页面标题
+                const configData = await window.gistRenderer.loadConfig();
+                
+                if (configData.site && configData.site.name) {
+                    document.title = `联系我 | ${configData.site.name}`;
+                }
+                
+                // 渲染导航栏和页脚
+                await window.gistRenderer.renderAll();
+                
+            } catch (error) {
+                console.error('初始化失败:', error);
+            }
+        });
+        
         // 弹窗控制函数
         function showModal(type, title, message, buttons = []) {
             const overlay = document.getElementById('modalOverlay');
@@ -302,6 +268,15 @@
             overlay.classList.remove('active');
         }
         
+        // 生成邮件链接的辅助函数
+        function generateMailtoLink(name, email, subject, message) {
+            let body = `姓名: ${name}\n\n`;
+            if (email) body += `联系方式: ${email}\n\n`;
+            body += `留言内容:\n${message}`;
+            
+            return `mailto:zcfi.cn@outlook.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        }
+        
         // 邮箱跳转功能（收件人改为 zcfi.cn@outlook.com）
         document.getElementById('emailBtn').addEventListener('click', function() {
             const name = document.getElementById('name').value || '访客';
@@ -309,11 +284,7 @@
             const subject = document.getElementById('subject').value || '网站咨询';
             const message = document.getElementById('message').value || '';
             
-            let body = `姓名: ${name}\n\n`;
-            if (email) body += `联系方式: ${email}\n\n`;
-            body += `留言内容:\n${message}`;
-            
-            const mailtoUrl = `mailto:zcfi.cn@outlook.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            const mailtoUrl = generateMailtoLink(name, email, subject, message);
             window.location.href = mailtoUrl;
         });
 
@@ -369,16 +340,12 @@
                 console.error(error);
                 
                 // 失败弹窗，提供通过邮件发送的选项
-                showModal('error', '发送失败', '消息发送失败，您可以直接通过邮件发送给我。', [
+                showModal('error', '发送失败', '消息发送失败。您可以点击下方的"通过邮件发送"按钮，系统将自动调用您的默认邮件软件，打开发信页面并自动填写收件人、主题和所有内容，您只需点击发送邮件即可。', [
                     { 
                         text: '通过邮件发送', 
                         class: 'modal-btn-primary', 
                         onClick: () => {
-                            let body = `姓名: ${name}\n\n`;
-                            if (email) body += `联系方式: ${email}\n\n`;
-                            body += `留言内容:\n${message}`;
-                            
-                            const mailtoUrl = `mailto:zcfi.cn@outlook.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                            const mailtoUrl = generateMailtoLink(name, email, subject, message);
                             window.location.href = mailtoUrl;
                             hideModal();
                         }
