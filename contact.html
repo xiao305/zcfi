@@ -4,35 +4,144 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>联系我 | zcfi.cn</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="../.favicon/favicon.svg">
+    <link rel="icon" type="image/png" sizes="96x96" href="../.favicon/favicon-96x96.png">
+    <link rel="icon" type="image/x-icon" href="../.favicon/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="../.favicon/apple-touch-icon.png">
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="../.favicon/site.webmanifest">
+    
+    <!-- Web App Icons -->
+    <link rel="apple-touch-icon" sizes="192x192" href="../.favicon/web-app-manifest-192x192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="../.favicon/web-app-manifest-512x512.png">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/style.css">
     <style>
-        /* 临时状态样式（可以移到你的 style.css 中） */
-        #form-status {
-            margin-top: 15px;
-            padding: 12px;
-            border-radius: 6px;
-            font-size: 0.95rem;
+        /* 弹窗样式 */
+        .modal-overlay {
             display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
         }
-        #form-status.success {
-            background: #d4edda;
-            color: #155724;
-            border-left: 4px solid #28a745;
-            display: block;
+        
+        .modal-overlay.active {
+            display: flex;
         }
-        #form-status.error {
-            background: #f8d7da;
-            color: #721c24;
-            border-left: 4px solid #dc3545;
-            display: block;
+        
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            animation: modalSlideIn 0.3s ease;
         }
-        #form-status.loading {
-            background: #e2f0ff;
-            color: #004085;
-            border-left: 4px solid #007bff;
-            display: block;
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .modal-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+        
+        .modal-icon.success {
+            color: #28a745;
+        }
+        
+        .modal-icon.error {
+            color: #dc3545;
+        }
+        
+        .modal-icon.loading {
+            color: #007bff;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .modal-message {
+            color: #666;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .modal-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            min-width: 150px;
+        }
+        
+        .modal-btn-primary {
+            background: #4a6fa5;
+            color: white;
+        }
+        
+        .modal-btn-primary:hover {
+            background: #3a5a80;
+            transform: translateY(-2px);
+        }
+        
+        .modal-btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .modal-btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        .modal-btn-close {
+            background: #f8f9fa;
+            color: #333;
+            border: 1px solid #dee2e6;
+        }
+        
+        .modal-btn-close:hover {
+            background: #e9ecef;
         }
     </style>
 </head>
@@ -85,13 +194,21 @@
                             <button type="submit" class="submit-btn" style="flex: 1; min-width: 200px;">发送消息</button>
                             <button type="button" id="emailBtn" class="cta-button" style="background: #6c757d; flex: 1; min-width: 200px;">通过邮箱发送</button>
                         </div>
-                        <!-- 状态提示区域（原警告框已移除，替换为此动态状态区） -->
-                        <div id="form-status"></div>
                     </form>
                 </div>
             </div>
         </section>
     </main>
+
+    <!-- 弹窗容器 -->
+    <div id="modalOverlay" class="modal-overlay">
+        <div class="modal-content">
+            <div id="modalIcon" class="modal-icon"></div>
+            <h3 id="modalTitle" class="modal-title"></h3>
+            <p id="modalMessage" class="modal-message"></p>
+            <div id="modalButtons" class="modal-buttons"></div>
+        </div>
+    </div>
 
     <!-- 页脚（保持不变） -->
     <footer>
@@ -144,7 +261,48 @@
 
     <script src="../assets/js/main.js"></script>
     <script>
-        // 邮箱跳转功能（保持不变）
+        // 弹窗控制函数
+        function showModal(type, title, message, buttons = []) {
+            const overlay = document.getElementById('modalOverlay');
+            const icon = document.getElementById('modalIcon');
+            const titleEl = document.getElementById('modalTitle');
+            const messageEl = document.getElementById('modalMessage');
+            const buttonsEl = document.getElementById('modalButtons');
+            
+            // 设置图标
+            icon.className = 'modal-icon ' + type;
+            if (type === 'success') {
+                icon.innerHTML = '<i class="fas fa-check-circle"></i>';
+            } else if (type === 'error') {
+                icon.innerHTML = '<i class="fas fa-exclamation-circle"></i>';
+            } else if (type === 'loading') {
+                icon.innerHTML = '<i class="fas fa-spinner"></i>';
+            }
+            
+            // 设置标题和消息
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            
+            // 设置按钮
+            buttonsEl.innerHTML = '';
+            buttons.forEach(btn => {
+                const button = document.createElement('button');
+                button.className = `modal-btn ${btn.class || 'modal-btn-primary'}`;
+                button.textContent = btn.text;
+                button.onclick = btn.onClick;
+                buttonsEl.appendChild(button);
+            });
+            
+            // 显示弹窗
+            overlay.classList.add('active');
+        }
+        
+        function hideModal() {
+            const overlay = document.getElementById('modalOverlay');
+            overlay.classList.remove('active');
+        }
+        
+        // 邮箱跳转功能（收件人改为 zcfi.cn@outlook.com）
         document.getElementById('emailBtn').addEventListener('click', function() {
             const name = document.getElementById('name').value || '访客';
             const email = document.getElementById('email').value || '';
@@ -155,7 +313,7 @@
             if (email) body += `联系方式: ${email}\n\n`;
             body += `留言内容:\n${message}`;
             
-            const mailtoUrl = `mailto:admin@zcfi.cn?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            const mailtoUrl = `mailto:zcfi.cn@outlook.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
             window.location.href = mailtoUrl;
         });
 
@@ -170,19 +328,20 @@
             const message = document.getElementById('message').value.trim();
 
             if (!name || !email || !subject || !message) {
-                showStatus('请完整填写所有字段', 'error');
+                showModal('error', '提示', '请完整填写所有字段', [
+                    { text: '确定', class: 'modal-btn-primary', onClick: () => hideModal() }
+                ]);
                 return;
             }
 
             // 构建要存入的内容（将邮箱和主题合并到 content 中）
             const content = `【主题】${subject}\n【邮箱】${email}\n【留言】${message}`;
 
-            // 显示加载状态
-            showStatus('正在发送...', 'loading');
+            // 显示加载状态弹窗
+            showModal('loading', '发送中', '正在发送您的消息，请稍候...', []);
 
             try {
                 // 发送 POST 请求到 Cloudflare Worker
-                // 注意：这里需要替换为您的实际Worker URL
                 const workerUrl = 'https://your-worker.your-subdomain.workers.dev'; // ← 需要替换成您的Worker地址
                 
                 const response = await fetch(workerUrl, {
@@ -199,23 +358,39 @@
                     throw new Error(result.error || '提交失败');
                 }
 
-                // 成功
-                showStatus('留言发送成功！我会尽快回复您。', 'success');
-                // 清空表单
-                document.getElementById('contactForm').reset();
+                // 成功弹窗
+                showModal('success', '发送成功', '留言发送成功！我会尽快回复您。', [
+                    { text: '关闭', class: 'modal-btn-primary', onClick: () => {
+                        hideModal();
+                        document.getElementById('contactForm').reset();
+                    }}
+                ]);
             } catch (error) {
                 console.error(error);
-                showStatus('提交失败：' + error.message, 'error');
+                
+                // 失败弹窗，提供通过邮件发送的选项
+                showModal('error', '发送失败', '消息发送失败，您可以直接通过邮件发送给我。', [
+                    { 
+                        text: '通过邮件发送', 
+                        class: 'modal-btn-primary', 
+                        onClick: () => {
+                            let body = `姓名: ${name}\n\n`;
+                            if (email) body += `联系方式: ${email}\n\n`;
+                            body += `留言内容:\n${message}`;
+                            
+                            const mailtoUrl = `mailto:zcfi.cn@outlook.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                            window.location.href = mailtoUrl;
+                            hideModal();
+                        }
+                    },
+                    { 
+                        text: '取消', 
+                        class: 'modal-btn-close', 
+                        onClick: () => hideModal() 
+                    }
+                ]);
             }
         });
-
-        // 显示状态信息的辅助函数
-        function showStatus(text, type) {
-            const statusDiv = document.getElementById('form-status');
-            statusDiv.textContent = text;
-            statusDiv.className = ''; // 清空原有类
-            statusDiv.classList.add(type);
-        }
     </script>
 </body>
 </html>
