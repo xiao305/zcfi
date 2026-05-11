@@ -76,13 +76,22 @@
         }
         
         .modal-icon.loading {
-            color: #007bff;
+            color: #4a6fa5;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        
+        .modal-icon.loading i {
             animation: spin 1s linear infinite;
         }
         
+        .modal-icon.info {
+            color: #4a6fa5;
+        }
+        
         @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         
         .modal-title {
@@ -143,6 +152,23 @@
         .modal-btn-close:hover {
             background: #e9ecef;
         }
+        
+        /* 邮箱快捷链接样式 */
+        .email-link {
+            padding: 8px 16px;
+            background: #4a6fa5;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 13px;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+        
+        .email-link:hover {
+            background: #3a5a80;
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
@@ -176,7 +202,7 @@
                         </div>
                         <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                             <button type="submit" class="submit-btn" style="flex: 1; min-width: 200px;">发送消息</button>
-                            <button type="button" id="emailBtn" class="cta-button" style="background: #6c757d; flex: 1; min-width: 200px;">通过邮箱发送</button>
+                            <button type="button" id="emailBtn" class="cta-button" style="background: #4a6fa5; flex: 1; min-width: 200px;">通过邮箱发送</button>
                         </div>
                     </form>
                 </div>
@@ -242,7 +268,10 @@
             } else if (type === 'error') {
                 icon.innerHTML = '<i class="fas fa-exclamation-circle"></i>';
             } else if (type === 'loading') {
-                icon.innerHTML = '<i class="fas fa-spinner"></i>';
+                icon.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            } else if (type === 'info') {
+                icon.innerHTML = '<i class="fas fa-info-circle"></i>';
+                icon.style.color = '#4a6fa5';
             }
             
             // 设置标题和消息
@@ -270,23 +299,125 @@
         
         // 生成邮件链接的辅助函数
         function generateMailtoLink(name, email, subject, message) {
-            let body = `姓名: ${name}\n\n`;
-            if (email) body += `联系方式: ${email}\n\n`;
-            body += `留言内容:\n${message}`;
+            const timestamp = new Date().toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
             
-            return `mailto:zcfi.cn@outlook.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            // 使用 %0D%0A (CRLF) 确保跨平台换行兼容
+            const CRLF = '%0D%0A';
+            const SEPARATOR = `━━━━━━━━━━━━━━━━━━━━`;
+            
+            let body = `【来源】zcfi.cn 网站自动填写${CRLF}`;
+            body += `【时间】${timestamp}${CRLF}${CRLF}`;
+            body += `${SEPARATOR}${CRLF}${CRLF}`;
+            body += `姓名：${name}${CRLF}`;
+            if (email) body += `邮箱：${email}${CRLF}`;
+            body += `${CRLF}${SEPARATOR}${CRLF}${CRLF}`;
+            body += `主题：${subject}${CRLF}${CRLF}`;
+            body += `留言内容：${CRLF}${message}`;
+            
+            return `mailto:zcfi.cn@outlook.com?subject=${encodeURIComponent(`[网站留言] ${subject}`)}&body=${body}`;
         }
         
-        // 邮箱跳转功能（收件人改为 zcfi.cn@outlook.com）
+        // 邮箱跳转功能 - 显示选择弹窗
+        function showEmailOptions(name, email, subject, message) {
+            const modalMessage = document.getElementById('modalMessage');
+            
+            showModal('info', '选择发送方式', '', [
+                { 
+                    text: '通过邮件客户端发送', 
+                    class: 'modal-btn-primary', 
+                    onClick: () => {
+                        const mailtoUrl = generateMailtoLink(name, email, subject, message);
+                        window.location.href = mailtoUrl;
+                        hideModal();
+                    }
+                },
+                { 
+                    text: '通过网页版邮箱发送', 
+                    class: 'modal-btn-secondary', 
+                    onClick: () => {
+                        copyEmailContent(name, email, subject, message);
+                    }
+                },
+                { 
+                    text: '取消', 
+                    class: 'modal-btn-close', 
+                    onClick: () => hideModal() 
+                }
+            ]);
+            
+            // 自定义消息内容，添加说明文字
+            modalMessage.innerHTML = `
+                <p style="margin-bottom: 15px;">请选择您喜欢的邮件发送方式：</p>
+                <div style="text-align: left; background: #f8f9fa; padding: 15px; border-radius: 8px; font-size: 13px; color: #666;">
+                    <p style="margin-bottom: 8px;"><strong>通过邮件客户端发送：</strong>自动调用系统默认邮件软件（如 Outlook、Apple Mail），自动填写所有内容</p>
+                    <p style="margin: 0;"><strong>通过网页版邮箱发送：</strong>复制格式化内容到剪贴板，手动粘贴到 QQ邮箱、163邮箱等网页邮箱</p>
+                </div>
+            `;
+        }
+        
         document.getElementById('emailBtn').addEventListener('click', function() {
             const name = document.getElementById('name').value || '访客';
             const email = document.getElementById('email').value || '';
             const subject = document.getElementById('subject').value || '网站咨询';
             const message = document.getElementById('message').value || '';
             
-            const mailtoUrl = generateMailtoLink(name, email, subject, message);
-            window.location.href = mailtoUrl;
+            showEmailOptions(name, email, subject, message);
         });
+        
+        // 复制邮件内容到剪贴板
+        function copyEmailContent(name, email, subject, message) {
+            const timestamp = new Date().toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            const SEPARATOR = '━━━━━━━━━━━━━━━━━━━━';
+            let content = `【来源】zcfi.cn 网站自动填写\n`;
+            content += `【时间】${timestamp}\n\n`;
+            content += `${SEPARATOR}\n\n`;
+            content += `姓名：${name}\n`;
+            if (email) content += `邮箱：${email}\n`;
+            content += `\n${SEPARATOR}\n\n`;
+            content += `主题：${subject}\n\n`;
+            content += `留言内容：\n${message}`;
+            
+            navigator.clipboard.writeText(content).then(() => {
+                hideModal();
+                
+                const modalMessage = document.getElementById('modalMessage');
+                showModal('success', '复制成功', '', [
+                    { text: '确定', class: 'modal-btn-primary', onClick: () => hideModal() }
+                ]);
+                
+                modalMessage.innerHTML = `
+                    <p style="margin-bottom: 15px;">邮件内容已复制到剪贴板！</p>
+                    <div style="text-align: left; background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <p style="margin-bottom: 10px;">请打开您的邮箱，新建邮件并粘贴内容</p>
+                        <p style="margin: 0;">收件人填写：<strong style="color: #4a6fa5; font-size: 15px;">zcfi.cn@outlook.com</strong></p>
+                    </div>
+                    <p style="margin-bottom: 10px; color: #666; font-size: 13px;">快捷跳转：</p>
+                    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                        <a href="https://mail.qq.com" target="_blank" class="email-link">QQ邮箱</a>
+                        <a href="https://mail.163.com" target="_blank" class="email-link">网易邮箱</a>
+                        <a href="https://mail.google.com" target="_blank" class="email-link">Gmail</a>
+                    </div>
+                `;
+            }).catch(err => {
+                hideModal();
+                showModal('error', '复制失败', '自动复制失败，请手动复制以下内容：\n\n' + content, [
+                    { text: '确定', class: 'modal-btn-primary', onClick: () => hideModal() }
+                ]);
+            });
+        }
 
         // 表单提交：通过 Cloudflare Worker 存入 Gist
         document.getElementById('contactForm').addEventListener('submit', async function(e) {
@@ -340,14 +471,13 @@
                 console.error(error);
                 
                 // 失败弹窗，提供通过邮件发送的选项
-                showModal('error', '发送失败', '消息发送失败。您可以点击下方的"通过邮件发送"按钮，系统将自动调用您的默认邮件软件，打开发信页面并自动填写收件人、主题和所有内容，您只需点击发送邮件即可。', [
+                const modalMessage = document.getElementById('modalMessage');
+                showModal('error', '发送失败', '', [
                     { 
-                        text: '通过邮件发送', 
+                        text: '通过邮箱发送', 
                         class: 'modal-btn-primary', 
                         onClick: () => {
-                            const mailtoUrl = generateMailtoLink(name, email, subject, message);
-                            window.location.href = mailtoUrl;
-                            hideModal();
+                            showEmailOptions(name, email, subject, message);
                         }
                     },
                     { 
@@ -356,6 +486,11 @@
                         onClick: () => hideModal() 
                     }
                 ]);
+                
+                modalMessage.innerHTML = `
+                    <p style="margin-bottom: 10px;">消息发送失败。</p>
+                    <p style="margin: 0; color: #666;">您可以点击下方的"通过邮箱发送"按钮，选择使用邮件客户端或网页版邮箱发送。</p>
+                `;
             }
         });
     </script>
