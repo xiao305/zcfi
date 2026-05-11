@@ -17,7 +17,6 @@ class GistRenderer {
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             
             this.configData = await response.json();
-            console.log('Gist配置加载成功');
             return this.configData;
         } catch (error) {
             console.error('加载Gist配置失败:', error);
@@ -170,8 +169,6 @@ class GistRenderer {
         
         // 初始化移动端菜单
         this.initMobileMenu(container);
-        
-        console.log('导航栏渲染完成');
     }
 
     // 渲染页脚
@@ -219,22 +216,92 @@ class GistRenderer {
                 `).join('');
         }
 
-        // 社交媒体链接
+        // 社交媒体链接 - 支持新数据结构 {type, value, label} 和旧数据字符串
         let socialLinksHtml = '';
         const social = footer.social || {};
         
-        if (social.github && social.github.trim()) {
-            socialLinksHtml += `<a href="${this.normalizeUrl(social.github)}" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>`;
-        }
-        if (social.weibo && social.weibo.trim()) {
-            socialLinksHtml += `<a href="${this.normalizeUrl(social.weibo)}" target="_blank" title="微博"><i class="fab fa-weibo"></i></a>`;
-        }
-        if (social.zhihu && social.zhihu.trim()) {
-            socialLinksHtml += `<a href="${this.normalizeUrl(social.zhihu)}" target="_blank" title="知乎"><i class="fab fa-zhihu"></i></a>`;
-        }
-        if (social.linkedin && social.linkedin.trim()) {
-            socialLinksHtml += `<a href="${this.normalizeUrl(social.linkedin)}" target="_blank" title="LinkedIn"><i class="fab fa-linkedin"></i></a>`;
-        }
+        const socialPlatforms = [
+            { key: 'github', icon: 'fab fa-github', title: 'GitHub' },
+            { key: 'weibo', icon: 'fab fa-weibo', title: '微博' },
+            { key: 'zhihu', icon: 'fab fa-zhihu', title: '知乎' },
+            { key: 'douyin', icon: 'fab fa-tiktok', title: '抖音' },
+            { key: 'wechat', icon: 'fab fa-weixin', title: '公众号' }
+        ];
+        
+        socialPlatforms.forEach(platform => {
+            const platformData = social[platform.key];
+            if (!platformData) return;
+            
+            // 兼容新旧数据格式
+            let type, value, label;
+            
+            if (typeof platformData === 'string') {
+                // 旧格式：直接是字符串
+                type = 'link';
+                value = platformData;
+                label = '';
+            } else if (typeof platformData === 'object') {
+                // 新格式：{ type, value, label }
+                type = platformData.type || 'link';
+                value = platformData.value || '';
+                label = platformData.label || '';
+            } else {
+                return;
+            }
+            
+            // 判断是否应该显示
+            if (type === 'link' && !value) return;
+            if (type === 'image' && !value) return;
+            if (type === 'qrcode' && !value && !label) return;
+            
+            if (type === 'link') {
+                // 直链模式
+                socialLinksHtml += `
+                    <a href="${this.normalizeUrl(value)}" 
+                       target="_blank" 
+                       rel="noopener noreferrer" 
+                       title="${platform.title}"
+                       class="social-link-item">
+                        <i class="${platform.icon}"></i>
+                    </a>
+                `;
+            } else if (type === 'image') {
+                // 图片模式 - 悬停显示
+                socialLinksHtml += `
+                    <div class="social-link-item social-link-with-popup">
+                        <a href="javascript:void(0)" title="${platform.title}" class="social-link-trigger">
+                            <i class="${platform.icon}"></i>
+                        </a>
+                        <div class="social-popup">
+                            <img src="${this.escapeHtml(value)}" alt="${platform.title}" loading="lazy">
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'qrcode') {
+                // 二维码模式 - 悬停显示
+                // 二维码区域：有value生成二维码，没有value显示"管理员未配置内容"
+                const qrArea = value 
+                    ? `<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(value)}" alt="${platform.title} 二维码" loading="lazy">`
+                    : `<p class="qr-hint" style="padding: 20px; text-align: center; color: #999;">管理员未配置内容</p>`;
+                
+                // 文字说明区域：有label时显示label，没有label时显示value
+                const hintArea = label 
+                    ? `<p class="qr-hint">${this.escapeHtml(label)}</p>`
+                    : (value ? `<p class="qr-hint">${this.escapeHtml(value)}</p>` : '');
+                
+                socialLinksHtml += `
+                    <div class="social-link-item social-link-with-popup">
+                        <a href="javascript:void(0)" title="${platform.title}" class="social-link-trigger">
+                            <i class="${platform.icon}"></i>
+                        </a>
+                        <div class="social-popup">
+                            ${qrArea}
+                            ${hintArea}
+                        </div>
+                    </div>
+                `;
+            }
+        });
 
         // 完整的页脚HTML
         const footerHtml = `
@@ -272,7 +339,6 @@ class GistRenderer {
         `;
 
         container.innerHTML = footerHtml;
-        console.log('页脚渲染完成');
     }
 
     // 初始化移动端菜单
@@ -308,7 +374,6 @@ class GistRenderer {
             this.renderNavbar(),
             this.renderFooter()
         ]);
-        console.log('导航栏和页脚渲染完成');
     }
 }
 
