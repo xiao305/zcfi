@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
 
-  <!-- 使用站点公共样式（保持与首页风格一致） -->
+  <!-- 如果保留了站点公共样式，可正常引用；若没有则移除或保留，不影响核心功能 -->
   <link rel="stylesheet" href="../assets/css/style.css">
   <link rel="stylesheet" href="../assets/css/components.css">
 
@@ -47,7 +47,7 @@
     .code-input{padding:10px 12px;border-radius:10px;border:1px solid #e6eef8;background:white;width:140px}
     .btn{background:var(--primary);color:white;border:none;padding:9px 12px;border-radius:10px;cursor:pointer;font-weight:600}
     .no-media{padding:28px;text-align:center;color:var(--muted)}
-    /* 强制入口弹窗样式（模态） */
+    /* 强制入口弹窗样式 */
     .modal-overlay{position:fixed;inset:0;background:rgba(3,7,18,0.6);display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px}
     .modal{background:var(--card);border-radius:12px;padding:18px;max-width:420px;width:100%;box-shadow:0 30px 60px rgba(2,6,23,0.4)}
     .modal h3{margin:0 0 10px 0;font-size:18px}
@@ -59,7 +59,7 @@
     .side-alert{position:fixed;right:18px;top:50%;transform:translateY(-50%);width:260px;background:linear-gradient(180deg,#fff,#fbfdff);border-radius:12px;padding:14px;box-shadow:0 18px 45px rgba(2,6,23,0.12);z-index:998;display:none;flex-direction:column;gap:8px;align-items:stretch}
     .side-alert.show{display:flex}
     .side-alert .head{display:flex;align-items:center;gap:8px}
-    .side-alert .head .icon{width:36px;height:36;border-radius:8px;background:#fee;display:inline-flex;align-items:center;justify-content:center;color:#c33}
+    .side-alert .head .icon{width:36px;height:36px;border-radius:8px;background:#fee;display:inline-flex;align-items:center;justify-content:center;color:#c33}
     .side-alert .body{color:var(--muted);font-size:14px}
     .side-alert .actions{display:flex;gap:8px;justify-content:center;margin-top:6px}
     /* lightbox */
@@ -169,10 +169,35 @@
 
   <script>
     (function(){
-      // 配置：后缀列表（只检测常用格式）
-      const videoExts = ['mp4','webm','ogg'];
-      const imgExts = ['jpg','jpeg','png','webp','gif'];
+      // ---------- 配置 ----------
+      const videoExts = ['mp4', 'webm', 'ogg'];
+      const imgExts = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
 
+      // 生成大小写变体（同时支持 .mp4 和 .MP4）
+      function allCaseExts(list) {
+        return list.flatMap(ext => [ext, ext.toUpperCase()]);
+      }
+
+      function videoCandidates(code) {
+        return allCaseExts(videoExts).map(ext => `${code}.${ext}`);
+      }
+
+      function imageCandidates(code) {
+        const arr = [];
+        // 基础图片（无后缀序号）
+        allCaseExts(imgExts).forEach(ext => arr.push(`${code}.${ext}`));
+        // 带序号的各种模式 ( _1, -1, 1 )，最多尝试6张
+        for (let i = 1; i <= 6; i++) {
+          allCaseExts(imgExts).forEach(ext => {
+            arr.push(`${code}_${i}.${ext}`);
+            arr.push(`${code}-${i}.${ext}`);
+            arr.push(`${code}${i}.${ext}`);
+          });
+        }
+        return arr;
+      }
+
+      // ---------- DOM 引用 ----------
       const entryModal = document.getElementById('entryModal');
       const entryInput = document.getElementById('entryInput');
       const entryLoad = document.getElementById('entryLoad');
@@ -192,7 +217,7 @@
       const refreshBtn = document.getElementById('refreshBtn');
       const manualBtn = document.getElementById('manualBtn');
 
-      // lightbox controls
+      // lightbox
       const lightbox = document.getElementById('lightbox');
       const lbImage = document.getElementById('lbImage');
       const lbClose = document.getElementById('lbClose');
@@ -218,67 +243,74 @@
         if(e.key==='Escape') closeLightbox();
       });
 
-      // url helper
-      function urlFor(name){ return './' + encodeURIComponent(name); }
+      // ---------- 文件存在性检测（优先使用 fetch HEAD） ----------
+      async function checkFileExists(url, expectedMimePrefix = '') {
+        try {
+          const resp = await fetch(url, { method: 'HEAD' });
+          if (resp.ok) {
+            if (expectedMimePrefix) {
+              const ct = resp.headers.get('Content-Type') || '';
+              if (ct.startsWith(expectedMimePrefix)) return true;
+              // 即使 Content-Type 不匹配，只要状态200就认为存在
+              return true;
+            }
+            return true;
+          }
+          return false;
+        } catch (e) {
+          return false;
+        }
+      }
 
-      // 检查图片存在性（使用 Image onload/onerror）
-      function checkImageExists(url, timeout = 5000){
-        return new Promise(resolve=>{
+      async function checkVideoExists(url, timeout = 7000) {
+        // 先用 HEAD 快速判断
+        const headOk = await checkFileExists(url, 'video/');
+        if (headOk) return true;
+        // 降级：video 元素加载（兼容某些服务器）
+        return new Promise(resolve => {
+          const v = document.createElement('video');
+          let done = false;
+          const timer = setTimeout(() => { if (!done) { done = true; v.src = ''; resolve(false); } }, timeout);
+          v.onloadedmetadata = () => { if (done) return; done = true; clearTimeout(timer); resolve(true); };
+          v.onerror = () => { if (done) return; done = true; clearTimeout(timer); resolve(false); };
+          v.preload = 'metadata';
+          v.src = url;
+          try { v.load(); } catch (e) { if (!done) { done = true; clearTimeout(timer); resolve(false); } }
+        });
+      }
+
+      async function checkImageExists(url, timeout = 5000) {
+        const headOk = await checkFileExists(url, 'image/');
+        if (headOk) return true;
+        // 降级：Image 元素
+        return new Promise(resolve => {
           const img = new Image();
-          let done=false;
-          const timer = setTimeout(()=>{ if(!done){ done=true; img.src=''; resolve(false); }}, timeout);
-          img.onload = ()=>{ if(done) return; done=true; clearTimeout(timer); resolve(true); };
-          img.onerror = ()=>{ if(done) return; done=true; clearTimeout(timer); resolve(false); };
+          let done = false;
+          const timer = setTimeout(() => { if (!done) { done = true; img.src = ''; resolve(false); } }, timeout);
+          img.onload = () => { if (done) return; done = true; clearTimeout(timer); resolve(true); };
+          img.onerror = () => { if (done) return; done = true; clearTimeout(timer); resolve(false); };
           img.src = url;
         });
       }
 
-      // 检查视频存在性（尝试加载 metadata）
-      function checkVideoExists(url, timeout = 7000){
-        return new Promise(resolve=>{
-          const v = document.createElement('video');
-          let done=false;
-          const timer = setTimeout(()=>{ if(!done){ done=true; v.src=''; resolve(false); }}, timeout);
-          v.onloadedmetadata = ()=>{ if(done) return; done=true; clearTimeout(timer); resolve(true); };
-          v.onerror = ()=>{ if(done) return; done=true; clearTimeout(timer); resolve(false); };
-          v.preload = 'metadata';
-          v.src = url;
-          try{ v.load(); }catch(e){}
-        });
-      }
+      // ---------- 路径工具 ----------
+      function urlFor(name) { return './' + encodeURIComponent(name); }
 
-      function videoCandidates(code){
-        return videoExts.map(ext => `${code}.${ext}`);
-      }
-      function imageCandidates(code){
-        const arr = [];
-        imgExts.forEach(ext => arr.push(`${code}.${ext}`));
-        for(let i=1;i<=6;i++){
-          imgExts.forEach(ext=>{
-            arr.push(`${code}_${i}.${ext}`);
-            arr.push(`${code}-${i}.${ext}`);
-            arr.push(`${code}${i}.${ext}`);
-          });
-        }
-        return arr;
-      }
-
-      // 显示侧边提示栏
-      function showSideAlert(show, msg){
+      // ---------- 侧边提示栏 ----------
+      function showSideAlert(show, msg) {
         document.getElementById('sideAlertBody').textContent = msg || '未在当前目录找到对应编码的打包视频和图片。';
-        if(show) sideAlert.classList.add('show');
+        if (show) sideAlert.classList.add('show');
         else sideAlert.classList.remove('show');
       }
 
-      // 加载媒体（隐藏调试信息、仅展示）
-      async function loadForCode(code){
-        if(!code) return;
-        // 更新标题与输入
+      // ---------- 媒体加载核心 ----------
+      async function loadForCode(code) {
+        if (!code) return;
         codeTitle.textContent = '编码：' + code;
         codeInput.value = code;
 
-        // 清空区域（只展示最终结果）
-        videoBox.querySelectorAll('video,div:not(#videoNo)').forEach(n=>n.remove());
+        // 清空原有内容
+        videoBox.querySelectorAll('video').forEach(v => v.remove());
         videoNo.style.display = 'block';
         videoNo.textContent = '正在查找视频…';
 
@@ -290,56 +322,59 @@
 
         // 查找视频
         let foundVideo = null;
-        for(const name of videoCandidates(code)){
+        for (const name of videoCandidates(code)) {
           const url = urlFor(name);
-          try{
+          try {
             const ok = await checkVideoExists(url);
-            if(ok){ foundVideo = url; break; }
-          }catch(e){}
+            if (ok) { foundVideo = url; break; }
+          } catch (e) {}
         }
 
-        if(foundVideo){
+        if (foundVideo) {
           videoNo.style.display = 'none';
           const v = document.createElement('video');
-          v.controls = true; v.playsInline = true; v.src = foundVideo;
+          v.controls = true;
+          v.playsInline = true;
+          v.src = foundVideo;
           videoBox.appendChild(v);
-        }else{
+        } else {
           videoNo.style.display = 'block';
           videoNo.textContent = '未找到视频';
         }
 
-        // 查找图片（顺序检测，最多显示 30 张）
+        // 查找图片（顺序检测，最多30张）
         const candidates = imageCandidates(code);
         const foundImages = [];
-        for(const name of candidates){
-          if(foundImages.length >= 30) break;
+        for (const name of candidates) {
+          if (foundImages.length >= 30) break;
           const url = urlFor(name);
-          try{
+          try {
             const ok = await checkImageExists(url);
-            if(ok) foundImages.push(url);
-          }catch(e){}
+            if (ok) foundImages.push(url);
+          } catch (e) {}
         }
 
-        if(foundImages.length){
+        if (foundImages.length) {
           imgNo.style.display = 'none';
           galleryList = foundImages;
           imgCount.textContent = foundImages.length + ' 张';
-          foundImages.forEach((src, idx)=>{
+          foundImages.forEach((src, idx) => {
             const d = document.createElement('div');
             d.className = 'thumb';
             const img = document.createElement('img');
-            img.src = src; img.alt = code + '-' + (idx+1); img.loading='lazy';
+            img.src = src;
+            img.alt = code + '-' + (idx+1);
+            img.loading = 'lazy';
             d.appendChild(img);
-            d.addEventListener('click', ()=>openLightbox(idx));
+            d.addEventListener('click', () => openLightbox(idx));
             gallery.appendChild(d);
           });
           showSideAlert(false);
-        }else{
+        } else {
           imgNo.style.display = 'block';
           imgNo.textContent = '未找到图片';
           imgCount.textContent = '0';
-          // 如果视频也没有，则显示侧边竖直提示栏
-          if(!foundVideo){
+          if (!foundVideo) {
             showSideAlert(true, '未找到视频和图片。请确认文件是否放在当前目录，或点击刷新重试。');
           } else {
             showSideAlert(true, '未找到图片。请确认图片命名或放置路径。');
@@ -347,64 +382,58 @@
         }
       }
 
-      // 读取 hash（必须为数值）
-      function hashToCode(){
-        const h = location.hash ? location.hash.replace(/^#/,'') : '';
+      // ---------- Hash 解析 ----------
+      function hashToCode() {
+        const h = location.hash ? location.hash.replace(/^#/, '') : '';
         return decodeURIComponent(h || '').trim();
       }
 
-      // 判断是否为纯数字编码
-      function isValidCode(s){ return /^\d+$/.test(s); }
+      function isValidCode(s) { return /^\d+$/.test(s); }
 
-      // 页面初次入口：如果没有 hash 或 hash 非数字，则弹窗强制输入
-      function initialEntry(){
+      // ---------- 入口控制 ----------
+      function initialEntry() {
         const code = hashToCode();
-        if(code && isValidCode(code)){
-          // 直接加载
+        if (code && isValidCode(code)) {
           loadForCode(code);
         } else {
-          // 显示强制输入弹窗（阻止其他交互）
           entryModal.style.display = 'flex';
           entryInput.focus();
         }
       }
 
-      // 事件绑定
-      entryLoad.addEventListener('click', ()=>{
-        const v = (entryInput.value||'').trim();
-        if(!isValidCode(v)){ alert('请输入纯数字编码'); entryInput.focus(); return; }
+      entryLoad.addEventListener('click', () => {
+        const v = (entryInput.value || '').trim();
+        if (!isValidCode(v)) { alert('请输入纯数字编码'); entryInput.focus(); return; }
         location.hash = encodeURIComponent(v);
         entryModal.style.display = 'none';
         loadForCode(v);
       });
-      entryCancel.addEventListener('click', ()=>{
-        // 允许用户关闭弹窗但仍要求输入（当前保留关闭以便 UX）
+
+      entryCancel.addEventListener('click', () => {
         entryModal.style.display = 'none';
       });
 
-      // 切换 hash 的情况下加载
-      window.addEventListener('hashchange', ()=>{
+      window.addEventListener('hashchange', () => {
         const code = hashToCode();
-        if(isValidCode(code)) loadForCode(code);
+        if (isValidCode(code)) loadForCode(code);
       });
 
-      goBtn.addEventListener('click', ()=>{
-        const v = (codeInput.value||'').trim();
-        if(!isValidCode(v)){ alert('请输入纯数字编码'); codeInput.focus(); return; }
+      goBtn.addEventListener('click', () => {
+        const v = (codeInput.value || '').trim();
+        if (!isValidCode(v)) { alert('请输入纯数字编码'); codeInput.focus(); return; }
         location.hash = encodeURIComponent(v);
       });
-      codeInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') goBtn.click(); });
 
-      refreshBtn.addEventListener('click', ()=> location.reload());
-      manualBtn.addEventListener('click', ()=> {
+      codeInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') goBtn.click(); });
+
+      refreshBtn.addEventListener('click', () => location.reload());
+      manualBtn.addEventListener('click', () => {
         entryModal.style.display = 'flex';
         entryInput.focus();
       });
 
-      // lightbox variables declared above (galleryList)
-      // initial run
+      // 启动
       initialEntry();
-
     })();
   </script>
 </body>
