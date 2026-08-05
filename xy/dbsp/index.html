@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>包裹打包预览 • zcfi</title>
+
+  <!-- 与站点一致的字体与图标 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <!-- 使用站点公共样式（保持与首页风格一致） -->
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+
+  <style>
+    :root{
+      --primary:#4a6fa5;
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --radius:12px;
+      --gap:16px;
+    }
+    html,body{height:100%;margin:0;font-family:"Noto Sans SC","Poppins",system-ui,Arial;background:var(--bg);color:#111}
+    .site-header{
+      background:linear-gradient(90deg,#fff 0%, #f3f7fb 100%);
+      border-bottom:1px solid rgba(15,23,42,0.04);
+      padding:14px 18px;display:flex;align-items:center;gap:12px;
+    }
+    .brand{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--primary)}
+    .brand img{width:40px;height:40px;border-radius:8px}
+    .brand .sitename{font-size:14px;line-height:1}
+    .brand .sitename small{display:block;color:var(--muted);font-size:12px}
+    .container{max-width:1100px;margin:18px auto;padding:0 16px}
+    .layout{display:grid;grid-template-columns:1fr 360px;gap:var(--gap);align-items:start}
+    .card{background:var(--card);border-radius:var(--radius);padding:14px;box-shadow:0 8px 30px rgba(15,23,42,0.06)}
+    .title-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .title-row h2{margin:0;font-size:16px;color:#111}
+    .muted{color:var(--muted);font-size:13px}
+    .video-box{background:#000;border-radius:10px;overflow:hidden;height:460px;display:flex;align-items:center;justify-content:center}
+    video{width:100%;height:100%;object-fit:contain;background:#000}
+    .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;margin-top:12px}
+    .thumb{border-radius:8px;overflow:hidden;cursor:pointer;border:1px solid #eef2f7;background:#f8fafc;height:96px;display:flex;align-items:center;justify-content:center}
+    .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+    .input-row{display:flex;gap:8px;align-items:center}
+    .code-input{padding:10px 12px;border-radius:10px;border:1px solid #e6eef8;background:white;width:140px}
+    .btn{background:var(--primary);color:white;border:none;padding:9px 12px;border-radius:10px;cursor:pointer;font-weight:600}
+    .no-media{padding:28px;text-align:center;color:var(--muted)}
+    /* 强制入口弹窗样式（模态） */
+    .modal-overlay{position:fixed;inset:0;background:rgba(3,7,18,0.6);display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px}
+    .modal{background:var(--card);border-radius:12px;padding:18px;max-width:420px;width:100%;box-shadow:0 30px 60px rgba(2,6,23,0.4)}
+    .modal h3{margin:0 0 10px 0;font-size:18px}
+    .modal p{margin:0 0 12px 0;color:var(--muted);font-size:14px}
+    .modal .row{display:flex;gap:8px;align-items:center}
+    .modal .code-input{flex:1}
+    .modal .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+    /* 竖直提示栏（右侧） */
+    .side-alert{position:fixed;right:18px;top:50%;transform:translateY(-50%);width:260px;background:linear-gradient(180deg,#fff,#fbfdff);border-radius:12px;padding:14px;box-shadow:0 18px 45px rgba(2,6,23,0.12);z-index:998;display:none;flex-direction:column;gap:8px;align-items:stretch}
+    .side-alert.show{display:flex}
+    .side-alert .head{display:flex;align-items:center;gap:8px}
+    .side-alert .head .icon{width:36px;height:36;border-radius:8px;background:#fee;display:inline-flex;align-items:center;justify-content:center;color:#c33}
+    .side-alert .body{color:var(--muted);font-size:14px}
+    .side-alert .actions{display:flex;gap:8px;justify-content:center;margin-top:6px}
+    /* lightbox */
+    .lightbox{position:fixed;inset:0;background:rgba(3,7,18,.86);display:none;align-items:center;justify-content:center;padding:18px;z-index:9999}
+    .lightbox.show{display:flex}
+    .lightbox img{max-width:95%;max-height:95%;border-radius:8px}
+    .lb-close{position:fixed;right:18px;top:18px;color:white;background:rgba(255,255,255,0.06);border-radius:8px;padding:8px 10px;cursor:pointer}
+    .lb-nav{position:fixed;top:50%;transform:translateY(-50%);color:white;font-size:32px;padding:8px 10px;cursor:pointer;user-select:none}
+    .lb-prev{left:18px}
+    .lb-next{right:18px}
+
+    footer{max-width:1100px;margin:18px auto;padding:0 16px;color:var(--muted);font-size:13px}
+
+    /* responsive */
+    @media (max-width:1000px){ .layout{grid-template-columns:1fr} .video-box{height:280px} .side-alert{display:none} }
+    @media (max-width:420px){ .code-input{width:110px;padding:9px} .modal{padding:14px} .video-box{height:220px} }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <a href="../index.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--primary)">
+        <img src="../favicon/web-app-manifest-192x192.png" alt="zcfi" />
+        <div class="sitename">zcfi<span style="color:var(--muted);font-weight:600">.</span><span style="color:var(--muted)">cn</span></div>
+      </a>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="layout">
+      <section class="card">
+        <div class="title-row">
+          <h2 id="codeTitle">编码：—</h2>
+          <div class="input-row">
+            <input id="codeInput" class="code-input" placeholder="输入编码（例：272）" />
+            <button id="goBtn" class="btn">跳转</button>
+          </div>
+        </div>
+
+        <div id="videoArea" style="margin-top:12px">
+          <div class="video-box" id="videoBox">
+            <div id="videoNo" class="no-media">正在加载…</div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px">
+          <div class="title-row">
+            <div><strong>打包图片</strong></div>
+            <div class="muted" id="imgCount">—</div>
+          </div>
+          <div id="gallery" class="gallery" style="margin-top:10px">
+            <div class="no-media" id="imgNo">正在加载…</div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="card" id="asideCard">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><strong>信息</strong></div>
+          <div class="muted">适配手机/PC</div>
+        </div>
+        <div style="margin-top:12px;color:var(--muted);font-size:14px">
+          本页面仅向第三方用户展示媒体内容。如需调整命名规则或路径，请联系维护者。
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- 入口强制弹窗（必须带数值 hash 才能关闭） -->
+  <div class="modal-overlay" id="entryModal" style="display:none">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="entryTitle">
+      <h3 id="entryTitle">请输入编码以查看媒体</h3>
+      <p>请使用包含数字编码的 URL 访问（例如：index.html#272）。如果没有，请在下方输入编码并点击“加载”。</p>
+      <div class="row">
+        <input id="entryInput" class="code-input" placeholder="例如：272" />
+        <button id="entryLoad" class="btn">加载</button>
+      </div>
+      <div class="actions" style="margin-top:8px;justify-content:flex-end">
+        <button id="entryCancel" class="btn" style="background:#9aa8bf">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 右侧竖直提示栏（无媒体时显示） -->
+  <div class="side-alert" id="sideAlert" aria-hidden="true">
+    <div class="head">
+      <div class="icon"><i class="fas fa-exclamation-triangle" style="color:#c33"></i></div>
+      <div style="font-weight:600">未找到媒体文件</div>
+    </div>
+    <div class="body" id="sideAlertBody">未在当前目录找到对应编码的打包视频和图片。</div>
+    <div class="actions">
+      <button id="refreshBtn" class="btn" style="flex:1"><i class="fas fa-sync-alt"></i> 刷新页面</button>
+      <button id="manualBtn" class="btn" style="flex:1;background:#9aa8bf">手动输入</button>
+    </div>
+  </div>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox">
+    <div class="lb-close" id="lbClose">关闭 ✕</div>
+    <div class="lb-nav lb-prev" id="lbPrev">‹</div>
+    <img id="lbImage" src="" alt="预览" />
+    <div class="lb-nav lb-next" id="lbNext">›</div>
+  </div>
+
+  <footer>
+  </footer>
+
+  <script>
+    (function(){
+      // 配置：后缀列表（只检测常用格式）
+      const videoExts = ['mp4','webm','ogg'];
+      const imgExts = ['jpg','jpeg','png','webp','gif'];
+
+      const entryModal = document.getElementById('entryModal');
+      const entryInput = document.getElementById('entryInput');
+      const entryLoad = document.getElementById('entryLoad');
+      const entryCancel = document.getElementById('entryCancel');
+
+      const codeInput = document.getElementById('codeInput');
+      const goBtn = document.getElementById('goBtn');
+
+      const codeTitle = document.getElementById('codeTitle');
+      const videoBox = document.getElementById('videoBox');
+      const videoNo = document.getElementById('videoNo');
+      const gallery = document.getElementById('gallery');
+      const imgNo = document.getElementById('imgNo');
+      const imgCount = document.getElementById('imgCount');
+
+      const sideAlert = document.getElementById('sideAlert');
+      const refreshBtn = document.getElementById('refreshBtn');
+      const manualBtn = document.getElementById('manualBtn');
+
+      // lightbox controls
+      const lightbox = document.getElementById('lightbox');
+      const lbImage = document.getElementById('lbImage');
+      const lbClose = document.getElementById('lbClose');
+      const lbPrev = document.getElementById('lbPrev');
+      const lbNext = document.getElementById('lbNext');
+      let galleryList = [], curIndex = 0;
+
+      function openLightbox(i){
+        if(!galleryList.length) return;
+        curIndex = (i + galleryList.length) % galleryList.length;
+        lbImage.src = galleryList[curIndex];
+        lightbox.classList.add('show');
+      }
+      function closeLightbox(){ lightbox.classList.remove('show'); lbImage.src=''; }
+      lbClose.addEventListener('click', closeLightbox);
+      lbNext.addEventListener('click', ()=>openLightbox(curIndex+1));
+      lbPrev.addEventListener('click', ()=>openLightbox(curIndex-1));
+      lightbox.addEventListener('click', (e)=>{ if(e.target===lightbox) closeLightbox(); });
+      document.addEventListener('keydown', (e)=>{
+        if(!lightbox.classList.contains('show')) return;
+        if(e.key==='ArrowRight') lbNext.click();
+        if(e.key==='ArrowLeft') lbPrev.click();
+        if(e.key==='Escape') closeLightbox();
+      });
+
+      // url helper
+      function urlFor(name){ return './' + encodeURIComponent(name); }
+
+      // 检查图片存在性（使用 Image onload/onerror）
+      function checkImageExists(url, timeout = 5000){
+        return new Promise(resolve=>{
+          const img = new Image();
+          let done=false;
+          const timer = setTimeout(()=>{ if(!done){ done=true; img.src=''; resolve(false); }}, timeout);
+          img.onload = ()=>{ if(done) return; done=true; clearTimeout(timer); resolve(true); };
+          img.onerror = ()=>{ if(done) return; done=true; clearTimeout(timer); resolve(false); };
+          img.src = url;
+        });
+      }
+
+      // 检查视频存在性（尝试加载 metadata）
+      function checkVideoExists(url, timeout = 7000){
+        return new Promise(resolve=>{
+          const v = document.createElement('video');
+          let done=false;
+          const timer = setTimeout(()=>{ if(!done){ done=true; v.src=''; resolve(false); }}, timeout);
+          v.onloadedmetadata = ()=>{ if(done) return; done=true; clearTimeout(timer); resolve(true); };
+          v.onerror = ()=>{ if(done) return; done=true; clearTimeout(timer); resolve(false); };
+          v.preload = 'metadata';
+          v.src = url;
+          try{ v.load(); }catch(e){}
+        });
+      }
+
+      function videoCandidates(code){
+        return videoExts.map(ext => `${code}.${ext}`);
+      }
+      function imageCandidates(code){
+        const arr = [];
+        imgExts.forEach(ext => arr.push(`${code}.${ext}`));
+        for(let i=1;i<=6;i++){
+          imgExts.forEach(ext=>{
+            arr.push(`${code}_${i}.${ext}`);
+            arr.push(`${code}-${i}.${ext}`);
+            arr.push(`${code}${i}.${ext}`);
+          });
+        }
+        return arr;
+      }
+
+      // 显示侧边提示栏
+      function showSideAlert(show, msg){
+        document.getElementById('sideAlertBody').textContent = msg || '未在当前目录找到对应编码的打包视频和图片。';
+        if(show) sideAlert.classList.add('show');
+        else sideAlert.classList.remove('show');
+      }
+
+      // 加载媒体（隐藏调试信息、仅展示）
+      async function loadForCode(code){
+        if(!code) return;
+        // 更新标题与输入
+        codeTitle.textContent = '编码：' + code;
+        codeInput.value = code;
+
+        // 清空区域（只展示最终结果）
+        videoBox.querySelectorAll('video,div:not(#videoNo)').forEach(n=>n.remove());
+        videoNo.style.display = 'block';
+        videoNo.textContent = '正在查找视频…';
+
+        gallery.innerHTML = '';
+        imgNo.style.display = 'block';
+        imgNo.textContent = '正在查找图片…';
+        imgCount.textContent = '—';
+        showSideAlert(false);
+
+        // 查找视频
+        let foundVideo = null;
+        for(const name of videoCandidates(code)){
+          const url = urlFor(name);
+          try{
+            const ok = await checkVideoExists(url);
+            if(ok){ foundVideo = url; break; }
+          }catch(e){}
+        }
+
+        if(foundVideo){
+          videoNo.style.display = 'none';
+          const v = document.createElement('video');
+          v.controls = true; v.playsInline = true; v.src = foundVideo;
+          videoBox.appendChild(v);
+        }else{
+          videoNo.style.display = 'block';
+          videoNo.textContent = '未找到视频';
+        }
+
+        // 查找图片（顺序检测，最多显示 30 张）
+        const candidates = imageCandidates(code);
+        const foundImages = [];
+        for(const name of candidates){
+          if(foundImages.length >= 30) break;
+          const url = urlFor(name);
+          try{
+            const ok = await checkImageExists(url);
+            if(ok) foundImages.push(url);
+          }catch(e){}
+        }
+
+        if(foundImages.length){
+          imgNo.style.display = 'none';
+          galleryList = foundImages;
+          imgCount.textContent = foundImages.length + ' 张';
+          foundImages.forEach((src, idx)=>{
+            const d = document.createElement('div');
+            d.className = 'thumb';
+            const img = document.createElement('img');
+            img.src = src; img.alt = code + '-' + (idx+1); img.loading='lazy';
+            d.appendChild(img);
+            d.addEventListener('click', ()=>openLightbox(idx));
+            gallery.appendChild(d);
+          });
+          showSideAlert(false);
+        }else{
+          imgNo.style.display = 'block';
+          imgNo.textContent = '未找到图片';
+          imgCount.textContent = '0';
+          // 如果视频也没有，则显示侧边竖直提示栏
+          if(!foundVideo){
+            showSideAlert(true, '未找到视频和图片。请确认文件是否放在当前目录，或点击刷新重试。');
+          } else {
+            showSideAlert(true, '未找到图片。请确认图片命名或放置路径。');
+          }
+        }
+      }
+
+      // 读取 hash（必须为数值）
+      function hashToCode(){
+        const h = location.hash ? location.hash.replace(/^#/,'') : '';
+        return decodeURIComponent(h || '').trim();
+      }
+
+      // 判断是否为纯数字编码
+      function isValidCode(s){ return /^\d+$/.test(s); }
+
+      // 页面初次入口：如果没有 hash 或 hash 非数字，则弹窗强制输入
+      function initialEntry(){
+        const code = hashToCode();
+        if(code && isValidCode(code)){
+          // 直接加载
+          loadForCode(code);
+        } else {
+          // 显示强制输入弹窗（阻止其他交互）
+          entryModal.style.display = 'flex';
+          entryInput.focus();
+        }
+      }
+
+      // 事件绑定
+      entryLoad.addEventListener('click', ()=>{
+        const v = (entryInput.value||'').trim();
+        if(!isValidCode(v)){ alert('请输入纯数字编码'); entryInput.focus(); return; }
+        location.hash = encodeURIComponent(v);
+        entryModal.style.display = 'none';
+        loadForCode(v);
+      });
+      entryCancel.addEventListener('click', ()=>{
+        // 允许用户关闭弹窗但仍要求输入（当前保留关闭以便 UX）
+        entryModal.style.display = 'none';
+      });
+
+      // 切换 hash 的情况下加载
+      window.addEventListener('hashchange', ()=>{
+        const code = hashToCode();
+        if(isValidCode(code)) loadForCode(code);
+      });
+
+      goBtn.addEventListener('click', ()=>{
+        const v = (codeInput.value||'').trim();
+        if(!isValidCode(v)){ alert('请输入纯数字编码'); codeInput.focus(); return; }
+        location.hash = encodeURIComponent(v);
+      });
+      codeInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') goBtn.click(); });
+
+      refreshBtn.addEventListener('click', ()=> location.reload());
+      manualBtn.addEventListener('click', ()=> {
+        entryModal.style.display = 'flex';
+        entryInput.focus();
+      });
+
+      // lightbox variables declared above (galleryList)
+      // initial run
+      initialEntry();
+
+    })();
+  </script>
+</body>
+</html>
