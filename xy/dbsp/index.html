@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
 
-  <!-- 站点公共样式（若不存在可移除，不影响核心功能） -->
+  <!-- 站点公共样式 -->
   <link rel="stylesheet" href="/assets/css/style.css">
   <link rel="stylesheet" href="/assets/css/components.css">
 
@@ -36,12 +36,13 @@
       background:linear-gradient(90deg,#fff 0%, #f3f7fb 100%);
       border-bottom:1px solid rgba(15,23,42,0.04);
       padding:14px 18px;display:flex;align-items:center;gap:12px;
+      position:sticky;top:0;z-index:100; /* 防止覆盖内容 */
     }
     .brand{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--primary)}
     .brand img{width:40px;height:40px;border-radius:8px}
     .brand .sitename{font-size:14px;line-height:1}
     .brand .sitename small{display:block;color:var(--muted);font-size:12px}
-    .container{max-width:1100px;margin:18px auto;padding:0 16px}
+    .container{max-width:1100px;margin:18px auto;padding:0 16px;padding-top:70px} /* 为 sticky 头部留空间 */
     .layout{display:grid;grid-template-columns:1fr 360px;gap:var(--gap);align-items:start}
     .card{background:var(--card);border-radius:var(--radius);padding:14px;box-shadow:0 8px 30px rgba(15,23,42,0.06)}
     .title-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -52,8 +53,6 @@
     .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;margin-top:12px}
     .thumb{border-radius:8px;overflow:hidden;cursor:pointer;border:1px solid #eef2f7;background:#f8fafc;height:96px;display:flex;align-items:center;justify-content:center}
     .thumb img{width:100%;height:100%;object-fit:cover;display:block}
-    .input-row{display:flex;gap:8px;align-items:center}
-    .code-input{padding:10px 12px;border-radius:10px;border:1px solid #e6eef8;background:white;width:140px}
     .btn{background:var(--primary);color:white;border:none;padding:9px 12px;border-radius:10px;cursor:pointer;font-weight:600;transition:background 0.2s}
     .btn:hover{background:#3a5a80}
     .no-media{padding:28px;text-align:center;color:var(--muted)}
@@ -80,11 +79,6 @@
     .modal .btn-cancel{background:#9aa8bf}
     .modal .btn-cancel:hover{background:#7e8ba0}
 
-    /* 内容区域加载状态 */
-    .loading-overlay{
-      display:flex;align-items:center;justify-content:center;padding:40px;
-    }
-
     /* lightbox */
     .lightbox{position:fixed;inset:0;background:rgba(3,7,18,.86);display:none;align-items:center;justify-content:center;padding:18px;z-index:9999}
     .lightbox.show{display:flex}
@@ -94,10 +88,9 @@
     .lb-prev{left:18px}
     .lb-next{right:18px}
 
-    footer{max-width:1100px;margin:18px auto;padding:0 16px;color:var(--muted);font-size:13px}
-
+    /* 响应式 */
     @media (max-width:1000px){ .layout{grid-template-columns:1fr} .video-box{height:280px} }
-    @media (max-width:420px){ .code-input{width:110px;padding:9px} .modal{padding:18px} .video-box{height:220px} }
+    @media (max-width:420px){ .video-box{height:220px} }
   </style>
 </head>
 <body>
@@ -115,15 +108,11 @@
       <section class="card">
         <div class="title-row">
           <h2 id="codeTitle">编码：—</h2>
-          <div class="input-row">
-            <input id="codeInput" class="code-input" placeholder="请输入被告知的编码" />
-            <button id="goBtn" class="btn">跳转</button>
-          </div>
         </div>
 
         <div id="videoArea" style="margin-top:12px">
           <div class="video-box" id="videoBox">
-            <div id="videoNo" class="no-media">验证中…</div>
+            <div id="videoNo" class="no-media">请输入编码</div>
           </div>
         </div>
 
@@ -133,7 +122,7 @@
             <div class="muted" id="imgCount">—</div>
           </div>
           <div id="gallery" class="gallery" style="margin-top:10px">
-            <div class="no-media" id="imgNo">验证中…</div>
+            <div class="no-media" id="imgNo">请输入编码</div>
           </div>
         </div>
       </section>
@@ -144,7 +133,8 @@
           <div class="muted">适配手机/PC</div>
         </div>
         <div style="margin-top:12px;color:var(--muted);font-size:14px">
-          本页面仅向第三方用户展示媒体内容。如需调整命名规则或路径，请联系维护者。
+          <p>本页面仅向第三方用户展示媒体内容。如需调整命名规则或路径，请联系维护者。</p>
+          <p style="margin-top:8px;">⚠️ 视频与图片基于静态托管，首次加载可能较慢，浏览器可能会长时间缓存，如遇更新请刷新页面。</p>
         </div>
       </aside>
     </div>
@@ -166,7 +156,7 @@
     </div>
   </div>
 
-  <!-- 错误弹窗：未找到任何媒体 -->
+  <!-- 错误弹窗：完全没有任何媒体时显示 -->
   <div class="modal-overlay" id="errorModal">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="errorTitle">
       <h3 id="errorTitle">❌ 未找到媒体文件</h3>
@@ -227,9 +217,6 @@
       const errorRetry = document.getElementById('errorRetry');
       const errorRefresh = document.getElementById('errorRefresh');
 
-      const codeInput = document.getElementById('codeInput');
-      const goBtn = document.getElementById('goBtn');
-
       const codeTitle = document.getElementById('codeTitle');
       const videoBox = document.getElementById('videoBox');
       const videoNo = document.getElementById('videoNo');
@@ -243,6 +230,7 @@
       const lbPrev = document.getElementById('lbPrev');
       const lbNext = document.getElementById('lbNext');
       let galleryList = [], curIndex = 0;
+      let currentLoadedCode = null; // 记录已成功加载的编码，防止重复弹窗
 
       // Lightbox 交互
       function openLightbox(i){
@@ -308,7 +296,7 @@
 
       function urlFor(name) { return './' + encodeURIComponent(name); }
 
-      // 快速检测是否存在任何媒体（用于预检）
+      // 快速预检：是否存在至少一个媒体文件（视频或图片）
       async function anyMediaExists(code) {
         for (const name of videoCandidates(code)) {
           if (await checkVideoExists(urlFor(name))) return true;
@@ -338,10 +326,9 @@
         }
       });
 
-      // 实际加载媒体内容
+      // 实际加载媒体内容（不进行任何弹窗）
       async function loadMedia(code) {
         codeTitle.textContent = '编码：' + code;
-        codeInput.value = code;
 
         // 清空
         videoBox.querySelectorAll('video').forEach(v => v.remove());
@@ -361,10 +348,13 @@
         if (foundVideo) {
           videoNo.style.display = 'none';
           const v = document.createElement('video');
-          v.controls = true; v.playsInline = true; v.src = foundVideo;
+          v.controls = true;
+          v.playsInline = true;
+          v.muted = true;          // 默认静音
+          v.src = foundVideo;
           videoBox.appendChild(v);
         } else {
-          videoNo.textContent = '未找到视频';
+          videoNo.textContent = '未找到视频资源';
         }
 
         const candidates = imageCandidates(code);
@@ -383,41 +373,48 @@
             const d = document.createElement('div');
             d.className = 'thumb';
             const img = document.createElement('img');
-            img.src = src; img.alt = code + '-' + (idx+1); img.loading = 'lazy';
+            img.src = src;
+            img.alt = code + '-' + (idx+1);
+            img.loading = 'lazy';
             d.appendChild(img);
             d.addEventListener('click', () => openLightbox(idx));
             gallery.appendChild(d);
           });
         } else {
-          imgNo.textContent = '未找到图片';
+          imgNo.textContent = '未找到图片资源';
           imgCount.textContent = '0';
         }
+
+        // 标记当前编码已成功加载
+        currentLoadedCode = code;
       }
 
-      // 主流程：根据编码进行验证，存在则加载，不存在则弹窗
+      // 统一入口处理：先验证编码格式，再预检，存在则加载，不存在则错误弹窗
       async function handleCode(code) {
         if (!isValidCode(code)) {
           showEntryModal();
           return;
         }
 
-        // 先显示加载状态
-        videoNo.textContent = '验证中…';
-        imgNo.textContent = '验证中…';
+        // 如果是当前已加载的编码，不重复处理（避免预检再次失败导致弹窗）
+        if (currentLoadedCode === code) return;
+
+        // 关闭所有弹窗，显示加载状态
         hideEntryModal();
         hideErrorModal();
+        videoNo.textContent = '验证中…';
+        imgNo.textContent = '验证中…';
 
-        // 快速预检
         const exists = await anyMediaExists(code);
         if (!exists) {
-          // 直接显示错误弹窗，并保持主区域显示“未找到”
+          // 完全不存在任何媒体，弹出错误
           videoNo.textContent = '未找到媒体';
           imgNo.textContent = '未找到媒体';
           showErrorModal('未找到该编码对应的视频或图片，请确认编码是否正确。');
           return;
         }
 
-        // 存在则加载
+        // 存在则加载，不会再弹窗
         await loadMedia(code);
       }
 
@@ -450,22 +447,12 @@
         if (isValidCode(code)) handleCode(code);
       });
 
-      goBtn.addEventListener('click', () => {
-        const v = (codeInput.value || '').trim();
-        if (!isValidCode(v)) { alert('请输入纯数字编码'); codeInput.focus(); return; }
-        location.hash = encodeURIComponent(v);
-        handleCode(v);
-      });
-
-      codeInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') goBtn.click(); });
-
       // 初始启动
       (function start() {
         const code = hashToCode();
         if (code && isValidCode(code)) {
           handleCode(code);
         } else {
-          // 无编码或非法编码，直接显示入口弹窗
           videoNo.textContent = '请输入编码';
           imgNo.textContent = '请输入编码';
           showEntryModal();
