@@ -5,22 +5,22 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>包裹打包预览 • zcfi</title>
 
-  <!-- Favicon（与首页完全一致） -->
-  <link rel="icon" type="image/svg+xml" href="../favicon/favicon.svg">
-  <link rel="icon" type="image/png" sizes="96x96" href="../favicon/favicon-96x96.png">
-  <link rel="icon" type="image/x-icon" href="../favicon/favicon.ico">
-  <link rel="apple-touch-icon" sizes="180x180" href="../favicon/apple-touch-icon.png">
-  <link rel="manifest" href="../favicon/site.webmanifest">
-  <link rel="apple-touch-icon" sizes="192x192" href="../favicon/web-app-manifest-192x192.png">
-  <link rel="apple-touch-icon" sizes="512x512" href="../favicon/web-app-manifest-512x512.png">
+  <!-- Favicon（与首页完全一致，使用绝对路径） -->
+  <link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon/favicon-96x96.png">
+  <link rel="icon" type="image/x-icon" href="/favicon/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
+  <link rel="manifest" href="/favicon/site.webmanifest">
+  <link rel="apple-touch-icon" sizes="192x192" href="/favicon/web-app-manifest-192x192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="/favicon/web-app-manifest-512x512.png">
 
   <!-- 字体与图标 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
 
   <!-- 站点公共样式（若不存在可移除，不影响核心功能） -->
-  <link rel="stylesheet" href="../assets/css/style.css">
-  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
 
   <style>
     :root{
@@ -58,7 +58,7 @@
     .btn:hover{background:#3a5a80}
     .no-media{padding:28px;text-align:center;color:var(--muted)}
 
-    /* 优化后的弹窗 */
+    /* 居中模态弹窗 */
     .modal-overlay{
       position:fixed;inset:0;background:rgba(3,7,18,0.6);display:none;align-items:center;justify-content:center;z-index:9999;padding:16px;
       animation:fadeIn 0.2s ease;
@@ -80,18 +80,10 @@
     .modal .btn-cancel{background:#9aa8bf}
     .modal .btn-cancel:hover{background:#7e8ba0}
 
-    /* 右侧提示栏优化 */
-    .side-alert{
-      position:fixed;right:18px;top:50%;transform:translateY(-50%);width:260px;
-      background:linear-gradient(180deg,#fff,#fbfdff);border-radius:12px;padding:16px;
-      box-shadow:0 18px 45px rgba(2,6,23,0.12);z-index:998;display:none;flex-direction:column;gap:10px;align-items:stretch;
-      transition:opacity 0.25s ease;
+    /* 内容区域加载状态 */
+    .loading-overlay{
+      display:flex;align-items:center;justify-content:center;padding:40px;
     }
-    .side-alert.show{display:flex}
-    .side-alert .head{display:flex;align-items:center;gap:8px}
-    .side-alert .head .icon{width:36px;height:36px;border-radius:8px;background:#fee;display:inline-flex;align-items:center;justify-content:center;color:#c33}
-    .side-alert .body{color:var(--muted);font-size:14px;line-height:1.4}
-    .side-alert .actions{display:flex;gap:8px;justify-content:center;margin-top:6px}
 
     /* lightbox */
     .lightbox{position:fixed;inset:0;background:rgba(3,7,18,.86);display:none;align-items:center;justify-content:center;padding:18px;z-index:9999}
@@ -104,15 +96,15 @@
 
     footer{max-width:1100px;margin:18px auto;padding:0 16px;color:var(--muted);font-size:13px}
 
-    @media (max-width:1000px){ .layout{grid-template-columns:1fr} .video-box{height:280px} .side-alert{display:none} }
+    @media (max-width:1000px){ .layout{grid-template-columns:1fr} .video-box{height:280px} }
     @media (max-width:420px){ .code-input{width:110px;padding:9px} .modal{padding:18px} .video-box{height:220px} }
   </style>
 </head>
 <body>
   <header class="site-header">
     <div class="brand">
-      <a href="../index.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--primary)">
-        <img src="../favicon/web-app-manifest-192x192.png" alt="zcfi logo" />
+      <a href="/index.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--primary)">
+        <img src="/favicon/web-app-manifest-192x192.png" alt="zcfi logo" />
         <div class="sitename">zcfi<span style="color:var(--muted);font-weight:600">.</span><span style="color:var(--muted)">cn</span></div>
       </a>
     </div>
@@ -124,14 +116,14 @@
         <div class="title-row">
           <h2 id="codeTitle">编码：—</h2>
           <div class="input-row">
-            <input id="codeInput" class="code-input" placeholder="输入编码（例：272）" />
+            <input id="codeInput" class="code-input" placeholder="请输入被告知的编码" />
             <button id="goBtn" class="btn">跳转</button>
           </div>
         </div>
 
         <div id="videoArea" style="margin-top:12px">
           <div class="video-box" id="videoBox">
-            <div id="videoNo" class="no-media">正在加载…</div>
+            <div id="videoNo" class="no-media">验证中…</div>
           </div>
         </div>
 
@@ -141,7 +133,7 @@
             <div class="muted" id="imgCount">—</div>
           </div>
           <div id="gallery" class="gallery" style="margin-top:10px">
-            <div class="no-media" id="imgNo">正在加载…</div>
+            <div class="no-media" id="imgNo">验证中…</div>
           </div>
         </div>
       </section>
@@ -158,13 +150,13 @@
     </div>
   </main>
 
-  <!-- 优化后的入口弹窗 -->
+  <!-- 入口弹窗：输入编码 -->
   <div class="modal-overlay" id="entryModal">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="entryTitle">
-      <h3 id="entryTitle">📦 输入包裹编码</h3>
-      <p>请输入一个纯数字编码（例如 <strong>272</strong>）来查看打包视频和图片。<br>你也可以直接在 URL 后添加 <strong>#编码</strong> 快速访问。</p>
+      <h3 id="entryTitle">📦 请输入包裹编码</h3>
+      <p>请输入被告知的编码以查看打包视频和图片。</p>
       <div class="row">
-        <input id="entryInput" class="code-input" placeholder="例如：272" />
+        <input id="entryInput" class="code-input" placeholder="请输入被告知的编码" />
         <button id="entryLoad" class="btn">加载</button>
       </div>
       <div class="actions">
@@ -174,16 +166,16 @@
     </div>
   </div>
 
-  <!-- 右侧竖直提示栏（无媒体时显示） -->
-  <div class="side-alert" id="sideAlert" aria-hidden="true">
-    <div class="head">
-      <div class="icon"><i class="fas fa-exclamation-triangle" style="color:#c33"></i></div>
-      <div style="font-weight:600">未找到媒体文件</div>
-    </div>
-    <div class="body" id="sideAlertBody">未在当前目录找到对应编码的打包视频和图片。</div>
-    <div class="actions">
-      <button id="refreshBtn" class="btn" style="flex:1"><i class="fas fa-sync-alt"></i> 刷新页面</button>
-      <button id="manualBtn" class="btn" style="flex:1;background:#9aa8bf">手动输入</button>
+  <!-- 错误弹窗：未找到任何媒体 -->
+  <div class="modal-overlay" id="errorModal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="errorTitle">
+      <h3 id="errorTitle">❌ 未找到媒体文件</h3>
+      <p id="errorBody">未在当前目录找到该编码对应的视频或图片。</p>
+      <div class="actions">
+        <button id="errorRetry" class="btn"><i class="fas fa-redo-alt"></i> 重新输入</button>
+        <button id="errorRefresh" class="btn btn-cancel"><i class="fas fa-sync-alt"></i> 刷新页面</button>
+      </div>
+      <p style="margin-top:12px;font-size:12px;color:#aaa;">按 <kbd>ESC</kbd> 或点击遮罩亦可关闭</p>
     </div>
   </div>
 
@@ -230,6 +222,11 @@
       const entryLoad = document.getElementById('entryLoad');
       const entryCancel = document.getElementById('entryCancel');
 
+      const errorModal = document.getElementById('errorModal');
+      const errorBody = document.getElementById('errorBody');
+      const errorRetry = document.getElementById('errorRetry');
+      const errorRefresh = document.getElementById('errorRefresh');
+
       const codeInput = document.getElementById('codeInput');
       const goBtn = document.getElementById('goBtn');
 
@@ -239,10 +236,6 @@
       const gallery = document.getElementById('gallery');
       const imgNo = document.getElementById('imgNo');
       const imgCount = document.getElementById('imgCount');
-
-      const sideAlert = document.getElementById('sideAlert');
-      const refreshBtn = document.getElementById('refreshBtn');
-      const manualBtn = document.getElementById('manualBtn');
 
       const lightbox = document.getElementById('lightbox');
       const lbImage = document.getElementById('lbImage');
@@ -270,7 +263,7 @@
         if(e.key==='Escape') closeLightbox();
       });
 
-      // 文件探测（大小写 + HEAD 降级）
+      // 文件探测（HEAD 优先）
       async function checkFileExists(url, expectedMimePrefix = '') {
         try {
           const resp = await fetch(url, { method: 'HEAD' });
@@ -315,30 +308,54 @@
 
       function urlFor(name) { return './' + encodeURIComponent(name); }
 
-      function showSideAlert(show, msg) {
-        document.getElementById('sideAlertBody').textContent = msg || '未在当前目录找到对应编码的打包视频和图片。';
-        if (show) sideAlert.classList.add('show');
-        else sideAlert.classList.remove('show');
+      // 快速检测是否存在任何媒体（用于预检）
+      async function anyMediaExists(code) {
+        for (const name of videoCandidates(code)) {
+          if (await checkVideoExists(urlFor(name))) return true;
+        }
+        for (const name of imageCandidates(code)) {
+          if (await checkImageExists(urlFor(name))) return true;
+        }
+        return false;
       }
 
-      async function loadForCode(code) {
-        if (!code) return;
+      // 显示/隐藏弹窗
+      function showEntryModal() { entryModal.classList.add('show'); entryInput.focus(); }
+      function hideEntryModal() { entryModal.classList.remove('show'); }
+      function showErrorModal(msg) {
+        errorBody.textContent = msg || '未找到任何媒体文件，请检查编码是否正确。';
+        errorModal.classList.add('show');
+      }
+      function hideErrorModal() { errorModal.classList.remove('show'); }
+
+      // 弹窗遮罩关闭
+      entryModal.addEventListener('click', function(e) { if (e.target === entryModal) hideEntryModal(); });
+      errorModal.addEventListener('click', function(e) { if (e.target === errorModal) hideErrorModal(); });
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          if (entryModal.classList.contains('show')) hideEntryModal();
+          if (errorModal.classList.contains('show')) hideErrorModal();
+        }
+      });
+
+      // 实际加载媒体内容
+      async function loadMedia(code) {
         codeTitle.textContent = '编码：' + code;
         codeInput.value = code;
 
+        // 清空
         videoBox.querySelectorAll('video').forEach(v => v.remove());
         videoNo.style.display = 'block';
-        videoNo.textContent = '正在查找视频…';
+        videoNo.textContent = '正在加载…';
         gallery.innerHTML = '';
         imgNo.style.display = 'block';
-        imgNo.textContent = '正在查找图片…';
+        imgNo.textContent = '正在加载…';
         imgCount.textContent = '—';
-        showSideAlert(false);
 
         let foundVideo = null;
         for (const name of videoCandidates(code)) {
           const url = urlFor(name);
-          try { if (await checkVideoExists(url)) { foundVideo = url; break; } } catch (e) {}
+          if (await checkVideoExists(url)) { foundVideo = url; break; }
         }
 
         if (foundVideo) {
@@ -347,7 +364,6 @@
           v.controls = true; v.playsInline = true; v.src = foundVideo;
           videoBox.appendChild(v);
         } else {
-          videoNo.style.display = 'block';
           videoNo.textContent = '未找到视频';
         }
 
@@ -356,7 +372,7 @@
         for (const name of candidates) {
           if (foundImages.length >= 30) break;
           const url = urlFor(name);
-          try { if (await checkImageExists(url)) foundImages.push(url); } catch (e) {}
+          if (await checkImageExists(url)) foundImages.push(url);
         }
 
         if (foundImages.length) {
@@ -372,17 +388,37 @@
             d.addEventListener('click', () => openLightbox(idx));
             gallery.appendChild(d);
           });
-          showSideAlert(false);
         } else {
-          imgNo.style.display = 'block';
           imgNo.textContent = '未找到图片';
           imgCount.textContent = '0';
-          if (!foundVideo) {
-            showSideAlert(true, '未找到视频和图片。请确认文件是否放在当前目录，或点击刷新重试。');
-          } else {
-            showSideAlert(true, '未找到图片。请确认图片命名或放置路径。');
-          }
         }
+      }
+
+      // 主流程：根据编码进行验证，存在则加载，不存在则弹窗
+      async function handleCode(code) {
+        if (!isValidCode(code)) {
+          showEntryModal();
+          return;
+        }
+
+        // 先显示加载状态
+        videoNo.textContent = '验证中…';
+        imgNo.textContent = '验证中…';
+        hideEntryModal();
+        hideErrorModal();
+
+        // 快速预检
+        const exists = await anyMediaExists(code);
+        if (!exists) {
+          // 直接显示错误弹窗，并保持主区域显示“未找到”
+          videoNo.textContent = '未找到媒体';
+          imgNo.textContent = '未找到媒体';
+          showErrorModal('未找到该编码对应的视频或图片，请确认编码是否正确。');
+          return;
+        }
+
+        // 存在则加载
+        await loadMedia(code);
       }
 
       function hashToCode() {
@@ -392,58 +428,49 @@
 
       function isValidCode(s) { return /^\d+$/.test(s); }
 
-      // 弹窗显示/隐藏控制
-      function showEntryModal() { entryModal.classList.add('show'); entryInput.focus(); }
-      function hideEntryModal() { entryModal.classList.remove('show'); }
-
-      // 遮罩点击关闭
-      entryModal.addEventListener('click', function(e) {
-        if (e.target === entryModal) hideEntryModal();
-      });
-
-      // ESC 关闭
-      document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && entryModal.classList.contains('show')) {
-          hideEntryModal();
-        }
-      });
-
-      function initialEntry() {
-        const code = hashToCode();
-        if (code && isValidCode(code)) {
-          loadForCode(code);
-        } else {
-          showEntryModal();
-        }
-      }
-
+      // 事件绑定
       entryLoad.addEventListener('click', () => {
         const v = (entryInput.value || '').trim();
         if (!isValidCode(v)) { alert('请输入纯数字编码'); entryInput.focus(); return; }
         location.hash = encodeURIComponent(v);
-        hideEntryModal();
-        loadForCode(v);
+        handleCode(v);
       });
 
       entryCancel.addEventListener('click', hideEntryModal);
 
+      errorRetry.addEventListener('click', () => {
+        hideErrorModal();
+        showEntryModal();
+      });
+
+      errorRefresh.addEventListener('click', () => location.reload());
+
       window.addEventListener('hashchange', () => {
         const code = hashToCode();
-        if (isValidCode(code)) loadForCode(code);
+        if (isValidCode(code)) handleCode(code);
       });
 
       goBtn.addEventListener('click', () => {
         const v = (codeInput.value || '').trim();
         if (!isValidCode(v)) { alert('请输入纯数字编码'); codeInput.focus(); return; }
         location.hash = encodeURIComponent(v);
+        handleCode(v);
       });
 
       codeInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') goBtn.click(); });
 
-      refreshBtn.addEventListener('click', () => location.reload());
-      manualBtn.addEventListener('click', showEntryModal);
-
-      initialEntry();
+      // 初始启动
+      (function start() {
+        const code = hashToCode();
+        if (code && isValidCode(code)) {
+          handleCode(code);
+        } else {
+          // 无编码或非法编码，直接显示入口弹窗
+          videoNo.textContent = '请输入编码';
+          imgNo.textContent = '请输入编码';
+          showEntryModal();
+        }
+      })();
     })();
   </script>
 </body>
