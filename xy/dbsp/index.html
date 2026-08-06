@@ -54,14 +54,13 @@
     .btn:hover{background:#3a5a80}
     .no-media{padding:28px;text-align:center;color:var(--muted);display:block;}
 
-    /* 弹窗输入框确保样式 */
+    /* 输入框 */
     .code-input{
       padding:10px 12px;border-radius:10px;border:1px solid #e6eef8;background:white;width:140px;
-      font-family: inherit; font-size: 14px;
+      font-family:inherit;font-size:14px;
     }
-    .modal .code-input { flex:1; width:auto; }
 
-    /* 居中弹窗 */
+    /* 居中弹窗通用 */
     .modal-overlay{
       position:fixed;inset:0;background:rgba(3,7,18,0.6);display:none;align-items:center;justify-content:center;z-index:9999;padding:16px;
       animation:fadeIn 0.2s ease;
@@ -78,9 +77,17 @@
     .modal h3{margin:0 0 10px 0;font-size:18px;color:#222}
     .modal p{margin:0 0 16px 0;color:var(--muted);font-size:14px;line-height:1.5}
     .modal .row{display:flex;gap:8px;align-items:center}
+    .modal .code-input{flex:1;width:auto;}
     .modal .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
-    .modal .btn-cancel{background:#9aa8bf}
-    .modal .btn-cancel:hover{background:#7e8ba0}
+    .btn-cancel{background:#9aa8bf}
+    .btn-cancel:hover{background:#7e8ba0}
+
+    /* 核验弹窗内的加载动画 */
+    @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+    .spinner{
+      width:40px;height:40px;border:4px solid #e0e7ef;border-top:4px solid var(--primary);
+      border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px;
+    }
 
     /* lightbox */
     .lightbox{position:fixed;inset:0;background:rgba(3,7,18,.86);display:none;align-items:center;justify-content:center;padding:18px;z-index:9999}
@@ -158,7 +165,7 @@
     </div>
   </footer>
 
-  <!-- 入口弹窗 -->
+  <!-- 入口弹窗：无编码时输入 -->
   <div class="modal-overlay" id="entryModal">
     <div class="modal" role="dialog" aria-modal="true">
       <h3>📦 请输入包裹编码</h3>
@@ -174,16 +181,12 @@
     </div>
   </div>
 
-  <!-- 错误弹窗 -->
-  <div class="modal-overlay" id="errorModal">
+  <!-- 核验弹窗 -->
+  <div class="modal-overlay" id="verifyModal">
     <div class="modal" role="dialog" aria-modal="true">
-      <h3>❌ 未找到媒体文件</h3>
-      <p id="errorBody">未在当前目录找到该编码对应的视频或图片。</p>
-      <div class="actions">
-        <button id="errorRetry" class="btn"><i class="fas fa-redo-alt"></i> 重新输入</button>
-        <button id="errorRefresh" class="btn btn-cancel"><i class="fas fa-sync-alt"></i> 刷新页面</button>
+      <div id="verifyContent">
+        <!-- 动态内容区域，由JS控制 -->
       </div>
-      <p style="margin-top:12px;font-size:12px;color:#aaa;">按 <kbd>ESC</kbd> 关闭</p>
     </div>
   </div>
 
@@ -228,10 +231,8 @@
       const entryLoad = document.getElementById('entryLoad');
       const entryCancel = document.getElementById('entryCancel');
 
-      const errorModal = document.getElementById('errorModal');
-      const errorBody = document.getElementById('errorBody');
-      const errorRetry = document.getElementById('errorRetry');
-      const errorRefresh = document.getElementById('errorRefresh');
+      const verifyModal = document.getElementById('verifyModal');
+      const verifyContent = document.getElementById('verifyContent');
 
       const codeTitle = document.getElementById('codeTitle');
       const videoBox = document.getElementById('videoBox');
@@ -250,7 +251,7 @@
       let loadAbort = false;
       let handling = false;
 
-      // Lightbox
+      // Lightbox 交互
       function openLightbox(i){
         if(!galleryList.length) return;
         curIndex = (i + galleryList.length) % galleryList.length;
@@ -269,7 +270,7 @@
         if(e.key==='Escape') closeLightbox();
       });
 
-      // --- 存在性检测 ---
+      // --- 存在性检测（用于流式加载和快速核验） ---
       function checkVideoExists(url) {
         return new Promise(resolve => {
           fetch(url, { method: 'HEAD' })
@@ -279,7 +280,7 @@
             })
             .catch(() => {
               const v = document.createElement('video');
-              const timer = setTimeout(() => { resolve(false); }, 5000);
+              const timer = setTimeout(() => { resolve(false); }, 4000);
               v.onloadedmetadata = () => { clearTimeout(timer); resolve(true); };
               v.onerror = () => { clearTimeout(timer); resolve(false); };
               v.preload = 'metadata';
@@ -297,25 +298,93 @@
         });
       }
 
+      // 快速核验：仅检测少数几个高概率候选
+      async function quickVerify(code) {
+        const baseNames = [];
+        // 视频：code.mp4, code.MP4
+        baseNames.push(`${code}.mp4`, `${code}.MP4`);
+        // 图片：code.jpg, code.jpeg, code.png 及大写
+        ['jpg','jpeg','png'].forEach(ext => {
+          baseNames.push(`${code}.${ext}`, `${code}.${ext.toUpperCase()}`);
+        });
+        const urls = baseNames.map(name => './' + name);
+        const results = await Promise.allSettled(urls.map(url => 
+          url.includes('.mp4') || url.includes('.MP4') || url.includes('.webm') || url.includes('.ogg') 
+            ? checkVideoExists(url) 
+            : checkImageExists(url)
+        ));
+        return results.some(r => r.status === 'fulfilled' && r.value === true);
+      }
+
       // --- 弹窗控制 ---
       function showEntryModal() { entryModal.classList.add('show'); entryInput.focus(); }
       function hideEntryModal() { entryModal.classList.remove('show'); }
-      function showErrorModal(msg) {
-        errorBody.textContent = msg || '未找到任何媒体文件，请检查编码是否正确。';
-        errorModal.classList.add('show');
+      function hideVerifyModal() { verifyModal.classList.remove('show'); }
+
+      // 设置核验弹窗内容
+      function renderVerifyLoading(code) {
+        verifyContent.innerHTML = `
+          <h3 style="text-align:center;">🔍 正在核验编码 ${code}</h3>
+          <div class="spinner"></div>
+          <p style="text-align:center;color:var(--muted);">请稍候，系统正在检查资源…</p>
+          <div style="text-align:center;margin-top:12px;">
+            <button id="verifyManualClose" class="btn btn-cancel" style="font-size:12px;">取消核验</button>
+          </div>
+        `;
+        document.getElementById('verifyManualClose').addEventListener('click', () => {
+          hideVerifyModal();
+          // 如果正在核验中取消，可能需要终止，但简单处理：关闭弹窗，不加载
+          loadAbort = true; // 终止可能的加载
+        });
       }
-      function hideErrorModal() { errorModal.classList.remove('show'); }
 
-      entryModal.addEventListener('click', e => { if (e.target === entryModal) hideEntryModal(); });
-      errorModal.addEventListener('click', e => { if (e.target === errorModal) hideErrorModal(); });
-      document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') {
-          if (entryModal.classList.contains('show')) hideEntryModal();
-          if (errorModal.classList.contains('show')) hideErrorModal();
-        }
-      });
+      function renderVerifySuccess(code, autoCloseCallback) {
+        verifyContent.innerHTML = `
+          <h3 style="text-align:center;color:#2e7d32;">✅ 核验通过</h3>
+          <p style="text-align:center;">编码 ${code} 的资源已找到，即将为您加载。</p>
+          <div style="text-align:center;margin-top:16px;">
+            <button id="verifyCloseNow" class="btn">立即查看</button>
+          </div>
+          <p style="text-align:center;font-size:12px;color:#aaa;margin-top:8px;">弹窗将在 <span id="autoCloseTimer">2</span> 秒后自动关闭</p>
+        `;
 
-      // --- 流式加载媒体 ---
+        let sec = 2;
+        const timerSpan = document.getElementById('autoCloseTimer');
+        const countdown = setInterval(() => {
+          sec--;
+          if (sec <= 0) {
+            clearInterval(countdown);
+            hideVerifyModal();
+            if (autoCloseCallback) autoCloseCallback();
+          } else {
+            timerSpan.textContent = sec;
+          }
+        }, 1000);
+
+        document.getElementById('verifyCloseNow').addEventListener('click', () => {
+          clearInterval(countdown);
+          hideVerifyModal();
+          if (autoCloseCallback) autoCloseCallback();
+        });
+      }
+
+      function renderVerifyFail(code) {
+        verifyContent.innerHTML = `
+          <h3 style="text-align:center;color:#c62828;">❌ 核验失败</h3>
+          <p style="text-align:center;">未找到编码 ${code} 对应的任何视频或图片。</p>
+          <div class="actions" style="justify-content:center;margin-top:16px;">
+            <button id="verifyRetry" class="btn"><i class="fas fa-redo-alt"></i> 重新输入</button>
+            <button id="verifyRefresh" class="btn btn-cancel"><i class="fas fa-sync-alt"></i> 刷新页面</button>
+          </div>
+        `;
+        document.getElementById('verifyRetry').addEventListener('click', () => {
+          hideVerifyModal();
+          showEntryModal();
+        });
+        document.getElementById('verifyRefresh').addEventListener('click', () => location.reload());
+      }
+
+      // --- 流式加载媒体（与之前相同） ---
       async function loadMedia(code) {
         loadAbort = true;
         await new Promise(r => setTimeout(r, 30));
@@ -393,12 +462,11 @@
 
         await Promise.all([videoPromise, imagePromise]);
 
-        if (!videoFound && !imageFound && !loadAbort) {
-          showErrorModal('未找到该编码对应的视频或图片，请确认编码是否正确。');
-        }
+        // 注意：核验已通过，此处不弹错误弹窗，即使部分缺失也无妨
       }
 
-      function handleCode(code) {
+      // --- 核心流程：编码提交后先核验再加载 ---
+      async function handleCode(code) {
         if (!isValidCode(code)) {
           showEntryModal();
           return;
@@ -406,11 +474,29 @@
         if (handling || currentLoadedCode === code) return;
         handling = true;
 
+        // 关闭其他弹窗，显示核验弹窗
         hideEntryModal();
-        hideErrorModal();
-        loadMedia(code).finally(() => {
+        verifyModal.classList.add('show');
+        renderVerifyLoading(code);
+
+        // 快速核验
+        const verified = await quickVerify(code);
+        if (!verified) {
+          renderVerifyFail(code);
           handling = false;
+          return;
+        }
+
+        // 核验成功，启动自动关闭，并准备加载
+        renderVerifySuccess(code, () => {
+          // 自动关闭或手动关闭后的回调：开始加载媒体
+          loadMedia(code).finally(() => {
+            handling = false;
+          });
         });
+
+        // 注意：自动关闭倒计时在renderVerifySuccess中启动，回调在关闭时触发
+        // 但是，如果用户在倒计时结束前手动关闭，同样会触发回调
       }
 
       function hashToCode() {
@@ -424,20 +510,15 @@
       entryLoad.addEventListener('click', () => {
         const v = (entryInput.value || '').trim();
         if (!isValidCode(v)) { alert('请输入纯数字编码'); entryInput.focus(); return; }
-        hideEntryModal();
-        location.hash = encodeURIComponent(v);
         handleCode(v);
+        // 注意：不直接改变hash，避免重复触发，除非需要书签功能
+        // 但为了保持一致性，可以设置hash
+        location.hash = encodeURIComponent(v);
       });
 
       entryCancel.addEventListener('click', hideEntryModal);
 
-      errorRetry.addEventListener('click', () => {
-        hideErrorModal();
-        showEntryModal();
-      });
-
-      errorRefresh.addEventListener('click', () => location.reload());
-
+      // 如果从hash进入，也走核验流程
       window.addEventListener('hashchange', () => {
         const code = hashToCode();
         if (isValidCode(code)) handleCode(code);
