@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>包裹打包预览 • zcfi</title>
 
-  <!-- Favicon（与首页完全一致） -->
+  <!-- Favicon（绝对路径，与首页一致） -->
   <link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg">
   <link rel="icon" type="image/png" sizes="96x96" href="/favicon/favicon-96x96.png">
   <link rel="icon" type="image/x-icon" href="/favicon/favicon.ico">
@@ -178,7 +178,8 @@
     (function(){
       // ---------- 配置 ----------
       const videoExts = ['mp4', 'webm', 'ogg'];
-      const imgExts = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+      // 仅保留最常见图片格式，大幅减少请求数量
+      const imgExts = ['jpg', 'jpeg', 'png'];   // 不再包含 webp/gif
 
       function allCaseExts(list) {
         return list.flatMap(ext => [ext, ext.toUpperCase()]);
@@ -190,12 +191,15 @@
 
       function imageCandidates(code) {
         const arr = [];
-        allCaseExts(imgExts).forEach(ext => arr.push(`${code}.${ext}`));
+        const allImgExts = allCaseExts(imgExts);
+        // 1. 基础图片：编码.扩展名
+        allImgExts.forEach(ext => arr.push(`${code}.${ext}`));
+        // 2. 带序号的图片：编码_数字.扩展名  和  编码-数字.扩展名 （不再包含“编码+数字”无分隔符格式）
         for (let i = 1; i <= 6; i++) {
-          allCaseExts(imgExts).forEach(ext => {
+          allImgExts.forEach(ext => {
             arr.push(`${code}_${i}.${ext}`);
             arr.push(`${code}-${i}.${ext}`);
-            arr.push(`${code}${i}.${ext}`);
+            // 注意：去掉了 `${code}${i}.${ext}` 这种混淆格式
           });
         }
         return arr;
@@ -246,33 +250,23 @@
         if(e.key==='Escape') closeLightbox();
       });
 
-      // 视频快速检测（保持 HEAD 优先）
-      async function checkVideoExists(url, timeout = 7000) {
+      // --- 文件探测工具（视频用HEAD，图片用快速Image）---
+      async function checkVideoExists(url) {
         try {
           const resp = await fetch(url, { method: 'HEAD' });
           if (resp.ok) return true;
         } catch (e) {}
+        // 降级为video元素
         return new Promise(resolve => {
           const v = document.createElement('video');
-          let done = false;
-          const timer = setTimeout(() => { if (!done) { done = true; v.src = ''; resolve(false); } }, timeout);
-          v.onloadedmetadata = () => { if (done) return; done = true; clearTimeout(timer); resolve(true); };
-          v.onerror = () => { if (done) return; done = true; clearTimeout(timer); resolve(false); };
+          const timer = setTimeout(() => { resolve(false); }, 5000);
+          v.onloadedmetadata = () => { clearTimeout(timer); resolve(true); };
+          v.onerror = () => { clearTimeout(timer); resolve(false); };
           v.preload = 'metadata';
           v.src = url;
-          try { v.load(); } catch (e) { if (!done) { done = true; clearTimeout(timer); resolve(false); } }
         });
       }
 
-      // 视频预检
-      async function anyVideoExists(code) {
-        for (const name of videoCandidates(code)) {
-          if (await checkVideoExists('./' + name)) return true;
-        }
-        return false;
-      }
-
-      // 图片预检 (使用 Image 元素，快速)
       function checkImageQuick(url) {
         return new Promise(resolve => {
           const img = new Image();
@@ -282,14 +276,19 @@
         });
       }
 
-      async function anyImageExists(code) {
-        for (const name of imageCandidates(code)) {
-          if (await checkImageQuick('./' + name)) return true;
-        }
-        return false;
+      // --- 并行预检函数 ---
+      async function anyVideoExists(code) {
+        const urls = videoCandidates(code).map(name => './' + name);
+        const results = await Promise.allSettled(urls.map(url => checkVideoExists(url)));
+        return results.some(r => r.status === 'fulfilled' && r.value === true);
       }
 
-      // 总预检：有任意视频或图片即认为编码有效
+      async function anyImageExists(code) {
+        const urls = imageCandidates(code).map(name => './' + name);
+        const results = await Promise.allSettled(urls.map(url => checkImageQuick(url)));
+        return results.some(r => r.status === 'fulfilled' && r.value === true);
+      }
+
       async function anyMediaExists(code) {
         const [hasVideo, hasImage] = await Promise.all([
           anyVideoExists(code),
@@ -298,7 +297,7 @@
         return hasVideo || hasImage;
       }
 
-      // 弹窗控制
+      // --- 弹窗控制 ---
       function showEntryModal() { entryModal.classList.add('show'); entryInput.focus(); }
       function hideEntryModal() { entryModal.classList.remove('show'); }
       function showErrorModal(msg) {
@@ -316,22 +315,20 @@
         }
       });
 
-      // 加载媒体内容（图片直接渲染，不再依赖预检）
+      // --- 加载媒体（视频顺序检测，图片并行）---
       async function loadMedia(code) {
         codeTitle.textContent = '编码：' + code;
 
-        // 清空视频区
+        // 清空
         videoBox.querySelectorAll('video').forEach(v => v.remove());
         videoNo.style.display = 'block';
         videoNo.textContent = '正在加载…';
-
-        // 清空图片区
         gallery.innerHTML = '';
         imgNo.style.display = 'block';
         imgNo.textContent = '正在查找图片…';
         imgCount.textContent = '—';
 
-        // --- 视频加载 ---
+        // 视频加载（候选少，顺序即可）
         let foundVideo = null;
         for (const name of videoCandidates(code)) {
           const url = './' + name;
@@ -350,51 +347,32 @@
           videoNo.textContent = '未找到视频资源';
         }
 
-        // --- 图片加载（直接渲染法） ---
+        // 图片加载：并行检测所有候选
         const imageUrls = imageCandidates(code).map(name => './' + name);
-        let loadedCount = 0;
-        const total = imageUrls.length;
+        const checks = await Promise.allSettled(imageUrls.map(url => checkImageQuick(url)));
+        
         galleryList = [];
         const thumbElements = [];
+        checks.forEach((result, idx) => {
+          if (result.status === 'fulfilled' && result.value === true) {
+            const url = imageUrls[idx];
+            galleryList.push(url);
+            const thumb = document.createElement('div');
+            thumb.className = 'thumb';
+            const img = document.createElement('img');
+            img.src = url;
+            img.alt = code + ' - ' + (galleryList.length);
+            img.loading = 'lazy';
+            thumb.appendChild(img);
+            thumb.addEventListener('click', () => openLightbox(galleryList.length - 1));
+            thumbElements.push(thumb);
+          }
+        });
 
-        // 创建一个临时占位提示，避免闪烁
-        if (total === 0) {
-          imgNo.textContent = '未找到图片资源';
-          imgCount.textContent = '0';
-          return;
-        }
-
-        // 逐个尝试加载图片
-        for (const url of imageUrls) {
-          const img = new Image();
-          img.src = url;
-          try {
-            const ok = await new Promise(resolve => {
-              img.onload = () => resolve(true);
-              img.onerror = () => resolve(false);
-            });
-            if (ok) {
-              galleryList.push(url);
-              // 创建缩略图
-              const thumb = document.createElement('div');
-              thumb.className = 'thumb';
-              const thumbImg = document.createElement('img');
-              thumbImg.src = url;
-              thumbImg.alt = code + ' - ' + (galleryList.length);
-              thumbImg.loading = 'lazy';
-              thumb.appendChild(thumbImg);
-              thumb.addEventListener('click', () => openLightbox(galleryList.length - 1));
-              thumbElements.push(thumb);
-              loadedCount++;
-            }
-          } catch (e) {}
-        }
-
-        // 更新UI
-        if (loadedCount > 0) {
+        if (galleryList.length > 0) {
           imgNo.style.display = 'none';
           gallery.append(...thumbElements);
-          imgCount.textContent = loadedCount + ' 张';
+          imgCount.textContent = galleryList.length + ' 张';
         } else {
           imgNo.style.display = 'block';
           imgNo.textContent = '未找到图片资源';
@@ -404,7 +382,7 @@
         currentLoadedCode = code;
       }
 
-      // 入口处理
+      // --- 入口处理 ---
       async function handleCode(code) {
         if (!isValidCode(code)) {
           showEntryModal();
@@ -416,6 +394,7 @@
         hideErrorModal();
         videoNo.textContent = '验证中…';
         imgNo.textContent = '验证中…';
+        imgNo.style.display = 'block';
 
         const exists = await anyMediaExists(code);
         if (!exists) {
@@ -457,7 +436,7 @@
         if (isValidCode(code)) handleCode(code);
       });
 
-      // 初始启动
+      // 启动
       (function start() {
         const code = hashToCode();
         if (code && isValidCode(code)) {
