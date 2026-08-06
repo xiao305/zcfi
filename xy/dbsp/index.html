@@ -178,8 +178,7 @@
     (function(){
       // ---------- 配置 ----------
       const videoExts = ['mp4', 'webm', 'ogg'];
-      // 仅保留最常见图片格式，大幅减少请求数量
-      const imgExts = ['jpg', 'jpeg', 'png'];   // 不再包含 webp/gif
+      const imgExts = ['jpg', 'jpeg', 'png'];   // 仅常见格式
 
       function allCaseExts(list) {
         return list.flatMap(ext => [ext, ext.toUpperCase()]);
@@ -192,14 +191,13 @@
       function imageCandidates(code) {
         const arr = [];
         const allImgExts = allCaseExts(imgExts);
-        // 1. 基础图片：编码.扩展名
+        // 基础图片
         allImgExts.forEach(ext => arr.push(`${code}.${ext}`));
-        // 2. 带序号的图片：编码_数字.扩展名  和  编码-数字.扩展名 （不再包含“编码+数字”无分隔符格式）
+        // 带分隔符的序号
         for (let i = 1; i <= 6; i++) {
           allImgExts.forEach(ext => {
             arr.push(`${code}_${i}.${ext}`);
             arr.push(`${code}-${i}.${ext}`);
-            // 注意：去掉了 `${code}${i}.${ext}` 这种混淆格式
           });
         }
         return arr;
@@ -230,6 +228,7 @@
       const lbNext = document.getElementById('lbNext');
       let galleryList = [], curIndex = 0;
       let currentLoadedCode = null;
+      let loadAbort = false;  // 用于中断加载（切换编码时）
 
       // Lightbox
       function openLightbox(i){
@@ -250,51 +249,34 @@
         if(e.key==='Escape') closeLightbox();
       });
 
-      // --- 文件探测工具（视频用HEAD，图片用快速Image）---
-      async function checkVideoExists(url) {
-        try {
-          const resp = await fetch(url, { method: 'HEAD' });
-          if (resp.ok) return true;
-        } catch (e) {}
-        // 降级为video元素
+      // --- 文件存在性探测（单次请求）---
+      function checkVideoExists(url) {
         return new Promise(resolve => {
-          const v = document.createElement('video');
-          const timer = setTimeout(() => { resolve(false); }, 5000);
-          v.onloadedmetadata = () => { clearTimeout(timer); resolve(true); };
-          v.onerror = () => { clearTimeout(timer); resolve(false); };
-          v.preload = 'metadata';
-          v.src = url;
+          // 先HEAD快速判断
+          fetch(url, { method: 'HEAD' })
+            .then(resp => {
+              if (resp.ok) return resolve(true);
+              throw new Error('HEAD failed');
+            })
+            .catch(() => {
+              // 降级为video元素
+              const v = document.createElement('video');
+              const timer = setTimeout(() => { resolve(false); }, 5000);
+              v.onloadedmetadata = () => { clearTimeout(timer); resolve(true); };
+              v.onerror = () => { clearTimeout(timer); resolve(false); };
+              v.preload = 'metadata';
+              v.src = url;
+            });
         });
       }
 
-      function checkImageQuick(url) {
+      function checkImageExists(url) {
         return new Promise(resolve => {
           const img = new Image();
           img.onload = () => resolve(true);
           img.onerror = () => resolve(false);
           img.src = url;
         });
-      }
-
-      // --- 并行预检函数 ---
-      async function anyVideoExists(code) {
-        const urls = videoCandidates(code).map(name => './' + name);
-        const results = await Promise.allSettled(urls.map(url => checkVideoExists(url)));
-        return results.some(r => r.status === 'fulfilled' && r.value === true);
-      }
-
-      async function anyImageExists(code) {
-        const urls = imageCandidates(code).map(name => './' + name);
-        const results = await Promise.allSettled(urls.map(url => checkImageQuick(url)));
-        return results.some(r => r.status === 'fulfilled' && r.value === true);
-      }
-
-      async function anyMediaExists(code) {
-        const [hasVideo, hasImage] = await Promise.all([
-          anyVideoExists(code),
-          anyImageExists(code)
-        ]);
-        return hasVideo || hasImage;
       }
 
       // --- 弹窗控制 ---
@@ -315,75 +297,100 @@
         }
       });
 
-      // --- 加载媒体（视频顺序检测，图片并行）---
+      // --- 流式加载核心 ---
       async function loadMedia(code) {
+        // 终止之前的加载
+        loadAbort = true;
+        await new Promise(r => setTimeout(r, 30)); // 等待可能的中断
+        loadAbort = false;
+        currentLoadedCode = code;
+
         codeTitle.textContent = '编码：' + code;
 
         // 清空
         videoBox.querySelectorAll('video').forEach(v => v.remove());
         videoNo.style.display = 'block';
-        videoNo.textContent = '正在加载…';
+        videoNo.textContent = '正在查找视频…';
         gallery.innerHTML = '';
+        galleryList = [];
         imgNo.style.display = 'block';
         imgNo.textContent = '正在查找图片…';
         imgCount.textContent = '—';
 
-        // 视频加载（候选少，顺序即可）
-        let foundVideo = null;
-        for (const name of videoCandidates(code)) {
-          const url = './' + name;
-          if (await checkVideoExists(url)) { foundVideo = url; break; }
-        }
+        let videoFound = false;
+        let imageFound = false;
 
-        if (foundVideo) {
-          videoNo.style.display = 'none';
-          const v = document.createElement('video');
-          v.controls = true;
-          v.playsInline = true;
-          v.muted = true;
-          v.src = foundVideo;
-          videoBox.appendChild(v);
-        } else {
-          videoNo.textContent = '未找到视频资源';
-        }
-
-        // 图片加载：并行检测所有候选
-        const imageUrls = imageCandidates(code).map(name => './' + name);
-        const checks = await Promise.allSettled(imageUrls.map(url => checkImageQuick(url)));
-        
-        galleryList = [];
-        const thumbElements = [];
-        checks.forEach((result, idx) => {
-          if (result.status === 'fulfilled' && result.value === true) {
-            const url = imageUrls[idx];
-            galleryList.push(url);
-            const thumb = document.createElement('div');
-            thumb.className = 'thumb';
-            const img = document.createElement('img');
-            img.src = url;
-            img.alt = code + ' - ' + (galleryList.length);
-            img.loading = 'lazy';
-            thumb.appendChild(img);
-            thumb.addEventListener('click', () => openLightbox(galleryList.length - 1));
-            thumbElements.push(thumb);
+        // 并行启动视频和图片检测（但各自内部是流式的）
+        const videoPromise = (async () => {
+          const videoUrls = videoCandidates(code).map(name => './' + name);
+          for (const url of videoUrls) {
+            if (loadAbort) return;
+            const exists = await checkVideoExists(url);
+            if (exists && !loadAbort) {
+              // 找到第一个视频就停止并显示
+              videoNo.style.display = 'none';
+              const v = document.createElement('video');
+              v.controls = true;
+              v.playsInline = true;
+              v.muted = true;
+              v.src = url;
+              videoBox.appendChild(v);
+              videoFound = true;
+              break;
+            }
           }
-        });
+          if (!videoFound && !loadAbort) {
+            videoNo.textContent = '未找到视频资源';
+          }
+        })();
 
-        if (galleryList.length > 0) {
-          imgNo.style.display = 'none';
-          gallery.append(...thumbElements);
-          imgCount.textContent = galleryList.length + ' 张';
-        } else {
-          imgNo.style.display = 'block';
-          imgNo.textContent = '未找到图片资源';
-          imgCount.textContent = '0';
+        const imagePromise = (async () => {
+          const imageUrls = imageCandidates(code).map(name => './' + name);
+          const foundUrls = [];
+          for (const url of imageUrls) {
+            if (loadAbort) return;
+            const exists = await checkImageExists(url);
+            if (exists && !loadAbort) {
+              foundUrls.push(url);
+              // 立即添加到画廊
+              const thumb = document.createElement('div');
+              thumb.className = 'thumb';
+              const img = document.createElement('img');
+              img.src = url;
+              img.alt = code + ' - ' + foundUrls.length;
+              img.loading = 'lazy';
+              thumb.appendChild(img);
+              // 点击打开lightbox（索引需要在添加后计算）
+              const currentIndex = galleryList.length;
+              thumb.addEventListener('click', () => openLightbox(currentIndex));
+              gallery.appendChild(thumb);
+              galleryList.push(url);
+              imageFound = true;
+              // 更新计数
+              imgCount.textContent = galleryList.length + ' 张';
+              // 第一次找到图片时隐藏加载提示
+              if (galleryList.length === 1) {
+                imgNo.style.display = 'none';
+              }
+            }
+          }
+          if (!imageFound && !loadAbort) {
+            imgNo.style.display = 'block';
+            imgNo.textContent = '未找到图片资源';
+            imgCount.textContent = '0';
+          }
+        })();
+
+        await Promise.all([videoPromise, imagePromise]);
+
+        // 都检测完毕后，如果两者均未找到，弹出错误
+        if (!videoFound && !imageFound && !loadAbort) {
+          showErrorModal('未找到该编码对应的视频或图片，请确认编码是否正确。');
         }
-
-        currentLoadedCode = code;
       }
 
       // --- 入口处理 ---
-      async function handleCode(code) {
+      function handleCode(code) {
         if (!isValidCode(code)) {
           showEntryModal();
           return;
@@ -392,19 +399,8 @@
 
         hideEntryModal();
         hideErrorModal();
-        videoNo.textContent = '验证中…';
-        imgNo.textContent = '验证中…';
-        imgNo.style.display = 'block';
-
-        const exists = await anyMediaExists(code);
-        if (!exists) {
-          videoNo.textContent = '未找到媒体';
-          imgNo.textContent = '未找到媒体';
-          showErrorModal('未找到该编码对应的视频或图片，请确认编码是否正确。');
-          return;
-        }
-
-        await loadMedia(code);
+        // 开始流式加载，无需预检
+        loadMedia(code);
       }
 
       function hashToCode() {
