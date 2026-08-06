@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>包裹打包预览 • zcfi</title>
 
-  <!-- Favicon（与首页完全一致，使用绝对路径） -->
+  <!-- Favicon（与首页完全一致） -->
   <link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg">
   <link rel="icon" type="image/png" sizes="96x96" href="/favicon/favicon-96x96.png">
   <link rel="icon" type="image/x-icon" href="/favicon/favicon.ico">
@@ -14,11 +14,8 @@
   <link rel="apple-touch-icon" sizes="192x192" href="/favicon/web-app-manifest-192x192.png">
   <link rel="apple-touch-icon" sizes="512x512" href="/favicon/web-app-manifest-512x512.png">
 
-  <!-- 字体与图标 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
-
-  <!-- 站点公共样式 -->
   <link rel="stylesheet" href="/assets/css/style.css">
   <link rel="stylesheet" href="/assets/css/components.css">
 
@@ -36,13 +33,13 @@
       background:linear-gradient(90deg,#fff 0%, #f3f7fb 100%);
       border-bottom:1px solid rgba(15,23,42,0.04);
       padding:14px 18px;display:flex;align-items:center;gap:12px;
-      position:sticky;top:0;z-index:100; /* 防止覆盖内容 */
+      position:sticky;top:0;z-index:100;
     }
     .brand{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--primary)}
     .brand img{width:40px;height:40px;border-radius:8px}
     .brand .sitename{font-size:14px;line-height:1}
     .brand .sitename small{display:block;color:var(--muted);font-size:12px}
-    .container{max-width:1100px;margin:18px auto;padding:0 16px;padding-top:70px} /* 为 sticky 头部留空间 */
+    .container{max-width:1100px;margin:18px auto;padding:0 16px;padding-top:70px}
     .layout{display:grid;grid-template-columns:1fr 360px;gap:var(--gap);align-items:start}
     .card{background:var(--card);border-radius:var(--radius);padding:14px;box-shadow:0 8px 30px rgba(15,23,42,0.06)}
     .title-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -55,9 +52,9 @@
     .thumb img{width:100%;height:100%;object-fit:cover;display:block}
     .btn{background:var(--primary);color:white;border:none;padding:9px 12px;border-radius:10px;cursor:pointer;font-weight:600;transition:background 0.2s}
     .btn:hover{background:#3a5a80}
-    .no-media{padding:28px;text-align:center;color:var(--muted)}
+    .no-media{padding:28px;text-align:center;color:var(--muted);display:block;}
 
-    /* 居中模态弹窗 */
+    /* 居中弹窗 */
     .modal-overlay{
       position:fixed;inset:0;background:rgba(3,7,18,0.6);display:none;align-items:center;justify-content:center;z-index:9999;padding:16px;
       animation:fadeIn 0.2s ease;
@@ -88,7 +85,6 @@
     .lb-prev{left:18px}
     .lb-next{right:18px}
 
-    /* 响应式 */
     @media (max-width:1000px){ .layout{grid-template-columns:1fr} .video-box{height:280px} }
     @media (max-width:420px){ .video-box{height:220px} }
   </style>
@@ -121,13 +117,12 @@
             <div><strong>打包图片</strong></div>
             <div class="muted" id="imgCount">—</div>
           </div>
-          <div id="gallery" class="gallery" style="margin-top:10px">
-            <div class="no-media" id="imgNo">请输入编码</div>
-          </div>
+          <div id="gallery" class="gallery" style="margin-top:10px"></div>
+          <div id="imgNo" class="no-media" style="display:none;">正在查找图片…</div>
         </div>
       </section>
 
-      <aside class="card" id="asideCard">
+      <aside class="card">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <div><strong>信息</strong></div>
           <div class="muted">适配手机/PC</div>
@@ -140,10 +135,10 @@
     </div>
   </main>
 
-  <!-- 入口弹窗：输入编码 -->
+  <!-- 入口弹窗 -->
   <div class="modal-overlay" id="entryModal">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="entryTitle">
-      <h3 id="entryTitle">📦 请输入包裹编码</h3>
+    <div class="modal" role="dialog" aria-modal="true">
+      <h3>📦 请输入包裹编码</h3>
       <p>请输入被告知的编码以查看打包视频和图片。</p>
       <div class="row">
         <input id="entryInput" class="code-input" placeholder="请输入被告知的编码" />
@@ -152,20 +147,20 @@
       <div class="actions">
         <button id="entryCancel" class="btn btn-cancel">关闭</button>
       </div>
-      <p style="margin-top:12px;font-size:12px;color:#aaa;">按 <kbd>ESC</kbd> 或点击遮罩亦可关闭</p>
+      <p style="margin-top:12px;font-size:12px;color:#aaa;">按 <kbd>ESC</kbd> 或点击遮罩关闭</p>
     </div>
   </div>
 
-  <!-- 错误弹窗：完全没有任何媒体时显示 -->
+  <!-- 错误弹窗 -->
   <div class="modal-overlay" id="errorModal">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="errorTitle">
-      <h3 id="errorTitle">❌ 未找到媒体文件</h3>
+    <div class="modal" role="dialog" aria-modal="true">
+      <h3>❌ 未找到媒体文件</h3>
       <p id="errorBody">未在当前目录找到该编码对应的视频或图片。</p>
       <div class="actions">
         <button id="errorRetry" class="btn"><i class="fas fa-redo-alt"></i> 重新输入</button>
         <button id="errorRefresh" class="btn btn-cancel"><i class="fas fa-sync-alt"></i> 刷新页面</button>
       </div>
-      <p style="margin-top:12px;font-size:12px;color:#aaa;">按 <kbd>ESC</kbd> 或点击遮罩亦可关闭</p>
+      <p style="margin-top:12px;font-size:12px;color:#aaa;">按 <kbd>ESC</kbd> 关闭</p>
     </div>
   </div>
 
@@ -230,9 +225,9 @@
       const lbPrev = document.getElementById('lbPrev');
       const lbNext = document.getElementById('lbNext');
       let galleryList = [], curIndex = 0;
-      let currentLoadedCode = null; // 记录已成功加载的编码，防止重复弹窗
+      let currentLoadedCode = null;
 
-      // Lightbox 交互
+      // Lightbox
       function openLightbox(i){
         if(!galleryList.length) return;
         curIndex = (i + galleryList.length) % galleryList.length;
@@ -251,24 +246,12 @@
         if(e.key==='Escape') closeLightbox();
       });
 
-      // 文件探测（HEAD 优先）
-      async function checkFileExists(url, expectedMimePrefix = '') {
+      // 视频快速检测（保持 HEAD 优先）
+      async function checkVideoExists(url, timeout = 7000) {
         try {
           const resp = await fetch(url, { method: 'HEAD' });
-          if (resp.ok) {
-            if (expectedMimePrefix) {
-              const ct = resp.headers.get('Content-Type') || '';
-              return ct.startsWith(expectedMimePrefix) || true;
-            }
-            return true;
-          }
-          return false;
-        } catch (e) { return false; }
-      }
-
-      async function checkVideoExists(url, timeout = 7000) {
-        const headOk = await checkFileExists(url, 'video/');
-        if (headOk) return true;
+          if (resp.ok) return true;
+        } catch (e) {}
         return new Promise(resolve => {
           const v = document.createElement('video');
           let done = false;
@@ -281,33 +264,41 @@
         });
       }
 
-      async function checkImageExists(url, timeout = 5000) {
-        const headOk = await checkFileExists(url, 'image/');
-        if (headOk) return true;
-        return new Promise(resolve => {
-          const img = new Image();
-          let done = false;
-          const timer = setTimeout(() => { if (!done) { done = true; img.src = ''; resolve(false); } }, timeout);
-          img.onload = () => { if (done) return; done = true; clearTimeout(timer); resolve(true); };
-          img.onerror = () => { if (done) return; done = true; clearTimeout(timer); resolve(false); };
-          img.src = url;
-        });
-      }
-
-      function urlFor(name) { return './' + encodeURIComponent(name); }
-
-      // 快速预检：是否存在至少一个媒体文件（视频或图片）
-      async function anyMediaExists(code) {
+      // 视频预检
+      async function anyVideoExists(code) {
         for (const name of videoCandidates(code)) {
-          if (await checkVideoExists(urlFor(name))) return true;
-        }
-        for (const name of imageCandidates(code)) {
-          if (await checkImageExists(urlFor(name))) return true;
+          if (await checkVideoExists('./' + name)) return true;
         }
         return false;
       }
 
-      // 显示/隐藏弹窗
+      // 图片预检 (使用 Image 元素，快速)
+      function checkImageQuick(url) {
+        return new Promise(resolve => {
+          const img = new Image();
+          img.onload = () => resolve(true);
+          img.onerror = () => resolve(false);
+          img.src = url;
+        });
+      }
+
+      async function anyImageExists(code) {
+        for (const name of imageCandidates(code)) {
+          if (await checkImageQuick('./' + name)) return true;
+        }
+        return false;
+      }
+
+      // 总预检：有任意视频或图片即认为编码有效
+      async function anyMediaExists(code) {
+        const [hasVideo, hasImage] = await Promise.all([
+          anyVideoExists(code),
+          anyImageExists(code)
+        ]);
+        return hasVideo || hasImage;
+      }
+
+      // 弹窗控制
       function showEntryModal() { entryModal.classList.add('show'); entryInput.focus(); }
       function hideEntryModal() { entryModal.classList.remove('show'); }
       function showErrorModal(msg) {
@@ -316,32 +307,34 @@
       }
       function hideErrorModal() { errorModal.classList.remove('show'); }
 
-      // 弹窗遮罩关闭
-      entryModal.addEventListener('click', function(e) { if (e.target === entryModal) hideEntryModal(); });
-      errorModal.addEventListener('click', function(e) { if (e.target === errorModal) hideErrorModal(); });
-      document.addEventListener('keydown', function(e) {
+      entryModal.addEventListener('click', e => { if (e.target === entryModal) hideEntryModal(); });
+      errorModal.addEventListener('click', e => { if (e.target === errorModal) hideErrorModal(); });
+      document.addEventListener('keydown', e => {
         if (e.key === 'Escape') {
           if (entryModal.classList.contains('show')) hideEntryModal();
           if (errorModal.classList.contains('show')) hideErrorModal();
         }
       });
 
-      // 实际加载媒体内容（不进行任何弹窗）
+      // 加载媒体内容（图片直接渲染，不再依赖预检）
       async function loadMedia(code) {
         codeTitle.textContent = '编码：' + code;
 
-        // 清空
+        // 清空视频区
         videoBox.querySelectorAll('video').forEach(v => v.remove());
         videoNo.style.display = 'block';
         videoNo.textContent = '正在加载…';
+
+        // 清空图片区
         gallery.innerHTML = '';
         imgNo.style.display = 'block';
-        imgNo.textContent = '正在加载…';
+        imgNo.textContent = '正在查找图片…';
         imgCount.textContent = '—';
 
+        // --- 视频加载 ---
         let foundVideo = null;
         for (const name of videoCandidates(code)) {
-          const url = urlFor(name);
+          const url = './' + name;
           if (await checkVideoExists(url)) { foundVideo = url; break; }
         }
 
@@ -350,56 +343,75 @@
           const v = document.createElement('video');
           v.controls = true;
           v.playsInline = true;
-          v.muted = true;          // 默认静音
+          v.muted = true;
           v.src = foundVideo;
           videoBox.appendChild(v);
         } else {
           videoNo.textContent = '未找到视频资源';
         }
 
-        const candidates = imageCandidates(code);
-        const foundImages = [];
-        for (const name of candidates) {
-          if (foundImages.length >= 30) break;
-          const url = urlFor(name);
-          if (await checkImageExists(url)) foundImages.push(url);
+        // --- 图片加载（直接渲染法） ---
+        const imageUrls = imageCandidates(code).map(name => './' + name);
+        let loadedCount = 0;
+        const total = imageUrls.length;
+        galleryList = [];
+        const thumbElements = [];
+
+        // 创建一个临时占位提示，避免闪烁
+        if (total === 0) {
+          imgNo.textContent = '未找到图片资源';
+          imgCount.textContent = '0';
+          return;
         }
 
-        if (foundImages.length) {
+        // 逐个尝试加载图片
+        for (const url of imageUrls) {
+          const img = new Image();
+          img.src = url;
+          try {
+            const ok = await new Promise(resolve => {
+              img.onload = () => resolve(true);
+              img.onerror = () => resolve(false);
+            });
+            if (ok) {
+              galleryList.push(url);
+              // 创建缩略图
+              const thumb = document.createElement('div');
+              thumb.className = 'thumb';
+              const thumbImg = document.createElement('img');
+              thumbImg.src = url;
+              thumbImg.alt = code + ' - ' + (galleryList.length);
+              thumbImg.loading = 'lazy';
+              thumb.appendChild(thumbImg);
+              thumb.addEventListener('click', () => openLightbox(galleryList.length - 1));
+              thumbElements.push(thumb);
+              loadedCount++;
+            }
+          } catch (e) {}
+        }
+
+        // 更新UI
+        if (loadedCount > 0) {
           imgNo.style.display = 'none';
-          galleryList = foundImages;
-          imgCount.textContent = foundImages.length + ' 张';
-          foundImages.forEach((src, idx) => {
-            const d = document.createElement('div');
-            d.className = 'thumb';
-            const img = document.createElement('img');
-            img.src = src;
-            img.alt = code + '-' + (idx+1);
-            img.loading = 'lazy';
-            d.appendChild(img);
-            d.addEventListener('click', () => openLightbox(idx));
-            gallery.appendChild(d);
-          });
+          gallery.append(...thumbElements);
+          imgCount.textContent = loadedCount + ' 张';
         } else {
+          imgNo.style.display = 'block';
           imgNo.textContent = '未找到图片资源';
           imgCount.textContent = '0';
         }
 
-        // 标记当前编码已成功加载
         currentLoadedCode = code;
       }
 
-      // 统一入口处理：先验证编码格式，再预检，存在则加载，不存在则错误弹窗
+      // 入口处理
       async function handleCode(code) {
         if (!isValidCode(code)) {
           showEntryModal();
           return;
         }
-
-        // 如果是当前已加载的编码，不重复处理（避免预检再次失败导致弹窗）
         if (currentLoadedCode === code) return;
 
-        // 关闭所有弹窗，显示加载状态
         hideEntryModal();
         hideErrorModal();
         videoNo.textContent = '验证中…';
@@ -407,14 +419,12 @@
 
         const exists = await anyMediaExists(code);
         if (!exists) {
-          // 完全不存在任何媒体，弹出错误
           videoNo.textContent = '未找到媒体';
           imgNo.textContent = '未找到媒体';
           showErrorModal('未找到该编码对应的视频或图片，请确认编码是否正确。');
           return;
         }
 
-        // 存在则加载，不会再弹窗
         await loadMedia(code);
       }
 
@@ -455,6 +465,7 @@
         } else {
           videoNo.textContent = '请输入编码';
           imgNo.textContent = '请输入编码';
+          imgNo.style.display = 'block';
           showEntryModal();
         }
       })();
