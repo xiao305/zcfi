@@ -54,6 +54,13 @@
     .btn:hover{background:#3a5a80}
     .no-media{padding:28px;text-align:center;color:var(--muted);display:block;}
 
+    /* 弹窗输入框确保样式 */
+    .code-input{
+      padding:10px 12px;border-radius:10px;border:1px solid #e6eef8;background:white;width:140px;
+      font-family: inherit; font-size: 14px;
+    }
+    .modal .code-input { flex:1; width:auto; }
+
     /* 居中弹窗 */
     .modal-overlay{
       position:fixed;inset:0;background:rgba(3,7,18,0.6);display:none;align-items:center;justify-content:center;z-index:9999;padding:16px;
@@ -71,7 +78,6 @@
     .modal h3{margin:0 0 10px 0;font-size:18px;color:#222}
     .modal p{margin:0 0 16px 0;color:var(--muted);font-size:14px;line-height:1.5}
     .modal .row{display:flex;gap:8px;align-items:center}
-    .modal .code-input{flex:1}
     .modal .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
     .modal .btn-cancel{background:#9aa8bf}
     .modal .btn-cancel:hover{background:#7e8ba0}
@@ -84,6 +90,12 @@
     .lb-nav{position:fixed;top:50%;transform:translateY(-50%);color:white;font-size:32px;padding:8px 10px;cursor:pointer;user-select:none}
     .lb-prev{left:18px}
     .lb-next{right:18px}
+
+    /* 页脚 */
+    .page-footer{
+      max-width:1100px;margin:18px auto;padding:12px 16px;color:var(--muted);font-size:12px;
+      text-align:center;border-top:1px solid #eef2f7;
+    }
 
     @media (max-width:1000px){ .layout{grid-template-columns:1fr} .video-box{height:280px} }
     @media (max-width:420px){ .video-box{height:220px} }
@@ -129,11 +141,22 @@
         </div>
         <div style="margin-top:12px;color:var(--muted);font-size:14px">
           <p>本页面仅向第三方用户展示媒体内容。如需调整命名规则或路径，请联系维护者。</p>
-          <p style="margin-top:8px;">⚠️ 视频与图片基于静态托管，首次加载可能较慢，浏览器可能会长时间缓存，如遇更新请刷新页面。</p>
+          <p style="margin-top:8px;">⚠️ 视频与图片基于静态托管，首次加载可能较慢，浏览器可能长时间缓存。如视频显示损坏或长时间未加载，请<strong>刷新页面</strong>重试。</p>
         </div>
       </aside>
     </div>
   </main>
+
+  <!-- 页脚声明 -->
+  <footer class="page-footer">
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:12px;">
+      <span>© 2026 zcfi.cn</span>
+      <span>|</span>
+      <span>本页面内容由第三方上传，仅供预览</span>
+      <span>|</span>
+      <span>如有疑问请联系站点维护者</span>
+    </div>
+  </footer>
 
   <!-- 入口弹窗 -->
   <div class="modal-overlay" id="entryModal">
@@ -171,8 +194,6 @@
     <img id="lbImage" src="" alt="预览" />
     <div class="lb-nav lb-next" id="lbNext">›</div>
   </div>
-
-  <footer></footer>
 
   <script>
     (function(){
@@ -227,7 +248,7 @@
       let galleryList = [], curIndex = 0;
       let currentLoadedCode = null;
       let loadAbort = false;
-      let handling = false; // 防止重复处理同一编码
+      let handling = false;
 
       // Lightbox
       function openLightbox(i){
@@ -296,7 +317,6 @@
 
       // --- 流式加载媒体 ---
       async function loadMedia(code) {
-        // 终止之前的加载
         loadAbort = true;
         await new Promise(r => setTimeout(r, 30));
         loadAbort = false;
@@ -304,7 +324,6 @@
 
         codeTitle.textContent = '编码：' + code;
 
-        // 清空
         videoBox.querySelectorAll('video').forEach(v => v.remove());
         videoNo.style.display = 'block';
         videoNo.textContent = '正在查找视频…';
@@ -379,7 +398,6 @@
         }
       }
 
-      // --- 统一入口，防重入 ---
       function handleCode(code) {
         if (!isValidCode(code)) {
           showEntryModal();
@@ -406,10 +424,8 @@
       entryLoad.addEventListener('click', () => {
         const v = (entryInput.value || '').trim();
         if (!isValidCode(v)) { alert('请输入纯数字编码'); entryInput.focus(); return; }
-        // 先关闭弹窗，再设置 hash 触发加载
         hideEntryModal();
         location.hash = encodeURIComponent(v);
-        // 直接调用 handleCode（hashchange 也会触发，但防重入保护会阻止第二次）
         handleCode(v);
       });
 
@@ -431,7 +447,6 @@
       (function start() {
         const code = hashToCode();
         if (code && isValidCode(code)) {
-          // 初始加载，无弹窗提交，直接 handle
           handleCode(code);
         } else {
           videoNo.textContent = '请输入编码';
