@@ -178,7 +178,7 @@
     (function(){
       // ---------- 配置 ----------
       const videoExts = ['mp4', 'webm', 'ogg'];
-      const imgExts = ['jpg', 'jpeg', 'png'];   // 仅常见格式
+      const imgExts = ['jpg', 'jpeg', 'png'];
 
       function allCaseExts(list) {
         return list.flatMap(ext => [ext, ext.toUpperCase()]);
@@ -191,9 +191,7 @@
       function imageCandidates(code) {
         const arr = [];
         const allImgExts = allCaseExts(imgExts);
-        // 基础图片
         allImgExts.forEach(ext => arr.push(`${code}.${ext}`));
-        // 带分隔符的序号
         for (let i = 1; i <= 6; i++) {
           allImgExts.forEach(ext => {
             arr.push(`${code}_${i}.${ext}`);
@@ -228,7 +226,8 @@
       const lbNext = document.getElementById('lbNext');
       let galleryList = [], curIndex = 0;
       let currentLoadedCode = null;
-      let loadAbort = false;  // 用于中断加载（切换编码时）
+      let loadAbort = false;
+      let handling = false; // 防止重复处理同一编码
 
       // Lightbox
       function openLightbox(i){
@@ -249,17 +248,15 @@
         if(e.key==='Escape') closeLightbox();
       });
 
-      // --- 文件存在性探测（单次请求）---
+      // --- 存在性检测 ---
       function checkVideoExists(url) {
         return new Promise(resolve => {
-          // 先HEAD快速判断
           fetch(url, { method: 'HEAD' })
             .then(resp => {
               if (resp.ok) return resolve(true);
               throw new Error('HEAD failed');
             })
             .catch(() => {
-              // 降级为video元素
               const v = document.createElement('video');
               const timer = setTimeout(() => { resolve(false); }, 5000);
               v.onloadedmetadata = () => { clearTimeout(timer); resolve(true); };
@@ -297,11 +294,11 @@
         }
       });
 
-      // --- 流式加载核心 ---
+      // --- 流式加载媒体 ---
       async function loadMedia(code) {
         // 终止之前的加载
         loadAbort = true;
-        await new Promise(r => setTimeout(r, 30)); // 等待可能的中断
+        await new Promise(r => setTimeout(r, 30));
         loadAbort = false;
         currentLoadedCode = code;
 
@@ -320,14 +317,12 @@
         let videoFound = false;
         let imageFound = false;
 
-        // 并行启动视频和图片检测（但各自内部是流式的）
         const videoPromise = (async () => {
           const videoUrls = videoCandidates(code).map(name => './' + name);
           for (const url of videoUrls) {
             if (loadAbort) return;
             const exists = await checkVideoExists(url);
             if (exists && !loadAbort) {
-              // 找到第一个视频就停止并显示
               videoNo.style.display = 'none';
               const v = document.createElement('video');
               v.controls = true;
@@ -352,7 +347,6 @@
             const exists = await checkImageExists(url);
             if (exists && !loadAbort) {
               foundUrls.push(url);
-              // 立即添加到画廊
               const thumb = document.createElement('div');
               thumb.className = 'thumb';
               const img = document.createElement('img');
@@ -360,15 +354,12 @@
               img.alt = code + ' - ' + foundUrls.length;
               img.loading = 'lazy';
               thumb.appendChild(img);
-              // 点击打开lightbox（索引需要在添加后计算）
               const currentIndex = galleryList.length;
               thumb.addEventListener('click', () => openLightbox(currentIndex));
               gallery.appendChild(thumb);
               galleryList.push(url);
               imageFound = true;
-              // 更新计数
               imgCount.textContent = galleryList.length + ' 张';
-              // 第一次找到图片时隐藏加载提示
               if (galleryList.length === 1) {
                 imgNo.style.display = 'none';
               }
@@ -383,24 +374,25 @@
 
         await Promise.all([videoPromise, imagePromise]);
 
-        // 都检测完毕后，如果两者均未找到，弹出错误
         if (!videoFound && !imageFound && !loadAbort) {
           showErrorModal('未找到该编码对应的视频或图片，请确认编码是否正确。');
         }
       }
 
-      // --- 入口处理 ---
+      // --- 统一入口，防重入 ---
       function handleCode(code) {
         if (!isValidCode(code)) {
           showEntryModal();
           return;
         }
-        if (currentLoadedCode === code) return;
+        if (handling || currentLoadedCode === code) return;
+        handling = true;
 
         hideEntryModal();
         hideErrorModal();
-        // 开始流式加载，无需预检
-        loadMedia(code);
+        loadMedia(code).finally(() => {
+          handling = false;
+        });
       }
 
       function hashToCode() {
@@ -414,7 +406,10 @@
       entryLoad.addEventListener('click', () => {
         const v = (entryInput.value || '').trim();
         if (!isValidCode(v)) { alert('请输入纯数字编码'); entryInput.focus(); return; }
+        // 先关闭弹窗，再设置 hash 触发加载
+        hideEntryModal();
         location.hash = encodeURIComponent(v);
+        // 直接调用 handleCode（hashchange 也会触发，但防重入保护会阻止第二次）
         handleCode(v);
       });
 
@@ -436,6 +431,7 @@
       (function start() {
         const code = hashToCode();
         if (code && isValidCode(code)) {
+          // 初始加载，无弹窗提交，直接 handle
           handleCode(code);
         } else {
           videoNo.textContent = '请输入编码';
