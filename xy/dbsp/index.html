@@ -99,7 +99,6 @@
       text-align:center;border-top:1px solid #eef2f7;
     }
 
-    /* 顶部状态栏 */
     .status-bar{
       position:fixed;top:60px;left:0;right:0;z-index:90;
       background:rgba(74,111,165,0.95);color:white;padding:8px 16px;
@@ -114,7 +113,6 @@
       font-size:16px;cursor:pointer;opacity:0.9;
     }
 
-    /* 小字提示 */
     .small-note{font-size:12px;color:#aaa;text-align:center;margin-top:8px;}
 
     @media (max-width:1000px){ .layout{grid-template-columns:1fr} .video-box{height:280px} }
@@ -131,7 +129,6 @@
     </div>
   </header>
 
-  <!-- 顶部状态栏 -->
   <div class="status-bar" id="statusBar">
     <span id="statusText"></span>
     <button class="status-close" id="statusClose" title="关闭">&times;</button>
@@ -181,7 +178,6 @@
     </div>
   </footer>
 
-  <!-- 入口弹窗 -->
   <div class="modal-overlay" id="entryModal">
     <div class="modal" role="dialog" aria-modal="true">
       <h3>请输入包裹编码</h3>
@@ -197,7 +193,6 @@
     </div>
   </div>
 
-  <!-- 通用弹窗 -->
   <div class="modal-overlay" id="verifyModal">
     <div class="modal" role="dialog" aria-modal="true">
       <div id="verifyContent"></div>
@@ -315,30 +310,27 @@
         }
       });
 
-      // 状态栏
       function showStatusBar(text, autoHide = false) {
         statusText.textContent = text;
         statusBar.classList.add('show');
         statusClose.onclick = () => statusBar.classList.remove('show');
         if(autoHide) setTimeout(() => statusBar.classList.remove('show'), 5000);
       }
-      function hideStatusBar() { statusBar.classList.remove('show'); }
 
-      // 密钥验证（至少1秒动画）
+      // ---------- 密钥验证（含两阶段动画） ----------
       function verifyCode(code, initialRaw) {
         return new Promise(async (resolve) => {
-          const minTime = 1000; // 1秒最小显示
+          const minTime = 1000;
           const startTime = Date.now();
 
-          // 显示核验加载
+          // 阶段一：核验编码
           verifyContent.innerHTML = `
-            <h3 style="text-align:center;">正在核验密钥…</h3>
+            <h3 style="text-align:center;">正在核验编码…</h3>
             <div class="spinner"></div>
-            <p style="text-align:center;color:var(--muted);">请稍候，系统正在验证密钥…</p>
+            <p style="text-align:center;color:var(--muted);">请稍候，系统正在核验编码…</p>
           `;
           showVerifyModal();
 
-          // 异步获取哈希文件
           const hashUrl = `./hashes/${code}.txt?t=${Date.now()}`;
           let resp;
           try { resp = await fetch(hashUrl); } catch(e) {
@@ -376,13 +368,13 @@
             return CryptoJS.MD5(raw).toString() === storedHash;
           };
 
-          // 确保等待剩余时间
+          // 确保至少显示1秒
           const waitMin = () => new Promise(r => {
             const elapsed = Date.now() - startTime;
-            const delay = Math.max(0, minTime - elapsed);
-            setTimeout(r, delay);
+            setTimeout(r, Math.max(0, minTime - elapsed));
           });
 
+          // 阶段二：密钥输入（如果需要）
           const showInputForm = (errorMsg) => {
             verifyContent.innerHTML = `
               <h3 style="text-align:center;">需要密钥</h3>
@@ -408,16 +400,29 @@
                 keyError.textContent = '请输入密钥';
                 return;
               }
-              if(tryVerify(raw)) {
-                hideVerifyModal();
-                resolve(raw);
-              } else {
-                keyError.style.display = 'block';
-                keyError.textContent = '密钥错误，请重新输入';
-                keyInput.value = '';
-                keyInput.focus();
-              }
+
+              // 显示核验密钥动画（至少1秒）
+              verifyContent.innerHTML = `
+                <h3 style="text-align:center;">正在核验密钥…</h3>
+                <div class="spinner"></div>
+                <p style="text-align:center;color:var(--muted);">请稍候，系统正在验证密钥…</p>
+              `;
+              const verifyStart = Date.now();
+              const inputHash = CryptoJS.MD5(raw).toString();
+              const success = (inputHash === storedHash);
+
+              const elapsed = Date.now() - verifyStart;
+              const delay = Math.max(0, 1000 - elapsed);
+              setTimeout(() => {
+                if(success) {
+                  hideVerifyModal();
+                  resolve(raw);
+                } else {
+                  showInputForm('密钥错误，请重新输入');
+                }
+              }, delay);
             };
+
             keySubmit.addEventListener('click', submitHandler);
             keyInput.addEventListener('keydown', e => { if(e.key === 'Enter') submitHandler(); });
             keyCancelBtn.addEventListener('click', () => {
@@ -426,10 +431,9 @@
             });
           };
 
-          // 处理 initialRaw
           if(initialRaw) {
             if(tryVerify(initialRaw)) {
-              await waitMin(); // 至少1秒
+              await waitMin();
               hideVerifyModal();
               resolve(initialRaw);
               return;
@@ -443,7 +447,7 @@
         });
       }
 
-      // 媒体加载（进度回调）
+      // 媒体加载
       async function loadMedia(code, onProgress) {
         loadAbort = true;
         await new Promise(r => setTimeout(r, 30));
@@ -510,7 +514,6 @@
         return { videoCount: videoFound, imageCount: imageFound };
       }
 
-      // 解析 URL
       function parseHash() {
         const h = location.hash ? location.hash.replace(/^#/, '') : '';
         const decoded = decodeURIComponent(h || '').trim();
@@ -522,7 +525,6 @@
 
       function isValidCode(s) { return /^\d+$/.test(s); }
 
-      // 主流程
       async function handleCode(code, raw) {
         if(!isValidCode(code)) { showEntryModal(); return; }
         if(handling || currentLoadedCode === code) return;
@@ -624,7 +626,6 @@
         handling = false;
       }
 
-      // 事件绑定
       entryLoad.addEventListener('click', () => {
         const v = (entryInput.value || '').trim();
         if(!isValidCode(v)) { alert('请输入纯数字编码'); entryInput.focus(); return; }
@@ -642,7 +643,6 @@
         if(code && isValidCode(code)) handleCode(code, raw);
       });
 
-      // 启动
       const { code, raw } = parseHash();
       if(code && isValidCode(code)) handleCode(code, raw);
       else {
