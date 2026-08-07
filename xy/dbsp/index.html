@@ -320,7 +320,6 @@
       // ---------- 密钥验证（1秒后开始核验，核验期间动画持续） ----------
       function verifyCode(code, initialRaw) {
         return new Promise(async (resolve) => {
-          // 阶段1：核验编码
           verifyContent.innerHTML = `
             <h3 style="text-align:center;">正在核验编码…</h3>
             <div class="spinner"></div>
@@ -328,10 +327,8 @@
           `;
           showVerifyModal();
 
-          // 等待至少1秒
           await new Promise(r => setTimeout(r, 1000));
 
-          // 开始请求哈希文件
           const hashUrl = `./hashes/${code}.txt?t=${Date.now()}`;
           let resp;
           try { resp = await fetch(hashUrl); } catch(e) {
@@ -357,14 +354,13 @@
             return CryptoJS.MD5(raw).toString() === storedHash;
           };
 
-          // 如果URL带了密钥，进行密钥核验
           if(initialRaw) {
             verifyContent.innerHTML = `
               <h3 style="text-align:center;">正在核验密钥…</h3>
               <div class="spinner"></div>
               <p style="text-align:center;color:var(--muted);">请稍候，系统正在验证密钥…</p>
             `;
-            await new Promise(r => setTimeout(r, 1000)); // 至少1秒动画
+            await new Promise(r => setTimeout(r, 1000));
             const success = tryVerify(initialRaw);
             if(success) {
               hideVerifyModal();
@@ -375,7 +371,6 @@
             return;
           }
 
-          // 无密钥，弹出输入框
           showInputForm();
 
           function showInputForm(errorMsg) {
@@ -404,13 +399,11 @@
                 return;
               }
 
-              // 显示密钥验证动画
               verifyContent.innerHTML = `
                 <h3 style="text-align:center;">正在核验密钥…</h3>
                 <div class="spinner"></div>
                 <p style="text-align:center;color:var(--muted);">请稍候，系统正在验证密钥…</p>
               `;
-              // 1秒后再进行比对
               setTimeout(() => {
                 if(tryVerify(raw)) {
                   hideVerifyModal();
@@ -509,6 +502,27 @@
 
       function isValidCode(s) { return /^\d+$/.test(s); }
 
+      // 无资源提示弹窗
+      function showNoResourceModal(code, rawKey) {
+        statusBar.classList.remove('show');
+        verifyContent.innerHTML = `
+          <h3 style="text-align:center;color:#c62828;">未找到资源</h3>
+          <p style="text-align:center;">可能原因：文件尚未上传、系统正在更新、页面加载卡顿。</p>
+          <p style="text-align:center;">建议稍后重新查询。</p>
+          <div class="actions" style="justify-content:center;">
+            <button id="retryNoResBtn" class="btn">重新查询</button>
+            <button id="closeNoResBtn" class="btn btn-cancel">关闭</button>
+          </div>
+        `;
+        document.getElementById('retryNoResBtn').addEventListener('click', () => {
+          hideVerifyModal();
+          currentLoadedCode = null;
+          handleCode(code, rawKey);
+        });
+        document.getElementById('closeNoResBtn').addEventListener('click', hideVerifyModal);
+        showVerifyModal();
+      }
+
       async function handleCode(code, raw) {
         if(!isValidCode(code)) { showEntryModal(); return; }
         if(handling || currentLoadedCode === code) return;
@@ -576,6 +590,20 @@
 
         const stats = await loadMedia(code, onProgress);
 
+        // 处理无资源情况
+        if (stats.videoCount === 0 && stats.imageCount === 0) {
+          if (!modalClosed) {
+            // 弹窗还在，替换为无资源提示
+            showNoResourceModal(code, rawKey);
+          } else {
+            // 已经advanced，显示新弹窗并隐藏状态栏
+            showNoResourceModal(code, rawKey);
+          }
+          handling = false;
+          return;
+        }
+
+        // 有资源，显示完成结果
         if(!modalClosed) {
           verifyContent.innerHTML = `
             <div style="text-align:center;margin-bottom:8px;">
