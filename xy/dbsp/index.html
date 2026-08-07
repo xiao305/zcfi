@@ -310,20 +310,17 @@
         }
       });
 
-      function showStatusBar(text, autoHide = false) {
+      function showStatusBar(text) {
+        if (!text) return;
         statusText.textContent = text;
         statusBar.classList.add('show');
         statusClose.onclick = () => statusBar.classList.remove('show');
-        if(autoHide) setTimeout(() => statusBar.classList.remove('show'), 5000);
       }
 
-      // ---------- 密钥验证（含两阶段动画） ----------
+      // ---------- 密钥验证（1秒后开始核验，核验期间动画持续） ----------
       function verifyCode(code, initialRaw) {
         return new Promise(async (resolve) => {
-          const minTime = 1000;
-          const startTime = Date.now();
-
-          // 阶段一：核验编码
+          // 阶段1：核验编码
           verifyContent.innerHTML = `
             <h3 style="text-align:center;">正在核验编码…</h3>
             <div class="spinner"></div>
@@ -331,33 +328,25 @@
           `;
           showVerifyModal();
 
+          // 等待至少1秒
+          await new Promise(r => setTimeout(r, 1000));
+
+          // 开始请求哈希文件
           const hashUrl = `./hashes/${code}.txt?t=${Date.now()}`;
           let resp;
           try { resp = await fetch(hashUrl); } catch(e) {
-            const elapsed = Date.now() - startTime;
-            const delay = Math.max(0, minTime - elapsed);
-            setTimeout(() => {
-              verifyContent.innerHTML = `<h3 style="text-align:center;color:#c62828;">编码不存在</h3><p style="text-align:center;">请检查编码是否正确，或尝试刷新页面。</p><div style="text-align:center;margin-top:16px;"><button id="closeInvalidBtn" class="btn btn-cancel">关闭</button></div>`;
-              document.getElementById('closeInvalidBtn').addEventListener('click', () => { hideVerifyModal(); resolve(false); });
-            }, delay);
+            verifyContent.innerHTML = `<h3 style="text-align:center;color:#c62828;">编码不存在</h3><p style="text-align:center;">请检查编码是否正确，或尝试刷新页面。</p><div style="text-align:center;margin-top:16px;"><button id="closeInvalidBtn" class="btn btn-cancel">关闭</button></div>`;
+            document.getElementById('closeInvalidBtn').addEventListener('click', () => { hideVerifyModal(); resolve(false); });
             return;
           }
           if(resp.status === 404) {
-            const elapsed = Date.now() - startTime;
-            const delay = Math.max(0, minTime - elapsed);
-            setTimeout(() => {
-              verifyContent.innerHTML = `<h3 style="text-align:center;color:#c62828;">编码不存在</h3><p style="text-align:center;">请检查编码是否正确，或尝试刷新页面。</p><div style="text-align:center;margin-top:16px;"><button id="closeInvalidBtn" class="btn btn-cancel">关闭</button></div>`;
-              document.getElementById('closeInvalidBtn').addEventListener('click', () => { hideVerifyModal(); resolve(false); });
-            }, delay);
+            verifyContent.innerHTML = `<h3 style="text-align:center;color:#c62828;">编码不存在</h3><p style="text-align:center;">请检查编码是否正确，或尝试刷新页面。</p><div style="text-align:center;margin-top:16px;"><button id="closeInvalidBtn" class="btn btn-cancel">关闭</button></div>`;
+            document.getElementById('closeInvalidBtn').addEventListener('click', () => { hideVerifyModal(); resolve(false); });
             return;
           }
           if(!resp.ok) {
-            const elapsed = Date.now() - startTime;
-            const delay = Math.max(0, minTime - elapsed);
-            setTimeout(() => {
-              verifyContent.innerHTML = `<h3 style="text-align:center;color:#c62828;">服务不可用</h3><p style="text-align:center;">核验服务暂时不可用，请稍后重试。</p><div style="text-align:center;margin-top:16px;"><button id="closeFailBtn" class="btn btn-cancel">关闭</button></div>`;
-              document.getElementById('closeFailBtn').addEventListener('click', () => { hideVerifyModal(); resolve(false); });
-            }, delay);
+            verifyContent.innerHTML = `<h3 style="text-align:center;color:#c62828;">服务不可用</h3><p style="text-align:center;">核验服务暂时不可用，请稍后重试。</p><div style="text-align:center;margin-top:16px;"><button id="closeFailBtn" class="btn btn-cancel">关闭</button></div>`;
+            document.getElementById('closeFailBtn').addEventListener('click', () => { hideVerifyModal(); resolve(false); });
             return;
           }
 
@@ -368,14 +357,28 @@
             return CryptoJS.MD5(raw).toString() === storedHash;
           };
 
-          // 确保至少显示1秒
-          const waitMin = () => new Promise(r => {
-            const elapsed = Date.now() - startTime;
-            setTimeout(r, Math.max(0, minTime - elapsed));
-          });
+          // 如果URL带了密钥，进行密钥核验
+          if(initialRaw) {
+            verifyContent.innerHTML = `
+              <h3 style="text-align:center;">正在核验密钥…</h3>
+              <div class="spinner"></div>
+              <p style="text-align:center;color:var(--muted);">请稍候，系统正在验证密钥…</p>
+            `;
+            await new Promise(r => setTimeout(r, 1000)); // 至少1秒动画
+            const success = tryVerify(initialRaw);
+            if(success) {
+              hideVerifyModal();
+              resolve(initialRaw);
+            } else {
+              showInputForm('密钥不正确，请重新输入');
+            }
+            return;
+          }
 
-          // 阶段二：密钥输入（如果需要）
-          const showInputForm = (errorMsg) => {
+          // 无密钥，弹出输入框
+          showInputForm();
+
+          function showInputForm(errorMsg) {
             verifyContent.innerHTML = `
               <h3 style="text-align:center;">需要密钥</h3>
               <p style="text-align:center;">该编码已加密，请输入密钥以继续查看。</p>
@@ -401,26 +404,21 @@
                 return;
               }
 
-              // 显示核验密钥动画（至少1秒）
+              // 显示密钥验证动画
               verifyContent.innerHTML = `
                 <h3 style="text-align:center;">正在核验密钥…</h3>
                 <div class="spinner"></div>
                 <p style="text-align:center;color:var(--muted);">请稍候，系统正在验证密钥…</p>
               `;
-              const verifyStart = Date.now();
-              const inputHash = CryptoJS.MD5(raw).toString();
-              const success = (inputHash === storedHash);
-
-              const elapsed = Date.now() - verifyStart;
-              const delay = Math.max(0, 1000 - elapsed);
+              // 1秒后再进行比对
               setTimeout(() => {
-                if(success) {
+                if(tryVerify(raw)) {
                   hideVerifyModal();
                   resolve(raw);
                 } else {
                   showInputForm('密钥错误，请重新输入');
                 }
-              }, delay);
+              }, 1000);
             };
 
             keySubmit.addEventListener('click', submitHandler);
@@ -429,20 +427,6 @@
               hideVerifyModal();
               resolve(false);
             });
-          };
-
-          if(initialRaw) {
-            if(tryVerify(initialRaw)) {
-              await waitMin();
-              hideVerifyModal();
-              resolve(initialRaw);
-              return;
-            }
-            await waitMin();
-            showInputForm('密钥不正确，请重新输入');
-          } else {
-            await waitMin();
-            showInputForm();
           }
         });
       }
