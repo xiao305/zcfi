@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>包裹打包预览 • zcfi</title>
 
-  <!-- Favicon（与首页一致） -->
   <link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg">
   <link rel="icon" type="image/png" sizes="96x96" href="/favicon/favicon-96x96.png">
   <link rel="icon" type="image/x-icon" href="/favicon/favicon.ico">
@@ -14,9 +13,7 @@
   <link rel="apple-touch-icon" sizes="192x192" href="/favicon/web-app-manifest-192x192.png">
   <link rel="apple-touch-icon" sizes="512x512" href="/favicon/web-app-manifest-512x512.png">
 
-  <!-- CryptoJS MD5 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/style.css">
@@ -57,13 +54,11 @@
     .btn:hover{background:#3a5a80}
     .no-media{padding:28px;text-align:center;color:var(--muted);display:block;}
 
-    /* 输入框 */
     .code-input{
       padding:10px 12px;border-radius:10px;border:1px solid #e6eef8;background:white;width:140px;
       font-family:inherit;font-size:14px;
     }
 
-    /* 居中弹窗通用 */
     .modal-overlay{
       position:fixed;inset:0;background:rgba(3,7,18,0.6);display:none;align-items:center;justify-content:center;z-index:9999;padding:16px;
       animation:fadeIn 0.2s ease;
@@ -85,14 +80,12 @@
     .btn-cancel{background:#9aa8bf}
     .btn-cancel:hover{background:#7e8ba0}
 
-    /* 加载动画 */
     @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
     .spinner{
       width:40px;height:40px;border:4px solid #e0e7ef;border-top:4px solid var(--primary);
       border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px;
     }
 
-    /* lightbox */
     .lightbox{position:fixed;inset:0;background:rgba(3,7,18,.86);display:none;align-items:center;justify-content:center;padding:18px;z-index:9999}
     .lightbox.show{display:flex}
     .lightbox img{max-width:95%;max-height:95%;border-radius:8px}
@@ -101,7 +94,6 @@
     .lb-prev{left:18px}
     .lb-next{right:18px}
 
-    /* 页脚 */
     .page-footer{
       max-width:1100px;margin:18px auto;padding:12px 16px;color:var(--muted);font-size:12px;
       text-align:center;border-top:1px solid #eef2f7;
@@ -127,13 +119,11 @@
         <div class="title-row">
           <h2 id="codeTitle">编码：—</h2>
         </div>
-
         <div id="videoArea" style="margin-top:12px">
           <div class="video-box" id="videoBox">
             <div id="videoNo" class="no-media">请输入编码</div>
           </div>
         </div>
-
         <div style="margin-top:12px">
           <div class="title-row">
             <div><strong>打包图片</strong></div>
@@ -157,7 +147,6 @@
     </div>
   </main>
 
-  <!-- 页脚声明 -->
   <footer class="page-footer">
     <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:12px;">
       <span>© 2026 zcfi.cn</span>
@@ -184,14 +173,13 @@
     </div>
   </div>
 
-  <!-- 通用核验/提示弹窗（动态内容） -->
+  <!-- 通用验证/提示弹窗 -->
   <div class="modal-overlay" id="verifyModal">
     <div class="modal" role="dialog" aria-modal="true">
       <div id="verifyContent"></div>
     </div>
   </div>
 
-  <!-- Lightbox -->
   <div class="lightbox" id="lightbox">
     <div class="lb-close" id="lbClose">关闭 ✕</div>
     <div class="lb-nav lb-prev" id="lbPrev">‹</div>
@@ -201,24 +189,17 @@
 
   <script>
     (function(){
-      // ---------- 配置 ----------
       const videoExts = ['mp4', 'webm', 'ogg'];
       const imgExts = ['jpg', 'jpeg', 'png'];
 
-      function allCaseExts(list) {
-        return list.flatMap(ext => [ext, ext.toUpperCase()]);
-      }
-
-      function videoCandidates(code) {
-        return allCaseExts(videoExts).map(ext => `./videos/${code}.${ext}`);
-      }
-
+      function allCaseExts(list) { return list.flatMap(ext => [ext, ext.toUpperCase()]); }
+      function videoCandidates(code) { return allCaseExts(videoExts).map(ext => `./videos/${code}.${ext}`); }
       function imageCandidates(code) {
         const arr = [];
-        const allImgExts = allCaseExts(imgExts);
-        allImgExts.forEach(ext => arr.push(`./images/${code}.${ext}`));
+        const all = allCaseExts(imgExts);
+        all.forEach(ext => arr.push(`./images/${code}.${ext}`));
         for (let i = 1; i <= 6; i++) {
-          allImgExts.forEach(ext => {
+          all.forEach(ext => {
             arr.push(`./images/${code}_${i}.${ext}`);
             arr.push(`./images/${code}-${i}.${ext}`);
           });
@@ -226,7 +207,6 @@
         return arr;
       }
 
-      // ---------- DOM ----------
       const entryModal = document.getElementById('entryModal');
       const entryInput = document.getElementById('entryInput');
       const entryLoad = document.getElementById('entryLoad');
@@ -252,7 +232,6 @@
       let loadAbort = false;
       let handling = false;
 
-      // Lightbox
       function openLightbox(i){
         if(!galleryList.length) return;
         curIndex = (i + galleryList.length) % galleryList.length;
@@ -271,21 +250,16 @@
         if(e.key==='Escape') closeLightbox();
       });
 
-      // --- 文件存在性检测 ---
       function checkVideoExists(url) {
         return new Promise(resolve => {
           fetch(url, { method: 'HEAD' })
-            .then(resp => {
-              if (resp.ok) return resolve(true);
-              throw new Error('HEAD failed');
-            })
+            .then(resp => { if(resp.ok) resolve(true); else throw new Error(); })
             .catch(() => {
               const v = document.createElement('video');
-              const timer = setTimeout(() => { resolve(false); }, 4000);
-              v.onloadedmetadata = () => { clearTimeout(timer); resolve(true); };
-              v.onerror = () => { clearTimeout(timer); resolve(false); };
-              v.preload = 'metadata';
-              v.src = url;
+              const t = setTimeout(() => resolve(false), 4000);
+              v.onloadedmetadata = () => { clearTimeout(t); resolve(true); };
+              v.onerror = () => { clearTimeout(t); resolve(false); };
+              v.preload = 'metadata'; v.src = url;
             });
         });
       }
@@ -299,208 +273,140 @@
         });
       }
 
-      // --- 弹窗工具 ---
       function showEntryModal() { entryModal.classList.add('show'); entryInput.focus(); }
       function hideEntryModal() { entryModal.classList.remove('show'); }
       function showVerifyModal() { verifyModal.classList.add('show'); }
       function hideVerifyModal() { verifyModal.classList.remove('show'); }
 
-      // 通用关闭事件
-      entryModal.addEventListener('click', e => { if (e.target === entryModal) hideEntryModal(); });
-      verifyModal.addEventListener('click', e => { if (e.target === verifyModal) hideVerifyModal(); });
+      entryModal.addEventListener('click', e => { if(e.target === entryModal) hideEntryModal(); });
+      verifyModal.addEventListener('click', e => { if(e.target === verifyModal) hideVerifyModal(); });
       document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') {
-          if (entryModal.classList.contains('show')) hideEntryModal();
-          if (verifyModal.classList.contains('show')) hideVerifyModal();
+        if(e.key === 'Escape') {
+          if(entryModal.classList.contains('show')) hideEntryModal();
+          if(verifyModal.classList.contains('show')) hideVerifyModal();
         }
       });
 
-      // ---------- 弹窗内容渲染 ----------
-      // 1. 核验加载中
-      function renderVerifyLoading(code) {
-        verifyContent.innerHTML = `
-          <h3 style="text-align:center;">正在核验编码 ${code}</h3>
-          <div class="spinner"></div>
-          <p style="text-align:center;color:var(--muted);">请稍候，系统正在验证资源…</p>
-          <div style="text-align:center;margin-top:12px;">
-            <button id="verifyCancelBtn" class="btn btn-cancel" style="font-size:12px;">取消</button>
-          </div>
-        `;
-        document.getElementById('verifyCancelBtn').addEventListener('click', () => {
-          loadAbort = true;
-          hideVerifyModal();
-        });
-      }
+      // ---------- 统一的密钥验证（处理所有交互） ----------
+      function verifyCode(code, initialRaw) {
+        return new Promise(async (resolve) => {
+          // 1. 显示加载状态
+          verifyContent.innerHTML = `
+            <h3 style="text-align:center;">正在核验编码 ${code}</h3>
+            <div class="spinner"></div>
+            <p style="text-align:center;color:var(--muted);">请稍候，系统正在验证资源…</p>
+          `;
+          showVerifyModal();
 
-      // 2. 密钥输入框
-      function renderKeyInput(code, storedHash, onSuccess) {
-        verifyContent.innerHTML = `
-          <h3 style="text-align:center;">需要原始密钥</h3>
-          <p style="text-align:center;">该编码已加密，请输入原始密钥以继续查看。</p>
-          <div class="row">
-            <input id="keyInput" class="code-input" type="text" placeholder="请输入原始密钥" autocomplete="off" />
-            <button id="keySubmit" class="btn">验证</button>
-          </div>
-          <div style="text-align:center;margin-top:12px;">
-            <button id="keyCancel" class="btn btn-cancel" style="font-size:12px;">取消</button>
-          </div>
-          <p id="keyError" style="color:#c33;font-size:13px;margin-top:8px;display:none;"></p>
-        `;
-        const keyInput = document.getElementById('keyInput');
-        const keySubmit = document.getElementById('keySubmit');
-        const keyCancel = document.getElementById('keyCancel');
-        const keyError = document.getElementById('keyError');
-
-        const trySubmit = () => {
-          const raw = keyInput.value.trim();
-          if (!raw) {
-            keyError.style.display = 'block';
-            keyError.textContent = '请输入密钥';
+          // 2. 请求哈希文件
+          const hashUrl = `./hashes/${code}.txt?t=${Date.now()}`;
+          let resp;
+          try { resp = await fetch(hashUrl); } catch(e) {
+            verifyContent.innerHTML = `
+              <h3 style="text-align:center;color:#c62828;">无效编码</h3>
+              <p style="text-align:center;">未找到该编码的哈希文件，请检查链接是否正确。</p>
+              <div style="text-align:center;margin-top:16px;">
+                <button id="closeInvalidBtn" class="btn btn-cancel">关闭</button>
+              </div>
+            `;
+            document.getElementById('closeInvalidBtn').addEventListener('click', () => { hideVerifyModal(); resolve(false); });
             return;
           }
-          const inputHash = CryptoJS.MD5(raw).toString();
-          if (inputHash === storedHash) {
-            hideVerifyModal();
-            onSuccess();
-          } else {
-            keyError.style.display = 'block';
-            keyError.textContent = '密钥错误，请重新输入';
+          if(resp.status === 404) {
+            verifyContent.innerHTML = `
+              <h3 style="text-align:center;color:#c62828;">无效编码</h3>
+              <p style="text-align:center;">未找到该编码的哈希文件，请检查链接是否正确。</p>
+              <div style="text-align:center;margin-top:16px;">
+                <button id="closeInvalidBtn" class="btn btn-cancel">关闭</button>
+              </div>
+            `;
+            document.getElementById('closeInvalidBtn').addEventListener('click', () => { hideVerifyModal(); resolve(false); });
+            return;
           }
-        };
-        keySubmit.addEventListener('click', trySubmit);
-        keyInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') trySubmit(); });
-        keyCancel.addEventListener('click', hideVerifyModal);
-      }
-
-      // 3. 密钥错误提示（仅提示，无重试/刷新）
-      function renderKeyError() {
-        verifyContent.innerHTML = `
-          <h3 style="text-align:center;color:#c62828;">密钥核验失败</h3>
-          <p style="text-align:center;">提供的密钥不正确，无法查看内容。密钥请联系网址提供方获取。</p>
-          <div style="text-align:center;margin-top:16px;">
-            <button id="manualInputBtn" class="btn">手动输入密钥</button>
-          </div>
-        `;
-        // 获取当前的 storedHash 和 code 供重新输入使用（需要缓存）
-        // 简单处理：直接在外部绑定
-      }
-
-      // 4. 查找资源加载中（核验通过后）
-      function renderScanning() {
-        verifyContent.innerHTML = `
-          <h3 style="text-align:center;">正在查找资源</h3>
-          <div class="spinner"></div>
-          <p style="text-align:center;color:var(--muted);">正在扫描视频与图片文件，请稍后…</p>
-        `;
-      }
-
-      // 5. 查找完成（显示统计与倒计时）
-      function renderScanResult(videoCount, imageCount, autoCloseSeconds = 5) {
-        verifyContent.innerHTML = `
-          <h3 style="text-align:center;color:#2e7d32;">资源查找完成</h3>
-          <p style="text-align:center;">共找到 <strong>${videoCount}</strong> 个视频，<strong>${imageCount}</strong> 张图片。</p>
-          <p style="text-align:center;font-size:13px;color:var(--muted);">页面即将加载，弹窗将在 <span id="autoCloseTimer">${autoCloseSeconds}</span> 秒后自动关闭</p>
-          <div style="text-align:center;margin-top:12px;">
-            <button id="closeScanNow" class="btn">立即查看</button>
-          </div>
-        `;
-        let sec = autoCloseSeconds;
-        const timerSpan = document.getElementById('autoCloseTimer');
-        const countdown = setInterval(() => {
-          sec--;
-          if (sec <= 0) {
-            clearInterval(countdown);
-            hideVerifyModal();
-          } else {
-            timerSpan.textContent = sec;
+          if(!resp.ok) {
+            verifyContent.innerHTML = `
+              <h3 style="text-align:center;color:#c62828;">服务不可用</h3>
+              <p style="text-align:center;">核验服务暂时不可用，请稍后重试。</p>
+              <div style="text-align:center;margin-top:16px;">
+                <button id="closeFailBtn" class="btn btn-cancel">关闭</button>
+              </div>
+            `;
+            document.getElementById('closeFailBtn').addEventListener('click', () => { hideVerifyModal(); resolve(false); });
+            return;
           }
-        }, 1000);
-        document.getElementById('closeScanNow').addEventListener('click', () => {
-          clearInterval(countdown);
-          hideVerifyModal();
+
+          const storedHash = (await resp.text()).trim();
+
+          // 3. 内部函数：尝试用给定的 raw 进行比对
+          const tryVerify = (raw) => {
+            if(!raw) return false;
+            return CryptoJS.MD5(raw).toString() === storedHash;
+          };
+
+          // 4. 如果提供了 initialRaw，先尝试自动验证
+          if(initialRaw) {
+            if(tryVerify(initialRaw)) {
+              hideVerifyModal();
+              resolve(true);
+              return;
+            }
+            // 自动验证失败 -> 进入输入界面，并显示错误提示
+          }
+
+          // 5. 显示密钥输入界面（可带错误消息）
+          const showInputForm = (errorMsg) => {
+            verifyContent.innerHTML = `
+              <h3 style="text-align:center;">需要原始密钥</h3>
+              <p style="text-align:center;">该编码已加密，请输入原始密钥以继续查看。</p>
+              <div class="row">
+                <input id="keyInput" class="code-input" type="text" placeholder="请输入原始密钥" autocomplete="off" />
+                <button id="keySubmit" class="btn">验证</button>
+              </div>
+              <div style="text-align:center;margin-top:12px;">
+                <button id="keyCancel" class="btn btn-cancel">取消</button>
+              </div>
+              <p id="keyError" style="color:#c33;font-size:13px;margin-top:8px;${errorMsg ? '' : 'display:none;'}">${errorMsg || ''}</p>
+            `;
+            const keyInput = document.getElementById('keyInput');
+            const keySubmit = document.getElementById('keySubmit');
+            const keyCancelBtn = document.getElementById('keyCancel');
+            const keyError = document.getElementById('keyError');
+
+            const submitHandler = () => {
+              const raw = keyInput.value.trim();
+              if(!raw) {
+                keyError.style.display = 'block';
+                keyError.textContent = '请输入密钥';
+                return;
+              }
+              if(tryVerify(raw)) {
+                hideVerifyModal();
+                resolve(true);
+              } else {
+                keyError.style.display = 'block';
+                keyError.textContent = '密钥错误，请重新输入';
+                keyInput.value = '';
+                keyInput.focus();
+              }
+            };
+            keySubmit.addEventListener('click', submitHandler);
+            keyInput.addEventListener('keydown', e => { if(e.key === 'Enter') submitHandler(); });
+            keyCancelBtn.addEventListener('click', () => {
+              hideVerifyModal();
+              resolve(false);
+            });
+          };
+
+          // 根据 initialRaw 的情况决定显示什么
+          if(initialRaw) {
+            showInputForm('提供的密钥不正确，请手动输入');
+          } else {
+            showInputForm();
+          }
         });
       }
 
-      // 6. 编码无效提示
-      function renderInvalidCode() {
-        verifyContent.innerHTML = `
-          <h3 style="text-align:center;color:#c62828;">无效编码</h3>
-          <p style="text-align:center;">未找到该编码的哈希文件，请检查链接是否正确。</p>
-          <div style="text-align:center;margin-top:16px;">
-            <button id="closeInvalidBtn" class="btn btn-cancel">关闭</button>
-          </div>
-        `;
-        document.getElementById('closeInvalidBtn').addEventListener('click', hideVerifyModal);
-      }
-
-      // ---------- 核心验证流程 ----------
-      async function performVerification(code, rawInput) {
-        showVerifyModal();
-        renderVerifyLoading(code);
-
-        const hashUrl = `./hashes/${code}.txt?t=${Date.now()}`;
-        let resp;
-        try {
-          resp = await fetch(hashUrl);
-        } catch (e) {
-          renderInvalidCode();
-          return { success: false, storedHash: null };
-        }
-
-        if (resp.status === 404) {
-          renderInvalidCode();
-          return { success: false, storedHash: null };
-        }
-
-        if (!resp.ok) {
-          renderInvalidCode();
-          return { success: false, storedHash: null };
-        }
-
-        const storedHash = (await resp.text()).trim();
-
-        // 有原始值则直接比对
-        if (rawInput !== undefined && rawInput !== null && rawInput !== '') {
-          const inputHash = CryptoJS.MD5(rawInput).toString();
-          if (inputHash === storedHash) {
-            hideVerifyModal();
-            return { success: true, storedHash };
-          } else {
-            // 密钥错误 -> 显示特定错误页，并提供手动输入
-            renderKeyError();
-            // 绑定手动输入按钮：重新弹出密钥输入框
-            setTimeout(() => {
-              const manualBtn = document.getElementById('manualInputBtn');
-              if (manualBtn) {
-                manualBtn.addEventListener('click', () => {
-                  renderKeyInput(code, storedHash, () => {
-                    // 密钥验证成功后的处理（外部继续）
-                    // 但这里需要与外部协调，采用回调方式
-                  });
-                });
-              }
-            }, 0);
-            return { success: false, storedHash };
-          }
-        } else {
-          // 无原始值，弹出输入框
-          return new Promise(resolve => {
-            renderKeyInput(code, storedHash, () => {
-              resolve({ success: true, storedHash });
-            });
-            // 如果用户取消输入框（keyCancel），不会调用 resolve，但我们需要处理取消逻辑
-            // 简化：取消时直接关闭验证弹窗，不做任何操作
-            const originalCancel = document.getElementById('keyCancel');
-            if (originalCancel) {
-              originalCancel.addEventListener('click', () => {
-                resolve({ success: false, storedHash: null });
-              });
-            }
-          });
-        }
-      }
-
-      // ---------- 媒体加载（同时统计数量） ----------
+      // ---------- 媒体加载 ----------
       async function loadMedia(code) {
         loadAbort = true;
         await new Promise(r => setTimeout(r, 30));
@@ -508,7 +414,6 @@
         currentLoadedCode = code;
 
         codeTitle.textContent = '编码：' + code;
-
         videoBox.querySelectorAll('video').forEach(v => v.remove());
         videoNo.style.display = 'block';
         videoNo.textContent = '正在查找视频…';
@@ -518,59 +423,43 @@
         imgNo.textContent = '正在查找图片…';
         imgCount.textContent = '—';
 
-        let videoFound = 0;
-        let imageFound = 0;
+        let videoFound = 0, imageFound = 0;
 
         const videoPromise = (async () => {
-          const videoUrls = videoCandidates(code);
-          for (const url of videoUrls) {
-            if (loadAbort) return;
-            const exists = await checkVideoExists(url);
-            if (exists && !loadAbort) {
-              if (videoFound === 0) {
+          for(const url of videoCandidates(code)) {
+            if(loadAbort) return;
+            if(await checkVideoExists(url) && !loadAbort) {
+              if(videoFound === 0) {
                 videoNo.style.display = 'none';
                 const v = document.createElement('video');
-                v.controls = true;
-                v.playsInline = true;
-                v.muted = true;
-                v.src = url;
+                v.controls = true; v.playsInline = true; v.muted = true; v.src = url;
                 videoBox.appendChild(v);
               }
               videoFound++;
             }
           }
-          if (videoFound === 0 && !loadAbort) {
-            videoNo.textContent = '未找到视频资源';
-          }
+          if(videoFound === 0 && !loadAbort) videoNo.textContent = '未找到视频资源';
         })();
 
         const imagePromise = (async () => {
-          const imageUrls = imageCandidates(code);
-          const foundUrls = [];
-          for (const url of imageUrls) {
-            if (loadAbort) return;
-            const exists = await checkImageExists(url);
-            if (exists && !loadAbort) {
-              foundUrls.push(url);
+          for(const url of imageCandidates(code)) {
+            if(loadAbort) return;
+            if(await checkImageExists(url) && !loadAbort) {
               const thumb = document.createElement('div');
               thumb.className = 'thumb';
               const img = document.createElement('img');
-              img.src = url;
-              img.alt = code + ' - ' + foundUrls.length;
-              img.loading = 'lazy';
+              img.src = url; img.alt = code; img.loading = 'lazy';
               thumb.appendChild(img);
-              const currentIndex = galleryList.length;
-              thumb.addEventListener('click', () => openLightbox(currentIndex));
+              const idx = galleryList.length;
+              thumb.addEventListener('click', () => openLightbox(idx));
               gallery.appendChild(thumb);
               galleryList.push(url);
               imageFound++;
               imgCount.textContent = galleryList.length + ' 张';
-              if (galleryList.length === 1) {
-                imgNo.style.display = 'none';
-              }
+              if(galleryList.length === 1) imgNo.style.display = 'none';
             }
           }
-          if (imageFound === 0 && !loadAbort) {
+          if(imageFound === 0 && !loadAbort) {
             imgNo.style.display = 'block';
             imgNo.textContent = '未找到图片资源';
             imgCount.textContent = '0';
@@ -578,84 +467,89 @@
         })();
 
         await Promise.all([videoPromise, imagePromise]);
-
-        // 返回统计结果
         return { videoCount: videoFound, imageCount: imageFound };
       }
 
-      // ---------- 统一入口 ----------
+      // ---------- 扫描结果弹窗 ----------
+      function showScanResult(videoCount, imageCount) {
+        verifyContent.innerHTML = `
+          <h3 style="text-align:center;color:#2e7d32;">资源查找完成</h3>
+          <p style="text-align:center;">共找到 <strong>${videoCount}</strong> 个视频，<strong>${imageCount}</strong> 张图片。</p>
+          <p style="text-align:center;font-size:13px;color:var(--muted);">弹窗将在 <span id="autoCloseTimer">5</span> 秒后自动关闭</p>
+          <div style="text-align:center;margin-top:12px;">
+            <button id="closeScanNow" class="btn">立即查看</button>
+          </div>
+        `;
+        let sec = 5;
+        const timerSpan = document.getElementById('autoCloseTimer');
+        const countdown = setInterval(() => {
+          sec--;
+          if(sec <= 0) { clearInterval(countdown); hideVerifyModal(); }
+          else timerSpan.textContent = sec;
+        }, 1000);
+        document.getElementById('closeScanNow').addEventListener('click', () => {
+          clearInterval(countdown);
+          hideVerifyModal();
+        });
+        showVerifyModal();
+      }
+
+      // ---------- 主流程 ----------
       function parseHash() {
         const h = location.hash ? location.hash.replace(/^#/, '') : '';
         const decoded = decodeURIComponent(h || '').trim();
-        if (!decoded) return { code: null, raw: null };
+        if(!decoded) return { code: null, raw: null };
         const eqIndex = decoded.indexOf('=');
-        if (eqIndex === -1) return { code: decoded, raw: null };
-        const code = decoded.substring(0, eqIndex);
-        const raw = decoded.substring(eqIndex + 1);
-        return { code, raw };
+        if(eqIndex === -1) return { code: decoded, raw: null };
+        return { code: decoded.substring(0, eqIndex), raw: decoded.substring(eqIndex + 1) };
       }
 
       function isValidCode(s) { return /^\d+$/.test(s); }
 
       async function handleCode(code, raw) {
-        if (!isValidCode(code)) {
-          showEntryModal();
-          return;
-        }
-        if (handling || currentLoadedCode === code) return;
+        if(!isValidCode(code)) { showEntryModal(); return; }
+        if(handling || currentLoadedCode === code) return;
         handling = true;
 
-        // 1. 核验
-        const verifyResult = await performVerification(code, raw);
-        if (!verifyResult.success) {
-          // 如果是密钥错误弹窗已经展示了，无需额外操作；如果是取消输入，直接结束
-          if (!verifyModal.classList.contains('show')) {
-            // 用户取消了输入框
-          }
-          handling = false;
-          return;
-        }
+        // 验证（内部控制弹窗）
+        const verified = await verifyCode(code, raw);
+        if(!verified) { handling = false; return; }
 
-        // 2. 核验通过，显示扫描资源弹窗
+        // 扫描
+        verifyContent.innerHTML = `
+          <h3 style="text-align:center;">正在查找资源</h3>
+          <div class="spinner"></div>
+          <p style="text-align:center;color:var(--muted);">正在扫描视频与图片文件，请稍后…</p>
+        `;
         showVerifyModal();
-        renderScanning();
 
-        // 3. 加载媒体并获取统计
         const stats = await loadMedia(code);
-
-        // 4. 显示结果并自动关闭
-        renderScanResult(stats.videoCount, stats.imageCount, 5);
-
+        showScanResult(stats.videoCount, stats.imageCount);
         handling = false;
       }
 
       // 事件绑定
       entryLoad.addEventListener('click', () => {
         const v = (entryInput.value || '').trim();
-        if (!isValidCode(v)) { alert('请输入纯数字编码'); entryInput.focus(); return; }
+        if(!isValidCode(v)) { alert('请输入纯数字编码'); entryInput.focus(); return; }
         hideEntryModal();
         handleCode(v, null);
       });
-
       entryCancel.addEventListener('click', hideEntryModal);
-
       window.addEventListener('hashchange', () => {
         const { code, raw } = parseHash();
-        if (code && isValidCode(code)) handleCode(code, raw);
+        if(code && isValidCode(code)) handleCode(code, raw);
       });
 
       // 启动
-      (function start() {
-        const { code, raw } = parseHash();
-        if (code && isValidCode(code)) {
-          handleCode(code, raw);
-        } else {
-          videoNo.textContent = '请输入编码';
-          imgNo.textContent = '请输入编码';
-          imgNo.style.display = 'block';
-          showEntryModal();
-        }
-      })();
+      const { code, raw } = parseHash();
+      if(code && isValidCode(code)) handleCode(code, raw);
+      else {
+        videoNo.textContent = '请输入编码';
+        imgNo.textContent = '请输入编码';
+        imgNo.style.display = 'block';
+        showEntryModal();
+      }
     })();
   </script>
 </body>
