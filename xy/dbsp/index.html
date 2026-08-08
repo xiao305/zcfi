@@ -273,26 +273,34 @@
         if(e.key==='Escape') closeLightbox();
       });
 
-      function checkVideoExists(url) {
+      function checkFileExists(url) {
         return new Promise(resolve => {
           fetch(url, { method: 'HEAD' })
-            .then(resp => { if(resp.ok) resolve(true); else throw new Error(); })
+            .then(resp => {
+              if(resp.ok) return resolve(true);
+              // 部分服务器HEAD可能返回404，但实际资源存在，降级为创建元素检测
+              if(url.match(/\.(mp4|webm|ogg)$/i)) {
+                const v = document.createElement('video');
+                const t = setTimeout(() => resolve(false), 3000);
+                v.onloadedmetadata = () => { clearTimeout(t); resolve(true); };
+                v.onerror = () => { clearTimeout(t); resolve(false); };
+                v.preload = 'metadata'; v.src = url;
+              } else {
+                resolve(false);
+              }
+            })
             .catch(() => {
-              const v = document.createElement('video');
-              const t = setTimeout(() => resolve(false), 4000);
-              v.onloadedmetadata = () => { clearTimeout(t); resolve(true); };
-              v.onerror = () => { clearTimeout(t); resolve(false); };
-              v.preload = 'metadata'; v.src = url;
+              // 网络错误，同样尝试降级
+              if(url.match(/\.(mp4|webm|ogg)$/i)) {
+                const v = document.createElement('video');
+                const t = setTimeout(() => resolve(false), 3000);
+                v.onloadedmetadata = () => { clearTimeout(t); resolve(true); };
+                v.onerror = () => { clearTimeout(t); resolve(false); };
+                v.preload = 'metadata'; v.src = url;
+              } else {
+                resolve(false);
+              }
             });
-        });
-      }
-
-      function checkImageExists(url) {
-        return new Promise(resolve => {
-          const img = new Image();
-          img.onload = () => resolve(true);
-          img.onerror = () => resolve(false);
-          img.src = url;
         });
       }
 
@@ -317,7 +325,7 @@
         statusClose.onclick = () => statusBar.classList.remove('show');
       }
 
-      // ---------- 密钥验证（1秒后开始核验，核验期间动画持续） ----------
+      // ---------- 密钥验证（1秒后开始核验） ----------
       function verifyCode(code, initialRaw) {
         return new Promise(async (resolve) => {
           verifyContent.innerHTML = `
@@ -424,8 +432,8 @@
         });
       }
 
-      // 媒体加载
-      async function loadMedia(code, onProgress) {
+      // ---------- 批量扫描与加载 ----------
+      async function scanAndLoadMedia(code) {
         loadAbort = true;
         await new Promise(r => setTimeout(r, 30));
         loadAbort = false;
@@ -434,61 +442,127 @@
         codeTitle.textContent = '编码：' + code;
         videoBox.querySelectorAll('video').forEach(v => v.remove());
         videoNo.style.display = 'block';
-        videoNo.textContent = '正在查找视频…';
+        videoNo.textContent = '正在扫描资源…';
         gallery.innerHTML = '';
         galleryList = [];
         imgNo.style.display = 'block';
-        imgNo.textContent = '正在查找图片…';
+        imgNo.textContent = '正在扫描资源…';
         imgCount.textContent = '—';
 
-        let videoFound = 0, imageFound = 0;
-        const notify = () => { if(onProgress) onProgress(videoFound, imageFound); };
+        // 显示扫描弹窗
+        verifyContent.innerHTML = `
+          <div style="text-align:center;margin-bottom:8px;">
+            <span style="background:#e8f5e9;color:#2e7d32;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:500;">密钥核验成功</span>
+          </div>
+          <h3 style="text-align:center;">正在查找资源</h3>
+          <div class="spinner"></div>
+          <p style="text-align:center;color:var(--muted);">正在扫描视频与图片文件…</p>
+        `;
+        showVerifyModal();
 
-        const videoPromise = (async () => {
-          for(const url of videoCandidates(code)) {
-            if(loadAbort) return;
-            if(await checkVideoExists(url) && !loadAbort) {
-              if(videoFound === 0) {
-                videoNo.style.display = 'none';
-                const v = document.createElement('video');
-                v.controls = true; v.playsInline = true; v.muted = true; v.src = url;
-                videoBox.appendChild(v);
-              }
-              videoFound++;
-              notify();
-            }
-          }
-          if(videoFound === 0 && !loadAbort) videoNo.textContent = '未找到视频资源';
-        })();
+        // 获取所有候选URL
+        const videoUrls = videoCandidates(code);
+        const imageUrls = imageCandidates(code);
+        const allUrls = [...videoUrls, ...imageUrls];
 
-        const imagePromise = (async () => {
-          for(const url of imageCandidates(code)) {
-            if(loadAbort) return;
-            if(await checkImageExists(url) && !loadAbort) {
-              const thumb = document.createElement('div');
-              thumb.className = 'thumb';
-              const img = document.createElement('img');
-              img.src = url; img.alt = code; img.loading = 'lazy';
-              thumb.appendChild(img);
-              const idx = galleryList.length;
-              thumb.addEventListener('click', () => openLightbox(idx));
-              gallery.appendChild(thumb);
-              galleryList.push(url);
-              imageFound++;
-              imgCount.textContent = galleryList.length + ' 张';
-              if(galleryList.length === 1) imgNo.style.display = 'none';
-              notify();
-            }
+        // 并行检查所有文件存在性
+        const results = await Promise.allSettled(allUrls.map(url => checkFileExists(url)));
+        const existingUrls = new Set();
+        results.forEach((res, idx) => {
+          if(res.status === 'fulfilled' && res.value === true) {
+            existingUrls.add(allUrls[idx]);
           }
-          if(imageFound === 0 && !loadAbort) {
-            imgNo.style.display = 'block';
-            imgNo.textContent = '未找到图片资源';
-            imgCount.textContent = '0';
-          }
-        })();
+        });
 
-        await Promise.all([videoPromise, imagePromise]);
-        return { videoCount: videoFound, imageCount: imageFound };
+        // 分类
+        const existingVideos = videoUrls.filter(url => existingUrls.has(url));
+        const existingImages = imageUrls.filter(url => existingUrls.has(url));
+
+        // 加载视频（取第一个）
+        if(existingVideos.length > 0) {
+          videoNo.style.display = 'none';
+          const v = document.createElement('video');
+          v.controls = true; v.playsInline = true; v.muted = true;
+          v.src = existingVideos[0];
+          videoBox.appendChild(v);
+        } else {
+          videoNo.textContent = '未找到视频资源';
+        }
+
+        // 加载图片画廊
+        if(existingImages.length > 0) {
+          imgNo.style.display = 'none';
+          existingImages.forEach((src, idx) => {
+            const thumb = document.createElement('div');
+            thumb.className = 'thumb';
+            const img = document.createElement('img');
+            img.src = src; img.alt = code; img.loading = 'lazy';
+            thumb.appendChild(img);
+            const lightboxIdx = galleryList.length;
+            thumb.addEventListener('click', () => openLightbox(lightboxIdx));
+            gallery.appendChild(thumb);
+            galleryList.push(src);
+          });
+          imgCount.textContent = galleryList.length + ' 张';
+        } else {
+          imgNo.style.display = 'block';
+          imgNo.textContent = '未找到图片资源';
+          imgCount.textContent = '0';
+        }
+
+        const stats = {
+          videoCount: existingVideos.length,
+          imageCount: existingImages.length
+        };
+
+        // 若无任何资源
+        if(stats.videoCount === 0 && stats.imageCount === 0) {
+          verifyContent.innerHTML = `
+            <h3 style="text-align:center;color:#c62828;">未找到资源</h3>
+            <p style="text-align:center;">可能原因：文件尚未上传、系统正在更新、页面加载卡顿。</p>
+            <p style="text-align:center;">建议稍后重新查询。</p>
+            <div class="actions" style="justify-content:center;">
+              <button id="retryNoResBtn" class="btn">重新查询</button>
+              <button id="closeNoResBtn" class="btn btn-cancel">关闭</button>
+            </div>
+          `;
+          document.getElementById('retryNoResBtn').addEventListener('click', () => {
+            hideVerifyModal();
+            currentLoadedCode = null;
+            handleCode(code, null);
+          });
+          document.getElementById('closeNoResBtn').addEventListener('click', hideVerifyModal);
+          return;
+        }
+
+        // 有资源：显示完成弹窗，30秒自动关闭
+        verifyContent.innerHTML = `
+          <div style="text-align:center;margin-bottom:8px;">
+            <span style="background:#e8f5e9;color:#2e7d32;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:500;">密钥核验成功</span>
+          </div>
+          <h3 style="text-align:center;color:#2e7d32;">资源查找完成</h3>
+          <p style="text-align:center;">共找到 <strong>${stats.videoCount}</strong> 个视频，<strong>${stats.imageCount}</strong> 张图片。</p>
+          <p style="text-align:center;font-size:13px;color:var(--muted);">文件首次加载可能较慢，请耐心等待，加载完成后可正常播放。</p>
+          <p style="text-align:center;font-size:13px;color:var(--muted);">弹窗将在 <span id="autoCloseTimer">30</span> 秒后自动关闭</p>
+          <div style="text-align:center;margin-top:12px;">
+            <button id="closeScanNow" class="btn">立即查看</button>
+          </div>
+        `;
+        let sec = 30;
+        const timerSpan = document.getElementById('autoCloseTimer');
+        const countdown = setInterval(() => {
+          sec--;
+          if(sec <= 0) {
+            clearInterval(countdown);
+            hideVerifyModal();
+          } else {
+            timerSpan.textContent = sec;
+          }
+        }, 1000);
+        document.getElementById('closeScanNow').addEventListener('click', () => {
+          clearInterval(countdown);
+          hideVerifyModal();
+        });
       }
 
       function parseHash() {
@@ -501,27 +575,6 @@
       }
 
       function isValidCode(s) { return /^\d+$/.test(s); }
-
-      // 无资源提示弹窗
-      function showNoResourceModal(code, rawKey) {
-        statusBar.classList.remove('show');
-        verifyContent.innerHTML = `
-          <h3 style="text-align:center;color:#c62828;">未找到资源</h3>
-          <p style="text-align:center;">可能原因：文件尚未上传、系统正在更新、页面加载卡顿。</p>
-          <p style="text-align:center;">建议稍后重新查询。</p>
-          <div class="actions" style="justify-content:center;">
-            <button id="retryNoResBtn" class="btn">重新查询</button>
-            <button id="closeNoResBtn" class="btn btn-cancel">关闭</button>
-          </div>
-        `;
-        document.getElementById('retryNoResBtn').addEventListener('click', () => {
-          hideVerifyModal();
-          currentLoadedCode = null;
-          handleCode(code, rawKey);
-        });
-        document.getElementById('closeNoResBtn').addEventListener('click', hideVerifyModal);
-        showVerifyModal();
-      }
 
       async function handleCode(code, raw) {
         if(!isValidCode(code)) { showEntryModal(); return; }
@@ -536,105 +589,7 @@
           location.hash = `#${code}=${encodeURIComponent(rawKey)}`;
         }
 
-        let modalClosed = false;
-        const renderScanModal = (vCount, iCount) => {
-          verifyContent.innerHTML = `
-            <div style="text-align:center;margin-bottom:8px;">
-              <span style="background:#e8f5e9;color:#2e7d32;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:500;">密钥核验成功</span>
-            </div>
-            <h3 style="text-align:center;">正在查找资源</h3>
-            <div style="text-align:center;margin:12px 0;font-size:15px;">
-              已找到 <strong>${vCount}</strong> 个视频，<strong>${iCount}</strong> 张图片
-            </div>
-            <div class="spinner"></div>
-            <div style="text-align:center;margin-top:12px;">
-              <button id="goInsideBtn" class="btn">先进去看看</button>
-            </div>
-            <p class="small-note">点击“先进去看看”不会中断查找，可先查看已加载内容</p>
-          `;
-          document.getElementById('goInsideBtn').addEventListener('click', () => {
-            hideVerifyModal();
-            modalClosed = true;
-            showStatusBar(`正在持续查找… 已找到 ${vCount} 个视频，${iCount} 张图片`);
-          });
-          if(!verifyModal.classList.contains('show')) showVerifyModal();
-        };
-
-        renderScanModal(0, 0);
-
-        const onProgress = (vCount, iCount) => {
-          if(!modalClosed) {
-            verifyContent.innerHTML = `
-              <div style="text-align:center;margin-bottom:8px;">
-                <span style="background:#e8f5e9;color:#2e7d32;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:500;">密钥核验成功</span>
-              </div>
-              <h3 style="text-align:center;">正在查找资源</h3>
-              <div style="text-align:center;margin:12px 0;font-size:15px;">
-                已找到 <strong>${vCount}</strong> 个视频，<strong>${iCount}</strong> 张图片
-              </div>
-              <div class="spinner"></div>
-              <div style="text-align:center;margin-top:12px;">
-                <button id="goInsideBtn" class="btn">先进去看看</button>
-              </div>
-              <p class="small-note">点击“先进去看看”不会中断查找，可先查看已加载内容</p>
-            `;
-            document.getElementById('goInsideBtn').addEventListener('click', () => {
-              hideVerifyModal();
-              modalClosed = true;
-              showStatusBar(`正在持续查找… 已找到 ${vCount} 个视频，${iCount} 张图片`);
-            });
-          } else {
-            showStatusBar(`正在持续查找… 已找到 ${vCount} 个视频，${iCount} 张图片`);
-          }
-        };
-
-        const stats = await loadMedia(code, onProgress);
-
-        // 处理无资源情况
-        if (stats.videoCount === 0 && stats.imageCount === 0) {
-          if (!modalClosed) {
-            // 弹窗还在，替换为无资源提示
-            showNoResourceModal(code, rawKey);
-          } else {
-            // 已经advanced，显示新弹窗并隐藏状态栏
-            showNoResourceModal(code, rawKey);
-          }
-          handling = false;
-          return;
-        }
-
-        // 有资源，显示完成结果
-        if(!modalClosed) {
-          verifyContent.innerHTML = `
-            <div style="text-align:center;margin-bottom:8px;">
-              <span style="background:#e8f5e9;color:#2e7d32;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:500;">密钥核验成功</span>
-            </div>
-            <h3 style="text-align:center;color:#2e7d32;">资源查找完成</h3>
-            <p style="text-align:center;">共找到 <strong>${stats.videoCount}</strong> 个视频，<strong>${stats.imageCount}</strong> 张图片。</p>
-            <p style="text-align:center;font-size:13px;color:var(--muted);">弹窗将在 <span id="autoCloseTimer">5</span> 秒后自动关闭</p>
-            <div style="text-align:center;margin-top:12px;">
-              <button id="closeScanNow" class="btn">立即查看</button>
-            </div>
-          `;
-          let sec = 5;
-          const timerSpan = document.getElementById('autoCloseTimer');
-          const countdown = setInterval(() => {
-            sec--;
-            if(sec <= 0) {
-              clearInterval(countdown);
-              hideVerifyModal();
-            } else {
-              timerSpan.textContent = sec;
-            }
-          }, 1000);
-          document.getElementById('closeScanNow').addEventListener('click', () => {
-            clearInterval(countdown);
-            hideVerifyModal();
-          });
-        } else {
-          showStatusBar(`查找完成，共 ${stats.videoCount} 个视频，${stats.imageCount} 张图片`);
-        }
-
+        await scanAndLoadMedia(code);
         handling = false;
       }
 
