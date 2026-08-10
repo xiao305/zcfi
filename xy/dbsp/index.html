@@ -3,7 +3,6 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <!-- 动态标题（由JS实时更新） -->
   <title id="dynamicTitle">包裹打包预览 • zcfi</title>
 
   <!-- Favicon（与首页一致） -->
@@ -15,20 +14,19 @@
   <link rel="apple-touch-icon" sizes="192x192" href="/favicon/web-app-manifest-192x192.png">
   <link rel="apple-touch-icon" sizes="512x512" href="/favicon/web-app-manifest-512x512.png">
 
-  <!-- 微信分享卡片兜底 meta 标签（动态更新由 JS 控制） -->
+  <!-- 微信分享卡片 meta 标签（动态更新） -->
   <meta property="og:title" id="ogTitle" content="包裹打包预览 • zcfi" />
   <meta property="og:description" content="安全、便捷的包裹内容预览工具，支持视频与图片在线查看。" />
-  <!-- 使用较大尺寸的 favicon 以提高分享卡片清晰度 -->
-  <meta property="og:image" content="https://你的域名/favicon/web-app-manifest-192x192.png" />
-  <meta property="og:url" id="ogUrl" content="" />
+  <meta property="og:image" content="https://zcfi.cn/favicon/web-app-manifest-192x192.png" />
+  <meta property="og:url" id="ogUrl" content="https://zcfi.cn" />
   <meta property="og:type" content="website" />
   <meta itemprop="name" content="包裹打包预览 • zcfi" />
   <meta itemprop="description" content="安全、便捷的包裹内容预览工具，支持视频与图片在线查看。" />
-  <meta itemprop="image" content="https://你的域名/favicon/web-app-manifest-192x192.png" />
+  <meta itemprop="image" content="https://zcfi.cn/favicon/web-app-manifest-192x192.png" />
 
   <!-- CryptoJS MD5 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-  <!-- 微信 JS-SDK（如需使用分享接口，请确保已绑定安全域名并完成签名） -->
+  <!-- 微信 JS-SDK -->
   <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -277,13 +275,11 @@
       // ---------- 动态标题与分享 ----------
       function getCurrentCodeFromURL() {
         const hash = location.hash ? location.hash.replace(/^#/, '') : '';
-        const params = new URLSearchParams(hash.includes('=') ? '' : location.search);
-        // 优先从 hash 中的编码（例如 #272）或 #272=xxx 中的编码部分提取
         if (hash) {
           const eqIndex = hash.indexOf('=');
           return eqIndex === -1 ? hash : hash.substring(0, eqIndex);
         }
-        return params.get('code') || null;
+        return null;
       }
 
       function updatePageTitle() {
@@ -291,53 +287,61 @@
         const title = code ? `编码：${code}` : '编码：未定义';
         document.title = title + ' • zcfi';
         document.getElementById('dynamicTitle').textContent = document.title;
-        // 同步 og:title
         const ogTitle = document.getElementById('ogTitle');
         if (ogTitle) ogTitle.setAttribute('content', document.title);
       }
 
-      // 安全链接：剔除敏感参数
+      // 安全分享链接：剔除 key/token/secret，且移除 hash（微信抓取最好不带 hash）
       function getSafeShareURL() {
         const url = new URL(location.href);
+        // 删除敏感参数
         const sensitiveKeys = ['key', 'token', 'secret'];
         const params = new URLSearchParams(url.search);
-        // 移除敏感参数（忽略大小写）
         for (const [key] of params) {
           if (sensitiveKeys.some(k => k.toLowerCase() === key.toLowerCase())) {
             params.delete(key);
           }
         }
-        // 保留 hash
-        const safeSearch = params.toString();
-        const newSearch = safeSearch ? '?' + safeSearch : '';
-        // 如果没有任何查询参数，且没有 hash，则返回根路径（根据要求）
-        if (!newSearch && !url.hash) {
-          return BASE_DOMAIN + '/';
-        }
-        return BASE_DOMAIN + url.pathname + newSearch + url.hash;
+        // 去除 hash 以获得干净链接
+        url.hash = '';
+        url.search = params.toString();
+        // 如果过滤后什么都没有，返回根路径
+        const finalUrl = url.toString();
+        return finalUrl === BASE_DOMAIN + '/' ? BASE_DOMAIN + '/' : finalUrl;
       }
 
       function updateShareMeta() {
         const safeURL = getSafeShareURL();
         document.getElementById('ogUrl').setAttribute('content', safeURL);
-        // 同时更新 og:title 已在 updatePageTitle 中处理
+        // og:title 已在 updatePageTitle 中更新
       }
 
-      // 尝试使用微信 JS-SDK 设置分享（需要后端签名支持）
+      // 微信 JS-SDK 配置（如需分享卡片，请填入正确的签名信息并取消注释）
       function configWXShare() {
         if (typeof wx === 'undefined') return;
-        // 这里需要后端提供签名，请根据实际情况替换
-        // wx.config({ debug: false, appId: '', timestamp: , nonceStr: '', signature: '', jsApiList: ['updateAppMessageShareData','updateTimelineShareData'] });
-        // wx.ready(function() {
-        //   const shareData = {
-        //     title: document.title,
-        //     desc: '安全、便捷的包裹内容预览工具，支持视频与图片在线查看。',
-        //     link: getSafeShareURL(),
-        //     imgUrl: BASE_DOMAIN + '/favicon/web-app-manifest-192x192.png'
-        //   };
-        //   wx.updateAppMessageShareData(shareData);
-        //   wx.updateTimelineShareData(shareData);
-        // });
+        // 示例：需后端接口获取签名
+        // fetch('/api/wx-signature?url=' + encodeURIComponent(location.href.split('#')[0]))
+        //   .then(res => res.json())
+        //   .then(data => {
+        //     wx.config({
+        //       debug: false,
+        //       appId: data.appId,
+        //       timestamp: data.timestamp,
+        //       nonceStr: data.nonceStr,
+        //       signature: data.signature,
+        //       jsApiList: ['updateAppMessageShareData', 'updateTimelineShareData']
+        //     });
+        //     wx.ready(function () {
+        //       const shareData = {
+        //         title: document.title,
+        //         desc: '安全、便捷的包裹内容预览工具，支持视频与图片在线查看。',
+        //         link: getSafeShareURL(),
+        //         imgUrl: BASE_DOMAIN + '/favicon/web-app-manifest-192x192.png'
+        //       };
+        //       wx.updateAppMessageShareData(shareData);
+        //       wx.updateTimelineShareData(shareData);
+        //     });
+        //   });
       }
 
       // ---------- 工具函数 ----------
@@ -359,7 +363,6 @@
         if(e.key==='Escape') closeLightbox();
       });
 
-      // 文件检测函数，强制禁用缓存（解决 vivo 浏览器缓存问题）
       function checkFileExists(url) {
         return new Promise(resolve => {
           const cacheBust = url.includes('?') ? '&_=' + Date.now() : '?_=' + Date.now();
@@ -372,8 +375,7 @@
                 const t = setTimeout(() => resolve(false), 3000);
                 v.onloadedmetadata = () => { clearTimeout(t); resolve(true); };
                 v.onerror = () => { clearTimeout(t); resolve(false); };
-                v.preload = 'metadata';
-                v.src = finalUrl;
+                v.preload = 'metadata'; v.src = finalUrl;
               } else {
                 resolve(false);
               }
@@ -384,8 +386,7 @@
                 const t = setTimeout(() => resolve(false), 3000);
                 v.onloadedmetadata = () => { clearTimeout(t); resolve(true); };
                 v.onerror = () => { clearTimeout(t); resolve(false); };
-                v.preload = 'metadata';
-                v.src = finalUrl;
+                v.preload = 'metadata'; v.src = finalUrl;
               } else {
                 resolve(false);
               }
@@ -423,7 +424,6 @@
             <p style="text-align:center;color:var(--muted);">请稍候，系统正在核验编码…</p>
           `;
           showVerifyModal();
-
           await new Promise(r => setTimeout(r, 1000));
 
           const hashUrl = `./hashes/${code}.txt?t=${Date.now()}`;
@@ -445,7 +445,6 @@
           }
 
           const storedHash = (await resp.text()).trim();
-
           const tryVerify = (raw) => {
             if(!raw) return false;
             return CryptoJS.MD5(raw).toString() === storedHash;
@@ -458,8 +457,7 @@
               <p style="text-align:center;color:var(--muted);">请稍候，系统正在验证密钥…</p>
             `;
             await new Promise(r => setTimeout(r, 1000));
-            const success = tryVerify(initialRaw);
-            if(success) {
+            if(tryVerify(initialRaw)) {
               hideVerifyModal();
               resolve(initialRaw);
             } else {
@@ -495,7 +493,6 @@
                 keyError.textContent = '请输入密钥';
                 return;
               }
-
               verifyContent.innerHTML = `
                 <h3 style="text-align:center;">正在核验密钥…</h3>
                 <div class="spinner"></div>
@@ -513,10 +510,7 @@
 
             keySubmit.addEventListener('click', submitHandler);
             keyInput.addEventListener('keydown', e => { if(e.key === 'Enter') submitHandler(); });
-            keyCancelBtn.addEventListener('click', () => {
-              hideVerifyModal();
-              resolve(false);
-            });
+            keyCancelBtn.addEventListener('click', () => { hideVerifyModal(); resolve(false); });
           }
         });
       }
