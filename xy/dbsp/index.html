@@ -212,7 +212,7 @@
       <h3>请输入包裹编码</h3>
       <p>请输入被告知的编码以查看打包视频和图片。</p>
       <div class="row">
-        <input id="entryInput" class="code-input" placeholder="请输入被告知的编码" />
+        <input id="entryInput" class="code-input" placeholder="请输入字母或数字编码" />
         <button id="entryLoad" class="btn">加载</button>
       </div>
       <div class="actions">
@@ -383,6 +383,13 @@
 
           const storedHash = (await resp.text()).trim();
 
+          // 【新增逻辑】：如果哈希值为空（txt文件为空内容），则无需密钥，直接通过
+          if (!storedHash) {
+            hideVerifyModal();
+            resolve(null); // 返回 null 表示无需密钥
+            return;
+          }
+
           const tryVerify = (raw) => {
             if(!raw) return false;
             return CryptoJS.MD5(raw).toString() === storedHash;
@@ -474,9 +481,10 @@
         imgNo.textContent = '正在扫描资源…';
         imgCount.textContent = '—';
 
+        // 【修改文案】：将“密钥核验成功”改为更通用的“编码核验成功”
         verifyContent.innerHTML = `
           <div style="text-align:center;margin-bottom:8px;">
-            <span style="background:#e8f5e9;color:#2e7d32;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:500;">密钥核验成功</span>
+            <span style="background:#e8f5e9;color:#2e7d32;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:500;">编码核验成功</span>
           </div>
           <h3 style="text-align:center;">正在查找资源</h3>
           <div class="spinner"></div>
@@ -555,7 +563,7 @@
 
         verifyContent.innerHTML = `
           <div style="text-align:center;margin-bottom:8px;">
-            <span style="background:#e8f5e9;color:#2e7d32;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:500;">密钥核验成功</span>
+            <span style="background:#e8f5e9;color:#2e7d32;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:500;">编码核验成功</span>
           </div>
           <h3 style="text-align:center;color:#2e7d32;">资源查找完成</h3>
           <p style="text-align:center;">共找到 <strong>${stats.videoCount}</strong> 个视频，<strong>${stats.imageCount}</strong> 张图片。</p>
@@ -591,19 +599,29 @@
         return { code: decoded.substring(0, eqIndex), raw: decoded.substring(eqIndex + 1) };
       }
 
-      function isValidCode(s) { return /^\d+$/.test(s); }
+      // 【修改逻辑】：支持字母和数字混合（如需支持横杠或下划线，可改为 /^[a-zA-Z0-9\-_]+$/）
+      function isValidCode(s) { return /^[a-zA-Z0-9]+$/.test(s); }
 
       async function handleCode(code, raw) {
         if(!isValidCode(code)) { showEntryModal(); return; }
         if(handling || currentLoadedCode === code) return;
         handling = true;
 
-        const rawKey = await verifyCode(code, raw);
-        if(!rawKey) { handling = false; return; }
+        const verifyResult = await verifyCode(code, raw);
+        
+        // verifyResult === false 表示验证失败或用户取消
+        if (verifyResult === false) { 
+          handling = false; 
+          return; 
+        }
 
-        if(rawKey !== raw) {
+        // verifyResult === null 表示无需密钥，为字符串表示验证成功的密钥
+        const finalKey = verifyResult === null ? null : verifyResult;
+
+        // 仅当存在密钥且与当前 hash 中的 raw 不一致时，才更新 hash
+        if (finalKey !== null && finalKey !== raw) {
           skipHashChange = true;
-          location.hash = `#${code}=${encodeURIComponent(rawKey)}`;
+          location.hash = `#${code}=${encodeURIComponent(finalKey)}`;
         }
 
         await scanAndLoadMedia(code);
@@ -612,7 +630,8 @@
 
       entryLoad.addEventListener('click', () => {
         const v = (entryInput.value || '').trim();
-        if(!isValidCode(v)) { alert('请输入纯数字编码'); entryInput.focus(); return; }
+        // 【修改提示】：更新错误提示文案
+        if(!isValidCode(v)) { alert('请输入有效的字母或数字编码'); entryInput.focus(); return; }
         hideEntryModal();
         handleCode(v, null);
       });
