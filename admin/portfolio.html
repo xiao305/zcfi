@@ -18,6 +18,9 @@
     
     <!-- 修正的CSS路径 -->
     <link rel="stylesheet" href="assets/css/admin-common.css">
+    <!-- 后台统一外壳与公共内核 -->
+    <link rel="stylesheet" href="assets/css/admin-shell.css">
+    <script src="assets/js/admin-core.js" defer></script>
     
     <!-- 作品集管理特定样式 -->
     <style>
@@ -250,13 +253,9 @@
         }
     </style>
 </head>
-<body class="admin-body">
+<body class="admin-body" data-admin-module="portfolio">
     <div class="admin-container">
         <div class="admin-header">
-            <a href="index.html" class="nav-back">
-                <i class="fas fa-arrow-left"></i> 返回
-            </a>
-            <a href="https://zcfi.cn" class="admin-logo">zcfi<span>.</span>cn</a>
             <div class="header-title">
                 <h1><i class="fas fa-briefcase"></i> 作品集管理</h1>
                 <p>管理和维护您的项目作品</p>
@@ -433,11 +432,7 @@
     </div>
 
     <script>
-        // 安全验证
-        if (!sessionStorage.getItem('admin_verified') || !sessionStorage.getItem('admin_token')) {
-            alert('❌ 未授权访问！请通过后台首页登录。');
-            window.location.href = 'index.html';
-        }
+        // 统一鉴权由 admin-core.js 处理：未登录/过期自动跳登录页，登录后返回本页
         
         // 全局配置
         const GIST_ID = '311b9a0a483aafc4314d17f577e859bb';
@@ -1312,11 +1307,7 @@
             return div.innerHTML;
         }
         
-        // 页面卸载时清除敏感信息
-        window.addEventListener('beforeunload', () => {
-            sessionStorage.removeItem('admin_token');
-            sessionStorage.removeItem('admin_verified');
-        });
+        // 会话由 admin-core.js 统一管理：刷新/切换板块不再清除 Token
     </script>
 </body>
 </html>

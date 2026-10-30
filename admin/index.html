@@ -12,6 +12,10 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <!-- 后台公共CSS -->
 <link rel="stylesheet" href="assets/css/admin-common.css">
+<!-- 后台统一外壳样式 -->
+<link rel="stylesheet" href="assets/css/admin-shell.css">
+<!-- 后台公共内核：统一会话 / 板块导航 / 退出登录 -->
+<script src="assets/js/admin-core.js" defer></script>
 <style>
 /* 登录页面特定样式 */
 .login-container {
@@ -252,9 +256,10 @@
 </head>
 <body class="admin-body">
 <div class="admin-container" style="max-width: 600px;">
-  <div class="login-container">
+  <div class="login-container" id="loginView">
     <a href="https://zcfi.cn" class="login-logo">zcfi<span>.</span>cn</a>
     <h2 class="login-title"><i class="fas fa-lock"></i> 管理后台登录</h2>
+    <div class="admin-msg-banner" id="sessionMessage" data-type="warning" hidden></div>
     <!-- 修正：将表单元素包裹在form标签内 -->
     <form class="login-form" id="loginForm">
       <div class="token-input">
@@ -305,9 +310,42 @@
         1. 前往 <a href="https://github.com/settings/tokens" target="_blank" style="color: #4a6fa5; text-decoration: none;">GitHub Token设置</a> 创建新Token<br>
         2. 基础功能需要勾选 <code>gist</code> 权限<br>
         3. 高级功能（如自动生成博客页面）需要额外勾选 <code>repo</code> 权限<br>
-        4. Token格式：<code>ghp_xxxxxxxxxxxx</code><br>
+        4. Token格式：<code>ghp_xxxxxxxxxxxx</code> 或新版 <code>github_pat_...</code><br>
         5. Token安全存储，切勿泄露
       </p>
+    </div>
+  </div>
+
+  <!-- 已登录面板：会话仍有效时不再重复输入 Token，直接切换板块 -->
+  <div class="admin-logged-in" id="loggedInView" hidden>
+    <a href="https://zcfi.cn" class="login-logo">zcfi<span>.</span>cn</a>
+    <h2 class="login-title"><i class="fas fa-check-circle"></i> 已登录</h2>
+    <p class="admin-logged-in-tip" id="loggedInMeta">正在读取会话…</p>
+    <div class="modules-grid">
+      <a class="module-card module-card-link" href="blog.html" data-module-link="blog">
+        <div class="module-icon"><i class="fas fa-blog"></i></div>
+        <div class="module-title">博客管理</div>
+        <div class="module-description">管理博客文章，编辑发布新内容</div>
+      </a>
+      <a class="module-card module-card-link" href="portfolio.html" data-module-link="portfolio">
+        <div class="module-icon"><i class="fas fa-briefcase"></i></div>
+        <div class="module-title">作品集管理</div>
+        <div class="module-description">管理项目作品，设置首页展示</div>
+      </a>
+      <a class="module-card module-card-link" href="contact.html" data-module-link="contact">
+        <div class="module-icon"><i class="fas fa-comments"></i></div>
+        <div class="module-title">留言管理</div>
+        <div class="module-description">查看和处理访客留言</div>
+      </a>
+      <a class="module-card module-card-link" href="config.html" data-module-link="config">
+        <div class="module-icon"><i class="fas fa-cog"></i></div>
+        <div class="module-title">配置面板</div>
+        <div class="module-description">网站设置和法律声明配置</div>
+      </a>
+    </div>
+    <div class="admin-logged-in-actions">
+      <button type="button" class="login-btn" id="logoutBtn">退出登录</button>
+      <button type="button" class="login-btn login-btn-secondary" id="reloginBtn">更换 Token</button>
     </div>
   </div>
 </div>
@@ -367,6 +405,7 @@ const SCOPE_CHECK_URL = 'https://api.github.com';
 // 页面加载
 document.addEventListener('DOMContentLoaded', () => {
   setupEventListeners();
+  initSessionUI();
 });
 
 // 初始化事件监听器
@@ -379,10 +418,10 @@ function setupEventListeners() {
     }
   });
   
-  // 模块选择
-  document.querySelectorAll('.module-card').forEach(card => {
+  // 模块选择（仅登录表单内的板块卡片；已登录面板的卡片是链接，不参与选择）
+  document.querySelectorAll('.modules-grid .module-card[data-module]').forEach(card => {
     card.addEventListener('click', function() {
-      document.querySelectorAll('.module-card').forEach(c => c.classList.remove('selected'));
+      document.querySelectorAll('.modules-grid .module-card[data-module]').forEach(c => c.classList.remove('selected'));
       this.classList.add('selected');
       selectedModule = this.dataset.module;
       updateEnterButton();
@@ -603,11 +642,95 @@ function renderTokenStatusInfo(permissions, statusInfo) {
   return allowAccess;
 }
 
+// 读取并校验登录后要返回的板块页（防止开放重定向）
+function getSafeReturnTo() {
+  const params = new URLSearchParams(window.location.search);
+  const raw = params.get('returnTo') || params.get('redirect') || '';
+  if (!raw) return '';
+  try {
+    const url = new URL(raw, window.location.href);
+    if (url.origin !== window.location.origin) return '';
+    const page = url.pathname.split('/').pop();
+    if (['blog.html', 'portfolio.html', 'contact.html', 'config.html'].indexOf(page) === -1) return '';
+    return page + url.search;
+  } catch (e) {
+    return '';
+  }
+}
+
+// 登录页会话状态：已登录直接显示板块面板，未登录显示登录表单
+function initSessionUI() {
+  const params = new URLSearchParams(window.location.search);
+  const message = document.getElementById('sessionMessage');
+  const loginView = document.getElementById('loginView');
+  const loggedInView = document.getElementById('loggedInView');
+
+  if (message) {
+    let text = '';
+    let type = 'info';
+    if (params.get('expired')) {
+      text = '会话已过期，请重新输入 Token 登录。';
+      type = 'warning';
+    } else if (params.get('relogin')) {
+      text = '已清除旧 Token，请输入新的 Token。';
+      type = 'warning';
+    } else if (params.get('logout')) {
+      text = '已安全退出登录。';
+      type = 'success';
+    } else if (params.get('returnTo')) {
+      text = '请先登录，登录后会自动返回刚才的板块。';
+      type = 'info';
+    }
+    if (text) {
+      message.textContent = text;
+      message.dataset.type = type;
+      message.hidden = false;
+    }
+  }
+
+  // 未登录 / 已过期：保持登录表单
+  if (!AdminCore.hasSession()) {
+    if (loginView) loginView.hidden = false;
+    if (loggedInView) loggedInView.hidden = true;
+    return;
+  }
+
+  // 已登录：展示板块面板，无需再次输入 Token
+  if (loginView) loginView.hidden = true;
+  if (loggedInView) loggedInView.hidden = false;
+
+  const permissions = AdminCore.getPermissions();
+  const last = sessionStorage.getItem('selected_module');
+  const lastModule = last ? AdminCore.moduleById(last) : null;
+  const meta = document.getElementById('loggedInMeta');
+  if (meta) {
+    meta.innerHTML =
+      'Token：' + AdminCore.escapeHtml(AdminCore.maskToken(AdminCore.getToken())) +
+      '　权限：gist ' + (permissions.gist ? '✓' : '✗') +
+      ' / repo ' + (permissions.repo ? '✓' : '✗') +
+      (lastModule ? '<br>上次访问：' + AdminCore.escapeHtml(lastModule.name) + '（绿色边框）' : '');
+  }
+
+  if (last) {
+    const lastCard = document.querySelector('.module-card-link[data-module-link="' + last + '"]');
+    if (lastCard) lastCard.classList.add('module-card-last');
+  }
+
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) logoutBtn.addEventListener('click', function () { AdminCore.logout(); });
+  const reloginBtn = document.getElementById('reloginBtn');
+  if (reloginBtn) reloginBtn.addEventListener('click', function () { AdminCore.changeToken(); });
+
+  // 已登录时显示统一顶栏，与各板块保持一致
+  AdminCore.renderShell('index');
+}
+
 // 验证和登录
 async function validateAndLogin() {
   const token = document.getElementById('token').value.trim();
   
-  if (!token.startsWith('ghp_')) {
+  // 兼容经典 Token（ghp_）与细粒度 Token（github_pat_）
+  if (!/^(ghp_|github_pat_|gho_|ghu_|ghs_|ghr_)/.test(token)) {
     closeModal();
     showPermissionsModal({
       gist: false,
@@ -615,7 +738,7 @@ async function validateAndLogin() {
     }, {
       isValid: false,
       status: 'invalid',
-      message: 'Token 必须以 "ghp_" 开头'
+      message: 'Token 格式不正确：应以 ghp_ 或 github_pat_ 开头'
     });
     return;
   }
@@ -749,13 +872,21 @@ function confirmPermissionsAndNavigate() {
     return;
   }
   
-  // 保存验证信息
-  sessionStorage.setItem('admin_token', token);
-  sessionStorage.setItem('admin_verified', 'true');
-  sessionStorage.setItem('admin_login_time', Date.now().toString());
-  sessionStorage.setItem('admin_permissions', JSON.stringify(permissions));
-  sessionStorage.setItem('selected_module', module);
-  
+  // 统一会话：登录一次，4 个板块共享，切换板块无需重新输入 Token
+  AdminCore.login(token, permissions, module);
+
+  // 清理临时待确认信息
+  sessionStorage.removeItem('pending_admin_token');
+  sessionStorage.removeItem('pending_selected_module');
+  sessionStorage.removeItem('token_permissions');
+
+  // 从模块页跳转来登录的：登录后原路返回
+  const returnTo = getSafeReturnTo();
+  if (returnTo) {
+    window.location.href = returnTo;
+    return;
+  }
+
   // 导航到选择的模块
   navigateToModule(module);
 }

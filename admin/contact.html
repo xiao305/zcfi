@@ -12,6 +12,9 @@
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 后台统一外壳与公共内核 -->
+    <link rel="stylesheet" href="assets/css/admin-shell.css">
+    <script src="assets/js/admin-core.js" defer></script>
     
     <style>
         * {
@@ -438,13 +441,9 @@
         }
     </style>
 </head>
-<body>
+<body data-admin-module="contact">
     <div class="container">
         <div class="header">
-            <a href="index.html" class="nav-back" id="backToHome">
-                <i class="fas fa-arrow-left"></i> 返回
-            </a>
-            <a href="https://zcfi.cn" class="logo">zcfi<span>.</span>cn</a>
             <div class="header-title">
                 <h1><i class="fas fa-comments"></i> 留言管理</h1>
                 <p>查看和处理访客留言</p>
@@ -518,36 +517,7 @@
     </div>
 
     <script>
-        // 安全验证和会话保持
-        function validateAndMaintainSession() {
-            const token = sessionStorage.getItem('admin_token');
-            const verified = sessionStorage.getItem('admin_verified');
-            const loginTime = sessionStorage.getItem('admin_login_time');
-            
-            // 检查是否存在有效的 Token
-            if (!token || !verified) {
-                // 尝试从 localStorage 获取历史 Token（安全方式）
-                const history = JSON.parse(localStorage.getItem('admin_token_history') || '[]');
-                if (history.length > 0) {
-                    // 重定向到首页，携带提示信息
-                    window.location.href = 'index.html?redirect=' + encodeURIComponent(window.location.pathname);
-                    return false;
-                }
-                window.location.href = 'index.html';
-                return false;
-            }
-            
-            // 检查是否过期（30分钟）
-            const currentTime = Date.now();
-            const thirtyMinutes = 30 * 60 * 1000;
-            if (loginTime && (currentTime - parseInt(loginTime)) > thirtyMinutes) {
-                sessionStorage.clear();
-                window.location.href = 'index.html?expired=true';
-                return false;
-            }
-            
-            return true;
-        }
+        // 统一鉴权由 admin-core.js 处理：未登录/过期自动跳登录页，登录后返回本页
         
         // 自定义下拉框功能
         function initCustomSelect() {
@@ -592,26 +562,9 @@
         let currentMessagesData = [];
         let currentFilter = 'all';
         
-        // 页面卸载时清除敏感信息
-        window.addEventListener('beforeunload', () => {
-            // 不清除 Token，保持会话
-            // sessionStorage.removeItem('admin_token');
-            // sessionStorage.removeItem('admin_verified');
-        });
-        
-        // 返回首页时保持 Token
-        document.getElementById('backToHome').addEventListener('click', function(e) {
-            e.preventDefault();
-            // Token 会自动保持在 sessionStorage 中
-            window.location.href = 'index.html';
-        });
+        // 会话由 admin-core.js 统一管理：刷新/切换板块不再清除 Token
         
         document.addEventListener('DOMContentLoaded', function() {
-            // 验证会话
-            if (!validateAndMaintainSession()) {
-                return;
-            }
-            
             setupEventListeners();
             initCustomSelect();
             loadMessages();

@@ -12,6 +12,9 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <!-- 后台公共CSS -->
 <link rel="stylesheet" href="assets/css/admin-common.css">
+<!-- 后台统一外壳与公共内核 -->
+<link rel="stylesheet" href="assets/css/admin-shell.css">
+<script src="assets/js/admin-core.js" defer></script>
 <style>
 /* 配置管理特定样式 */
 .config-layout {
@@ -769,13 +772,9 @@
 }
 </style>
 </head>
-<body class="admin-body">
+<body class="admin-body" data-admin-module="config">
 <div class="admin-container">
 <div class="admin-header">
-<a href="index.html" class="nav-back">
-<i class="fas fa-arrow-left"></i> 返回
-</a>
-<a href="https://zcfi.cn" class="admin-logo">zcfi<span>.</span>cn</a>
 <div class="header-title">
 <h1><i class="fas fa-cog"></i> 网站配置</h1>
 <p>管理网站基本信息和页面内容</p>
@@ -1461,11 +1460,7 @@
 </div>
 </div>
 <script>
-// 安全验证
-if (!sessionStorage.getItem('admin_verified') || !sessionStorage.getItem('admin_token')) {
-    alert('❌ 未授权访问！请通过后台首页登录。');
-    window.location.href = 'index.html';
-}
+// 统一鉴权由 admin-core.js 处理：未登录/过期自动跳登录页，登录后返回本页
 
 // 全局配置
 const CONFIG_GIST_ID = '983bb7371ddb439a2fcbfb4885e34d14';
@@ -3208,11 +3203,7 @@ function getFullscreenPreviewTitle(type) {
     return titles[type] || '预览';
 }
 
-// 页面卸载时清除敏感信息
-window.addEventListener('beforeunload', () => {
-    sessionStorage.removeItem('admin_token');
-    sessionStorage.removeItem('admin_verified');
-});
+// 会话由 admin-core.js 统一管理：刷新/切换板块不再清除 Token
 </script>
 </body>
 </html>
