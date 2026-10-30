@@ -35,7 +35,7 @@
   var SESSION_MAX_AGE = 2 * 60 * 60 * 1000;
 
   var MODULES = [
-    { id: 'index',     name: '仪表盘', icon: 'fas fa-th-large',   url: 'index.html' },
+    { id: 'dashboard', name: '仪表盘', icon: 'fas fa-th-large',   url: 'dashboard.html' },
     { id: 'blog',      name: '博客',   icon: 'fas fa-blog',       url: 'blog.html' },
     { id: 'portfolio', name: '作品集', icon: 'fas fa-briefcase',  url: 'portfolio.html' },
     { id: 'contact',   name: '留言',   icon: 'fas fa-comments',   url: 'contact.html' },
@@ -81,8 +81,9 @@
     var url = String(value == null ? '' : value).trim();
     if (!url) return '';
     if (/^(https?:)?\/\//i.test(url) || /^(mailto|tel):/i.test(url)) return url;
-    if (/^[./#]/.test(url) && !/^javascript:/i.test(url)) return url;
-    return '';
+    // 其它协议（javascript:、data: 等）一律拒绝；相对路径放行
+    if (/^[a-z][a-z0-9+.-]*:/i.test(url)) return '';
+    return url;
   }
 
   function getPermissions() {
@@ -193,7 +194,7 @@
     shell.className = 'admin-shell';
     shell.innerHTML =
       '<div class="admin-shell-inner">' +
-        '<a class="admin-shell-brand" href="index.html">zcfi<span class="brand-dot">.</span>cn <em>后台</em></a>' +
+        '<a class="admin-shell-brand" href="dashboard.html">zcfi<span class="brand-dot">.</span>cn <em>后台</em></a>' +
         '<nav class="admin-shell-nav" aria-label="后台板块导航">' + links + '</nav>' +
         '<div class="admin-shell-user">' +
           '<span class="admin-token-chip" title="' + escapeAttr(tokenText) + '">' +

@@ -1655,7 +1655,7 @@ ${post.enabled === false ? `<span class="article-status" style="background-color
 </span>` : ''}
 </div>
 </div>
-<p>${escapeHtml(post.excerpt.substring(0, 150))}${post.excerpt.length > 150 ? '...' : ''}</p>
+<p>${escapeHtml((post.excerpt || '').substring(0, 150))}${post.excerpt && post.excerpt.length > 150 ? '...' : ''}</p>
 <div class="action-buttons">
 <button class="admin-btn btn-primary action-btn edit-btn" data-post-id="${post.id}">
 <i class="fas fa-edit"></i> 编辑

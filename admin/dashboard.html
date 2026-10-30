@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>仪表盘 | zcfi.cn 管理后台</title>
+<link rel="icon" type="image/svg+xml" href="../favicon/favicon.svg">
+<link rel="icon" type="image/png" sizes="96x96" href="../favicon/favicon-96x96.png">
+<link rel="icon" type="image/x-icon" href="../favicon/favicon.ico">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="assets/css/admin-common.css">
+<link rel="stylesheet" href="assets/css/admin-shell.css">
+<script src="assets/js/admin-core.js" defer></script>
+<style>
+/* ===== 仪表盘 ===== */
+.dashboard-container {
+    max-width: 1200px;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+    overflow: visible;
+    margin: 0 auto;
+}
+
+/* 欢迎区 */
+.dash-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    padding: 26px 30px;
+    margin-bottom: 16px;
+    border: 1px solid #e6ebf2;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #ffffff 0%, #f3f8ff 55%, #eaf7f1 100%);
+}
+
+.dash-eyebrow {
+    font-size: 13px;
+    color: #6c757d;
+    margin-bottom: 6px;
+}
+
+.dash-title {
+    font-size: 25px;
+    color: #26303d;
+    margin-bottom: 6px;
+}
+
+.dash-sub {
+    font-size: 14px;
+    color: #6c757d;
+}
+
+.dash-hero-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.dash-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: 1px solid #dfe6f0;
+    background: #ffffff;
+    color: #3d4a5c;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.dash-btn:hover {
+    background: #eef3fa;
+    border-color: #d3e0f2;
+    color: #4a6fa5;
+}
+
+.dash-btn-primary {
+    background: #4a6fa5;
+    border-color: #4a6fa5;
+    color: #ffffff;
+}
+
+.dash-btn-primary:hover {
+    background: #3a5a80;
+    border-color: #3a5a80;
+    color: #ffffff;
+}
+
+.dash-btn[disabled] {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* 统计卡片 */
+.dash-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.dash-stat {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    padding: 18px;
+    background: #ffffff;
+    border: 1px solid #e9edf3;
+    border-radius: 16px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dash-stat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(28, 44, 72, 0.08);
+}
+
+.dash-stat-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex: none;
+}
+
+.dash-stat-icon.blue { background: #eef3fa; color: #4a6fa5; }
+.dash-stat-icon.violet { background: #f3edff; color: #7a5af8; }
+.dash-stat-icon.green { background: #e9f7ef; color: #28a745; }
+.dash-stat-icon.amber { background: #fff6e5; color: #d98800; }
+
+.dash-stat-body {
+    min-width: 0;
+    flex: 1;
+}
+
+.dash-stat-label {
+    font-size: 13px;
+    color: #6c757d;
+    margin-bottom: 3px;
+}
+
+.dash-stat-value {
+    font-size: 27px;
+    font-weight: 700;
+    line-height: 1.15;
+    color: #26303d;
+    word-break: break-all;
+}
+
+.dash-stat-meta {
+    margin-top: 4px;
+    font-size: 12px;
+    color: #8a94a3;
+}
+
+.dash-stat-link {
+    position: absolute;
+    right: 14px;
+    top: 14px;
+    color: #c3cbd6;
+    text-decoration: none;
+    font-size: 12px;
+}
+
+.dash-stat-link:hover {
+    color: #4a6fa5;
+}
+
+/* 主体两栏 */
+.dash-grid {
+    display: grid;
+    grid-template-columns: 1.55fr 1fr;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.dash-card {
+    background: #ffffff;
+    border: 1px solid #e9edf3;
+    border-radius: 16px;
+    padding: 20px 22px;
+}
+
+.dash-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.dash-card-head h2,
+.dash-card > h2 {
+    font-size: 16px;
+    color: #26303d;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dash-card-head h2 i,
+.dash-card > h2 i {
+    color: #4a6fa5;
+    font-size: 15px;
+}
+
+.dash-card-head a {
+    font-size: 13px;
+    color: #4a6fa5;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.dash-card-head a:hover {
+    text-decoration: underline;
+}
+
+/* 最近更新列表 */
+.dash-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 0;
+    border-bottom: 1px dashed #eef1f5;
+}
+
+.dash-item:last-child {
+    border-bottom: none;
+    padding-bottom: 2px;
+}
+
+.dash-item-badge {
+    flex: none;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: #eef3fa;
+    color: #4a6fa5;
+}
+
+.dash-item-badge.portfolio {
+    background: #f3edff;
+    color: #7a5af8;
+}
+
+.dash-item-title {
+    flex: 1;
+    min-width: 0;
+    font-size: 14px;
+    color: #33404f;
+    text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dash-item-title:hover {
+    color: #4a6fa5;
+}
+
+.dash-item-meta {
+    flex: none;
+    font-size: 12px;
+    color: #9aa3af;
+}
+
+.dash-empty {
+    padding: 22px 0;
+    text-align: center;
+    font-size: 13px;
+    color: #9aa3af;
+}
+
+/* 快捷操作 */
+.dash-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.dash-action {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 12px;
+    border: 1px solid #eef1f5;
+    border-radius: 10px;
+    background: #f8fafc;
+    color: #3d4a5c;
+    font-size: 13px;
+    text-decoration: none;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.dash-action i {
+    width: 16px;
+    text-align: center;
+    color: #4a6fa5;
+}
+
+.dash-action:hover {
+    background: #eef3fa;
+    border-color: #d9e5f5;
+    color: #4a6fa5;
+}
+
+/* 账户信息 */
+.dash-kv {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    margin-bottom: 16px;
+}
+
+.dash-kv-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 13px;
+}
+
+.dash-kv-row span:first-child {
+    color: #8a94a3;
+    flex: none;
+}
+
+.dash-kv-row span:last-child {
+    color: #33404f;
+    text-align: right;
+    word-break: break-all;
+}
+
+.dash-account-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* 数据源 */
+.dash-source {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px dashed #eef1f5;
+    font-size: 13px;
+}
+
+.dash-source:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.dash-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #c9d1dc;
+    flex: none;
+}
+
+.dash-dot.ok { background: #28a745; }
+.dash-dot.fail { background: #dc3545; }
+.dash-dot.loading { background: #ffc107; }
+
+.dash-source-name {
+    flex: 1;
+    color: #33404f;
+}
+
+.dash-source a {
+    color: #8a94a3;
+    text-decoration: none;
+    font-size: 12px;
+}
+
+.dash-source a:hover {
+    color: #4a6fa5;
+}
+
+/* 站点信息 */
+.dash-site-links {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.dash-site-links a {
+    color: #4a6fa5;
+    text-decoration: none;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dash-site-links a:hover {
+    text-decoration: underline;
+}
+
+/* 错误提示 */
+.dash-banner {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: #fff8e6;
+    border: 1px solid #ffe8a1;
+    color: #856404;
+    font-size: 13px;
+}
+
+.dash-banner.show {
+    display: flex;
+}
+
+.dash-skeleton {
+    display: inline-block;
+    height: 14px;
+    width: 90%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #eef1f5 25%, #f8fafc 37%, #eef1f5 63%);
+    background-size: 400% 100%;
+    animation: dash-shimmer 1.3s ease infinite;
+}
+
+@keyframes dash-shimmer {
+    0% { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
+}
+
+.dash-synced {
+    margin-top: 14px;
+    text-align: right;
+    font-size: 12px;
+    color: #b3bcc9;
+}
+
+@media (max-width: 1024px) {
+    .dash-stats { grid-template-columns: repeat(2, 1fr); }
+    .dash-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 560px) {
+    .dash-hero { padding: 22px 20px; }
+    .dash-stats { grid-template-columns: 1fr; }
+    .dash-actions { grid-template-columns: 1fr; }
+    .dash-card { padding: 18px 16px; }
+}
+</style>
+</head>
+<body class="admin-body" data-admin-module="dashboard">
+<div class="dashboard-container">
+
+    <!-- 欢迎区 -->
+    <section class="dash-hero">
+        <div>
+            <p class="dash-eyebrow">控制台 · <span id="dashDate">—</span></p>
+            <h1 class="dash-title">欢迎回来<span id="dashUser"></span></h1>
+            <p class="dash-sub">站点内容、数据与账户状态，一屏总览</p>
+        </div>
+        <div class="dash-hero-actions">
+            <a class="dash-btn dash-btn-primary" href="blog.html"><i class="fas fa-pen-nib" aria-hidden="true"></i> 写新文章</a>
+            <a class="dash-btn" href="https://zcfi.cn" target="_blank" rel="noopener"><i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i> 打开前台</a>
+            <button type="button" class="dash-btn" id="dashRefresh"><i class="fas fa-rotate" aria-hidden="true"></i> 刷新数据</button>
+        </div>
+    </section>
+
+    <div class="dash-banner" id="dashBanner" role="status">
+        <span id="dashBannerText">无法读取 Gist 数据，请检查网络或 Token 权限。</span>
+        <button type="button" class="dash-btn" id="dashRetry">重试</button>
+    </div>
+
+    <!-- 统计卡片 -->
+    <section class="dash-stats">
+        <article class="dash-stat">
+            <div class="dash-stat-icon blue"><i class="fas fa-blog" aria-hidden="true"></i></div>
+            <div class="dash-stat-body">
+                <p class="dash-stat-label">博客文章</p>
+                <p class="dash-stat-value" id="statBlogValue">—</p>
+                <p class="dash-stat-meta" id="statBlogMeta">读取中…</p>
+            </div>
+            <a class="dash-stat-link" href="blog.html" aria-label="进入博客管理"><i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+        </article>
+
+        <article class="dash-stat">
+            <div class="dash-stat-icon violet"><i class="fas fa-briefcase" aria-hidden="true"></i></div>
+            <div class="dash-stat-body">
+                <p class="dash-stat-label">作品集</p>
+                <p class="dash-stat-value" id="statPortfolioValue">—</p>
+                <p class="dash-stat-meta" id="statPortfolioMeta">读取中…</p>
+            </div>
+            <a class="dash-stat-link" href="portfolio.html" aria-label="进入作品集管理"><i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+        </article>
+
+        <article class="dash-stat">
+            <div class="dash-stat-icon green"><i class="fas fa-comments" aria-hidden="true"></i></div>
+            <div class="dash-stat-body">
+                <p class="dash-stat-label">留言</p>
+                <p class="dash-stat-value" id="statContactValue">—</p>
+                <p class="dash-stat-meta" id="statContactMeta">读取中…</p>
+            </div>
+            <a class="dash-stat-link" href="contact.html" aria-label="进入留言管理"><i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+        </article>
+
+        <article class="dash-stat">
+            <div class="dash-stat-icon amber"><i class="fas fa-shield-halved" aria-hidden="true"></i></div>
+            <div class="dash-stat-body">
+                <p class="dash-stat-label">当前会话</p>
+                <p class="dash-stat-value" id="statSessionValue">—</p>
+                <p class="dash-stat-meta" id="statSessionMeta">读取中…</p>
+            </div>
+        </article>
+    </section>
+
+    <!-- 最近更新 + 侧栏 -->
+    <section class="dash-grid">
+        <article class="dash-card">
+            <div class="dash-card-head">
+                <h2><i class="fas fa-clock-rotate-left" aria-hidden="true"></i> 最近更新</h2>
+                <a href="blog.html">全部文章</a>
+            </div>
+            <div id="recentList">
+                <div class="dash-empty"><span class="dash-skeleton"></span></div>
+            </div>
+        </article>
+
+        <div>
+            <article class="dash-card" style="margin-bottom: 14px;">
+                <h2><i class="fas fa-bolt" aria-hidden="true"></i> 快捷操作</h2>
+                <div class="dash-actions" style="margin-top: 14px;">
+                    <a class="dash-action" href="blog.html"><i class="fas fa-plus" aria-hidden="true"></i> 添加文章</a>
+                    <a class="dash-action" href="portfolio.html"><i class="fas fa-images" aria-hidden="true"></i> 管理作品</a>
+                    <a class="dash-action" href="contact.html"><i class="fas fa-inbox" aria-hidden="true"></i> 查看留言</a>
+                    <a class="dash-action" href="config.html"><i class="fas fa-sliders" aria-hidden="true"></i> 网站配置</a>
+                    <a class="dash-action" href="https://zcfi.cn" target="_blank" rel="noopener"><i class="fas fa-globe" aria-hidden="true"></i> 前台首页</a>
+                    <a class="dash-action" href="https://github.com/xiao305/zcfi" target="_blank" rel="noopener"><i class="fab fa-github" aria-hidden="true"></i> GitHub 仓库</a>
+                </div>
+            </article>
+
+            <article class="dash-card">
+                <h2><i class="fas fa-shield-halved" aria-hidden="true"></i> 账户与安全</h2>
+                <div class="dash-kv" style="margin-top: 14px;">
+                    <div class="dash-kv-row"><span>Token</span><span id="accountToken">—</span></div>
+                    <div class="dash-kv-row"><span>权限</span><span id="accountPerms">—</span></div>
+                    <div class="dash-kv-row"><span>会话剩余</span><span id="accountSession">—</span></div>
+                </div>
+                <div class="dash-account-actions">
+                    <button type="button" class="dash-btn" id="accountRelogin"><i class="fas fa-key" aria-hidden="true"></i> 更换 Token</button>
+                    <button type="button" class="dash-btn" id="accountLogout"><i class="fas fa-right-from-bracket" aria-hidden="true"></i> 退出登录</button>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <!-- 数据源 + 站点信息 -->
+    <section class="dash-grid">
+        <article class="dash-card">
+            <h2><i class="fas fa-database" aria-hidden="true"></i> 数据源状态</h2>
+            <div style="margin-top: 10px;">
+                <div class="dash-source">
+                    <span class="dash-dot loading" id="dotBlog"></span>
+                    <span class="dash-source-name">博客数据 <span style="color:#9aa3af;font-size:12px;">blog.json</span></span>
+                    <a href="https://gist.github.com/xiao305/73cc78400c25eb9effed665e2c89843d" target="_blank" rel="noopener">Gist ↗</a>
+                </div>
+                <div class="dash-source">
+                    <span class="dash-dot loading" id="dotPortfolio"></span>
+                    <span class="dash-source-name">作品集数据 <span style="color:#9aa3af;font-size:12px;">portfolio.json</span></span>
+                    <a href="https://gist.github.com/xiao305/311b9a0a483aafc4314d17f577e859bb" target="_blank" rel="noopener">Gist ↗</a>
+                </div>
+                <div class="dash-source">
+                    <span class="dash-dot loading" id="dotConfig"></span>
+                    <span class="dash-source-name">站点配置 <span style="color:#9aa3af;font-size:12px;">config.json</span></span>
+                    <a href="https://gist.github.com/xiao305/983bb7371ddb439a2fcbfb4885e34d14" target="_blank" rel="noopener">Gist ↗</a>
+                </div>
+            </div>
+            <p class="dash-synced" id="lastSync">尚未同步</p>
+        </article>
+
+        <article class="dash-card">
+            <h2><i class="fas fa-circle-info" aria-hidden="true"></i> 站点信息</h2>
+            <div class="dash-kv" style="margin-top: 14px;">
+                <div class="dash-kv-row"><span>站点</span><span>zcfi.cn</span></div>
+                <div class="dash-kv-row"><span>托管</span><span>GitHub Pages（纯静态）</span></div>
+                <div class="dash-kv-row"><span>内容源</span><span>GitHub Gist × 3</span></div>
+            </div>
+            <div class="dash-site-links">
+                <a href="https://zcfi.cn" target="_blank" rel="noopener"><i class="fas fa-globe" aria-hidden="true"></i> 打开前台站点</a>
+                <a href="https://github.com/xiao305/zcfi" target="_blank" rel="noopener"><i class="fab fa-github" aria-hidden="true"></i> 查看源码仓库</a>
+                <a href="https://github.com/settings/tokens" target="_blank" rel="noopener"><i class="fas fa-key" aria-hidden="true"></i> 管理 GitHub Token</a>
+            </div>
+        </article>
+    </section>
+
+</div>
+
+<script>
+(function () {
+    'use strict';
+
+    var GISTS = {
+        blog: { id: '73cc78400c25eb9effed665e2c89843d', file: 'blog.json', name: '博客数据' },
+        portfolio: { id: '311b9a0a483aafc4314d17f577e859bb', file: 'portfolio.json', name: '作品集数据' },
+        config: { id: '983bb7371ddb439a2fcbfb4885e34d14', file: 'config.json', name: '站点配置' }
+    };
+
+    var state = { blog: null, portfolio: null, config: null, errors: {} };
+    var esc = function (v) { return AdminCore.escapeHtml(v == null ? '' : v); };
+
+    document.addEventListener('DOMContentLoaded', init);
+
+    function init() {
+        renderDate();
+        renderSession();
+
+        var refresh = document.getElementById('dashRefresh');
+        if (refresh) refresh.addEventListener('click', loadAll);
+        var retry = document.getElementById('dashRetry');
+        if (retry) retry.addEventListener('click', loadAll);
+
+        var logout = document.getElementById('accountLogout');
+        if (logout) logout.addEventListener('click', function () { AdminCore.logout(); });
+        var relogin = document.getElementById('accountRelogin');
+        if (relogin) relogin.addEventListener('click', function () { AdminCore.changeToken(); });
+
+        loadAll();
+        setInterval(renderSession, 30000);
+    }
+
+    function renderDate() {
+        var el = document.getElementById('dashDate');
+        if (!el) return;
+        el.textContent = new Date().toLocaleDateString('zh-CN', {
+            year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'
+        });
+    }
+
+    function renderSession() {
+        var perms = AdminCore.getPermissions();
+        var token = AdminCore.getToken();
+        var user = '';
+        try { user = sessionStorage.getItem('admin_user') || ''; } catch (e) {}
+        var left = Math.max(0, AdminCore.SESSION_MAX_AGE - (Date.now() - AdminCore.getLoginTime()));
+
+        var value = document.getElementById('statSessionValue');
+        if (value) value.textContent = formatRemaining(left);
+        var meta = document.getElementById('statSessionMeta');
+        if (meta) meta.textContent = 'gist ' + (perms.gist ? '✓' : '✗') + ' · repo ' + (perms.repo ? '✓' : '✗');
+
+        var userEl = document.getElementById('dashUser');
+        if (userEl) userEl.textContent = user ? '，' + user : '';
+
+        var tokenEl = document.getElementById('accountToken');
+        if (tokenEl) tokenEl.textContent = AdminCore.maskToken(token);
+        var permsEl = document.getElementById('accountPerms');
+        if (permsEl) permsEl.textContent = 'gist ' + (perms.gist ? '✓' : '✗') + ' / repo ' + (perms.repo ? '✓' : '✗');
+        var sessionEl = document.getElementById('accountSession');
+        if (sessionEl) sessionEl.textContent = formatRemaining(left);
+    }
+
+    function formatRemaining(ms) {
+        if (ms <= 0) return '已过期';
+        var minutes = Math.floor(ms / 60000);
+        if (minutes <= 0) return '不足 1 分钟';
+        var hours = Math.floor(minutes / 60);
+        return hours > 0 ? (hours + ' 小时 ' + (minutes % 60) + ' 分') : (minutes + ' 分钟');
+    }
+
+    function setDot(id, status) {
+        var dot = document.getElementById(id);
+        if (dot) dot.className = 'dash-dot ' + status;
+    }
+
+    function loadAll() {
+        var refresh = document.getElementById('dashRefresh');
+        if (refresh) refresh.disabled = true;
+        var banner = document.getElementById('dashBanner');
+        if (banner) banner.classList.remove('show');
+        state = { blog: null, portfolio: null, config: null, errors: {} };
+        setDot('dotBlog', 'loading');
+        setDot('dotPortfolio', 'loading');
+        setDot('dotConfig', 'loading');
+
+        var keys = ['blog', 'portfolio', 'config'];
+        var jobs = keys.map(function (key) { return fetchGist(key); });
+
+        Promise.allSettled(jobs).then(function (results) {
+            results.forEach(function (result, i) {
+                var key = keys[i];
+                if (result.status === 'fulfilled') {
+                    state[key] = result.value;
+                    setDot('dot' + key.charAt(0).toUpperCase() + key.slice(1), 'ok');
+                } else {
+                    state.errors[key] = result.reason;
+                    setDot('dot' + key.charAt(0).toUpperCase() + key.slice(1), 'fail');
+                }
+            });
+            renderBlogCard();
+            renderPortfolioCard();
+            renderContactCard();
+            renderRecent();
+            renderErrorBanner();
+            var sync = document.getElementById('lastSync');
+            if (sync) sync.textContent = '同步于 ' + new Date().toLocaleTimeString('zh-CN', { hour12: false });
+        }).finally(function () {
+            if (refresh) refresh.disabled = false;
+        });
+    }
+
+    function fetchGist(key) {
+        var def = GISTS[key];
+        return AdminCore.apiFetch('https://api.github.com/gists/' + def.id, { cache: 'no-cache' })
+            .then(function (res) {
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                return res.json();
+            })
+            .then(function (data) {
+                var files = data.files || {};
+                var file = files[def.file] || Object.keys(files).map(function (k) { return files[k]; })[0];
+                if (!file || !file.content) throw new Error('数据为空');
+                return JSON.parse(file.content);
+            });
+    }
+
+    function renderBlogCard() {
+        var value = document.getElementById('statBlogValue');
+        var meta = document.getElementById('statBlogMeta');
+        if (!value || !meta) return;
+        if (state.errors.blog || !state.blog) {
+            value.textContent = '—';
+            meta.textContent = '读取失败';
+            return;
+        }
+        var posts = Array.isArray(state.blog) ? state.blog : (state.blog.blog || []);
+        var published = posts.filter(function (p) {
+            return p.status === 'published' && p.enabled !== false;
+        });
+        value.textContent = posts.length;
+        meta.textContent = '已发布 ' + published.length + ' · 草稿/下架 ' + (posts.length - published.length);
+    }
+
+    function renderPortfolioCard() {
+        var value = document.getElementById('statPortfolioValue');
+        var meta = document.getElementById('statPortfolioMeta');
+        if (!value || !meta) return;
+        if (state.errors.portfolio || !state.portfolio) {
+            value.textContent = '—';
+            meta.textContent = '读取失败';
+            return;
+        }
+        var items = Array.isArray(state.portfolio) ? state.portfolio : (state.portfolio.projects || []);
+        var featured = items.filter(function (p) { return p.featured === true; });
+        value.textContent = items.length;
+        meta.textContent = '首页展示 ' + featured.length;
+    }
+
+    function renderContactCard() {
+        var value = document.getElementById('statContactValue');
+        var meta = document.getElementById('statContactMeta');
+        if (!value || !meta) return;
+        var blog = state.blog;
+        var messages = (blog && !Array.isArray(blog) && Array.isArray(blog.messages)) ? blog.messages : null;
+        if (messages) {
+            var unprocessed = messages.filter(function (m) {
+                return !m.status || m.status === 'unprocessed';
+            }).length;
+            value.textContent = messages.length;
+            meta.textContent = '未处理 ' + unprocessed;
+        } else {
+            value.textContent = '—';
+            meta.textContent = '留言数据暂未接入';
+        }
+    }
+
+    function parseTs(value) {
+        if (!value) return 0;
+        var ts = Date.parse(value);
+        return isNaN(ts) ? 0 : ts;
+    }
+
+    function renderRecent() {
+        var container = document.getElementById('recentList');
+        if (!container) return;
+        var items = [];
+
+        if (state.blog) {
+            var posts = Array.isArray(state.blog) ? state.blog : (state.blog.blog || []);
+            posts.forEach(function (p) {
+                items.push({
+                    type: '博客',
+                    cls: '',
+                    title: p.title || p.id || '未命名文章',
+                    meta: p.date || p.lastUpdated || '',
+                    ts: parseTs(p.updatedAt || p.lastUpdated || p.date),
+                    href: postHref(p)
+                });
+            });
+        }
+
+        if (state.portfolio) {
+            var projects = Array.isArray(state.portfolio) ? state.portfolio : (state.portfolio.projects || []);
+            projects.forEach(function (p) {
+                items.push({
+                    type: '作品',
+                    cls: 'portfolio',
+                    title: p.title || p.id || '未命名项目',
+                    meta: p.status === 'published' ? '已发布' : '草稿',
+                    ts: parseTs(p.updatedAt || p.createdAt),
+                    href: 'portfolio.html'
+                });
+            });
+        }
+
+        items.sort(function (a, b) { return b.ts - a.ts; });
+        items = items.slice(0, 6);
+
+        if (!items.length) {
+            container.innerHTML = '<div class="dash-empty">暂无内容' +
+                (state.errors.blog || state.errors.portfolio ? '（数据读取失败）' : '') + '</div>';
+            return;
+        }
+
+        container.innerHTML = items.map(function (item) {
+            var external = item.href.indexOf('http') === 0 || item.href.indexOf('../') === 0;
+            var target = external ? ' target="_blank" rel="noopener"' : '';
+            return '<div class="dash-item">' +
+                '<span class="dash-item-badge ' + item.cls + '">' + esc(item.type) + '</span>' +
+                '<a class="dash-item-title" href="' + AdminCore.escapeAttr(AdminCore.safeUrl(item.href)) + '"' + target + '>' +
+                esc(item.title) + '</a>' +
+                '<span class="dash-item-meta">' + esc(item.meta) + '</span>' +
+                '</div>';
+        }).join('');
+    }
+
+    function postHref(post) {
+        var custom = post.customUrl;
+        if (custom && /^https?:\/\//i.test(custom)) return custom;
+        if (custom && /^[a-z0-9._-]+\.html$/i.test(custom)) return '../blogs/' + custom;
+        var id = post.id || '';
+        return id ? '../blogs/' + id + '.html' : '../blog.html';
+    }
+
+    function renderErrorBanner() {
+        var banner = document.getElementById('dashBanner');
+        if (!banner) return;
+        var failed = ['blog', 'portfolio', 'config'].filter(function (k) { return !!state.errors[k]; });
+        if (failed.length === 3) {
+            var text = document.getElementById('dashBannerText');
+            if (text) text.textContent = '无法读取 Gist 数据（网络或 Token 权限问题），请重试。';
+            banner.classList.add('show');
+        }
+    }
+})();
+</script>
+</body>
+</html>
