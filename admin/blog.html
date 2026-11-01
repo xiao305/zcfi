@@ -9,7 +9,7 @@
 <link rel="icon" type="image/png" sizes="96x96" href="../favicon/favicon-96x96.png">
 <link rel="icon" type="image/x-icon" href="../favicon/favicon.ico">
 <!-- Font Awesome -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="../assets/css/icons.css">
 <!-- 后台公共CSS -->
 <link rel="stylesheet" href="assets/css/admin-common.css">
 <!-- 后台统一外壳与公共内核 -->
@@ -559,12 +559,7 @@ let currentBlogData = [];
 let pendingAction = null;
 let pendingActionData = null;
 let hasRepoPermission = false;
-// CORS代理列表
-const CORS_PROXIES = [
-'https://api.allorigins.win/raw?url=',
-'https://corsproxy.io/?',
-'https://api.codetabs.com/v1/proxy?quest='
-];
+// 直连 api.github.com，不使用任何第三方 CORS 代理
 // 页面加载时初始化
 document.addEventListener('DOMContentLoaded', function() {
 initEventListeners();
@@ -937,10 +932,10 @@ return `<!DOCTYPE html>
     <link rel="icon" type="image/x-icon" href="../favicon/favicon.ico">
     
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/icons.css">
     
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts（本地自托管子集） -->
+    <link rel="stylesheet" href="../assets/css/fonts.css">
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -1129,7 +1124,7 @@ return `<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${escapeHtml(post.title)} | zcfi.cn</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="../assets/css/icons.css">
 <style>
 body { font-family: 'Noto Sans SC', sans-serif; background: #f5f5f5; margin: 0; padding: 0; }
 .container { max-width: 800px; margin: 0 auto; padding: 20px; }
@@ -1269,51 +1264,19 @@ hideLoading();
 showResult('error', '保存失败', error.message);
 }
 }
-// 带重试机制的fetch
+// 带重试机制的fetch（直连 api.github.com，GitHub API 已支持浏览器 CORS）
 async function fetchWithRetry(url, options = {}, retryCount = 0) {
-const maxRetries = CORS_PROXIES.length;
+const maxRetries = 2;
 try {
-if (retryCount === 0) {
-try {
-const directResponse = await fetch(url, options);
-if (directResponse.ok || directResponse.status !== 0) {
-return directResponse;
-}
-} catch (directError) {
-console.log('直接请求失败，尝试使用代理');
-}
-}
-if (retryCount < maxRetries) {
-const proxyUrl = CORS_PROXIES[retryCount];
-let fullUrl;
-if (proxyUrl.includes('allorigins')) {
-fullUrl = `${proxyUrl}${encodeURIComponent(url)}`;
-} else if (proxyUrl.includes('corsproxy.io')) {
-fullUrl = `${proxyUrl}${encodeURIComponent(url)}`;
-} else if (proxyUrl.includes('codetabs')) {
-fullUrl = `${proxyUrl}${encodeURIComponent(url)}`;
-}
-console.log(`尝试代理 ${retryCount + 1}/${maxRetries}: ${proxyUrl}`);
-const proxyResponse = await fetch(fullUrl, options);
-if (proxyResponse.ok) {
-return proxyResponse;
-} else {
-const errorText = await proxyResponse.text();
-console.warn(`代理 ${retryCount + 1} 返回错误:`, proxyResponse.status, errorText);
-throw new Error(`HTTP ${proxyResponse.status}`);
-}
-} else {
-throw new Error('所有CORS代理都失败');
-}
+return await fetch(url, options);
 } catch (error) {
-if (retryCount < maxRetries - 1) {
+if (retryCount < maxRetries) {
 const delayTime = 500 * (retryCount + 1);
-console.log(`等待 ${delayTime}ms 后重试...`);
+console.log(`请求失败，${delayTime}ms 后重试...`);
 await new Promise(resolve => setTimeout(resolve, delayTime));
 return await fetchWithRetry(url, options, retryCount + 1);
-} else {
-throw error;
 }
+throw error;
 }
 }
 // 确认弹窗

@@ -91,12 +91,22 @@ class GistRenderer {
         return `${this.escapeHtml(nameWithoutExtension)}<span>.</span>cn`;
     }
 
+    // 当前页面所在目录前缀：文章页在 /blogs/ 下，相对链接需回退一级
+    basePath() {
+        return window.location.pathname.indexOf('/blogs/') !== -1 ? '../' : './';
+    }
+
     normalizeUrl(url) {
         if (!url) return '#';
-        if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('/')) {
-            return url;
+        const raw = String(url).trim();
+        // 绝对地址、协议地址、锚点原样返回
+        if (/^(https?:)?\/\//i.test(raw) || /^[a-z][a-z0-9+.-]*:/i.test(raw) || raw.charAt(0) === '#') {
+            return raw;
         }
-        return url;
+        const base = this.basePath();
+        if (raw.charAt(0) === '/') return raw; // 站点根路径
+        if (raw.indexOf('./') === 0) return base + raw.slice(2);
+        return base + raw;
     }
 
     // 渲染导航栏
@@ -153,7 +163,7 @@ class GistRenderer {
             <header>
                 <div class="container">
                     <nav class="navbar">
-                        <a href="./" class="logo">${logoHtml}</a>
+                        <a href="${this.basePath()}" class="logo">${logoHtml}</a>
                         <ul class="nav-links">
                             ${navLinksHtml}
                         </ul>
@@ -309,7 +319,7 @@ class GistRenderer {
                 <div class="container">
                     <div class="footer-content">
                         <div class="footer-about">
-                            <a href="./" class="footer-logo">${logoHtml}</a>
+                            <a href="${this.basePath()}" class="footer-logo">${logoHtml}</a>
                             <p>${this.escapeHtml(footer.description || '个人网站和作品展示平台')}</p>
                             <div class="social-links">
                                 ${socialLinksHtml}

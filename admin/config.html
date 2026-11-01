@@ -9,7 +9,7 @@
 <link rel="icon" type="image/png" sizes="96x96" href="../favicon/favicon-96x96.png">
 <link rel="icon" type="image/x-icon" href="../favicon/favicon.ico">
 <!-- Font Awesome -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="../assets/css/icons.css">
 <!-- 后台公共CSS -->
 <link rel="stylesheet" href="assets/css/admin-common.css">
 <!-- 后台统一外壳与公共内核 -->
@@ -2659,56 +2659,8 @@ async function saveConfigToGistWithRetry(configData, retryCount = 0) {
 // 保存到Gist
 async function saveConfigToGist(configData) {
     try {
-        // 尝试使用不同的代理方案
-        const proxies = [
-            'https://api.allorigins.win/raw?url=',  // 代理方案1
-            'https://corsproxy.io/?',               // 代理方案2
-            'https://api.codetabs.com/v1/proxy?quest='  // 代理方案3
-        ];
-        
-        let lastError = null;
-        
-        for (let i = 0; i < proxies.length; i++) {
-            try {
-                const proxyUrl = proxies[i];
-                const encodedUrl = encodeURIComponent(CONFIG_GIST_URL);
-                
-                console.log(`尝试使用代理 ${i + 1}: ${proxyUrl}`);
-                
-                const updateResponse = await fetch(`${proxyUrl}${encodedUrl}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Authorization': `token ${token}`,
-                        'Accept': 'application/vnd.github.v3+json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        description: '网站配置数据',
-                        files: {
-                            'config.json': {
-                                content: JSON.stringify(configData, null, 2)
-                            }
-                        }
-                    })
-                });
-                
-                if (updateResponse.ok) {
-                    console.log(`代理 ${i + 1} 保存成功`);
-                    return true;
-                } else {
-                    const errorText = await updateResponse.text();
-                    console.error(`代理 ${i + 1} 错误:`, updateResponse.status, errorText);
-                    lastError = new Error(`代理 ${i + 1} 保存失败: ${updateResponse.status}`);
-                }
-            } catch (proxyError) {
-                console.error(`代理 ${i + 1} 异常:`, proxyError);
-                lastError = proxyError;
-                continue; // 尝试下一个代理
-            }
-        }
-        
-        // 如果所有代理都失败，尝试直接请求（如果环境允许）
-        console.log('所有代理失败，尝试直接请求...');
+        // 直连 api.github.com（GitHub API 已支持浏览器 CORS）
+        // 注意：不要经过任何第三方 CORS 代理，否则 Authorization 头会把 Token 泄露给代理方
         const directResponse = await fetch(CONFIG_GIST_URL, {
             method: 'PATCH',
             headers: {
