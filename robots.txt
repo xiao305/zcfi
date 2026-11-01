@@ -1,0 +1,14 @@
+# zcfi.cn — robots.txt
+# 站点：https://zcfi.cn（GitHub Pages，纯静态）
+
+User-agent: *
+Allow: /
+
+# 后台管理系统不参与搜索引擎收录
+Disallow: /admin/
+
+# 模板页与占位页
+Disallow: /blogs/template.html
+Disallow: /blogs/post.html
+
+Sitemap: https://zcfi.cn/sitemap.xml

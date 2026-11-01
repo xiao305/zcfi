@@ -76,6 +76,12 @@ window.AdminImageUploader = (function () {
             if (file && /^image\//.test(file.type)) handleFile(file);
         });
         nameInput.addEventListener('input', function () { updatePath(); scheduleExistCheck(); });
+        nameInput.addEventListener('blur', function () {
+            // 扩展名由压缩结果决定，避免出现 .jpg 文件名但内容是 webp 的情况
+            nameInput.value = sanitizeName(nameInput.value) + '.' + state.ext;
+            updatePath();
+            scheduleExistCheck();
+        });
         uploadBtn.addEventListener('click', upload);
         cancelBtn.addEventListener('click', close);
         root.querySelector('.upla-x').addEventListener('click', close);
@@ -114,6 +120,10 @@ window.AdminImageUploader = (function () {
         if (!root) return;
         root.hidden = true;
         document.body.style.overflow = '';
+        if (state.blobUrl) {
+            URL.revokeObjectURL(state.blobUrl);
+            state.blobUrl = null;
+        }
     }
 
     function sanitizeName(name) {
@@ -126,14 +136,9 @@ window.AdminImageUploader = (function () {
         return base || 'image';
     }
 
-    function currentExt() {
-        var m = String(nameInput.value).match(/\.([a-z0-9]+)$/i);
-        return m ? m[1].toLowerCase() : state.ext;
-    }
-
     function currentFile() {
-        var ext = currentExt();
-        return sanitizeName(nameInput.value) + '.' + ext;
+        // 扩展名固定使用压缩结果（.webp 或 .jpg），文件名部分可自定义
+        return sanitizeName(nameInput.value) + '.' + state.ext;
     }
 
     function updatePath() {
@@ -146,19 +151,28 @@ window.AdminImageUploader = (function () {
         }
     }
 
+    var checkSeq = 0;
+
     function scheduleExistCheck() {
         state.sha = null;
+        state.checkedName = null;
+        checkSeq += 1;
         clearTimeout(state.checkTimer);
-        state.checkTimer = setTimeout(checkExisting, 420);
+        state.checkTimer = setTimeout(function () { checkExisting(checkSeq); }, 420);
     }
 
-    function checkExisting() {
-        if (!state.blob || !window.AdminCore) return;
-        var path = REPO.folder + '/' + currentFile();
-        AdminCore.apiFetch('https://api.github.com/repos/' + REPO.owner + '/' + REPO.repo + '/contents/' + path + '?ref=' + REPO.branch)
+    function checkExisting(seq) {
+        if (seq === undefined) { seq = ++checkSeq; }
+        if (!state.blob || !window.AdminCore) return Promise.resolve();
+        var file = currentFile();
+        var path = REPO.folder + '/' + file;
+        return AdminCore.apiFetch('https://api.github.com/repos/' + REPO.owner + '/' + REPO.repo + '/contents/' + path + '?ref=' + REPO.branch)
             .then(function (res) {
+                if (seq !== checkSeq) return; // 文件名已变，丢弃旧请求结果
+                state.checkedName = file;
                 if (res.ok) {
                     return res.json().then(function (data) {
+                        if (seq !== checkSeq) return;
                         state.sha = data.sha;
                         var warning = ' · 已存在同名文件，上传将覆盖';
                         if (sizeEl.textContent.indexOf('已存在') === -1) sizeEl.textContent += warning;
@@ -166,7 +180,9 @@ window.AdminImageUploader = (function () {
                 }
                 state.sha = null;
             })
-            .catch(function () { state.sha = null; });
+            .catch(function () {
+                if (seq === checkSeq) state.sha = null;
+            });
     }
 
     function handleFile(file) {
@@ -246,6 +262,7 @@ window.AdminImageUploader = (function () {
         if (state.busy) return;
         if (!state.blob) { showError('请先选择图片'); return; }
         if (!window.AdminCore) { showError('后台内核未加载'); return; }
+        if (state.blob.size > 1.2 * 1024 * 1024) { showError('压缩后仍超过 1.2MB，请换一张更小的图片'); return; }
         var filename = currentFile();
         var path = REPO.folder + '/' + filename;
         state.busy = true;
@@ -253,42 +270,52 @@ window.AdminImageUploader = (function () {
         uploadBtn.textContent = '上传中…';
         errEl.hidden = true;
 
-        var reader = new FileReader();
-        reader.onload = function () {
-            var base64 = String(reader.result).split(',')[1] || '';
-            var body = {
-                message: 'upload image: ' + filename + ' (admin)',
-                content: base64,
-                branch: REPO.branch
-            };
-            if (state.sha) body.sha = state.sha;
-            AdminCore.apiFetch('https://api.github.com/repos/' + REPO.owner + '/' + REPO.repo + '/contents/' + path, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            }).then(function (res) {
-                if (res.ok) return res.json();
-                return res.json().catch(function () { return {}; }).then(function (data) {
-                    throw new Error(data.message || ('上传失败 HTTP ' + res.status));
+        function doUpload() {
+            var reader = new FileReader();
+            reader.onload = function () {
+                var base64 = String(reader.result).split(',')[1] || '';
+                var body = {
+                    message: 'upload image: ' + filename + ' (admin)',
+                    content: base64,
+                    branch: REPO.branch
+                };
+                if (state.sha) body.sha = state.sha;
+                AdminCore.apiFetch('https://api.github.com/repos/' + REPO.owner + '/' + REPO.repo + '/contents/' + path, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                }).then(function (res) {
+                    if (res.ok) return res.json();
+                    return res.json().catch(function () { return {}; }).then(function (data) {
+                        throw new Error(data.message || ('上传失败 HTTP ' + res.status));
+                    });
+                }).then(function () {
+                    var url = SITE_ORIGIN + '/' + path;
+                    state.busy = false;
+                    uploadBtn.disabled = false;
+                    uploadBtn.textContent = '确认上传';
+                    close();
+                    if (typeof state.callback === 'function') state.callback(url, path);
+                    if (window.AdminCore && AdminCore.toast) {
+                        AdminCore.toast('图片已上传：' + filename + '（约 1 分钟后全站可用）', 'success');
+                    }
+                }).catch(function (err) {
+                    state.busy = false;
+                    uploadBtn.disabled = false;
+                    uploadBtn.textContent = '确认上传';
+                    showError(err && err.message ? err.message : '上传失败，请检查 Token 权限或网络');
                 });
-            }).then(function () {
-                var url = SITE_ORIGIN + '/' + path;
-                state.busy = false;
-                uploadBtn.disabled = false;
-                uploadBtn.textContent = '确认上传';
-                close();
-                if (typeof state.callback === 'function') state.callback(url, path);
-                if (window.AdminCore && AdminCore.toast) {
-                    AdminCore.toast('图片已上传：' + filename + '（约 1 分钟后全站可用）', 'success');
-                }
-            }).catch(function (err) {
-                state.busy = false;
-                uploadBtn.disabled = false;
-                uploadBtn.textContent = '确认上传';
-                showError(err && err.message ? err.message : '上传失败，请检查 Token 权限或网络');
-            });
-        };
-        reader.readAsDataURL(state.blob);
+            };
+            reader.readAsDataURL(state.blob);
+        }
+
+        // 文件名可能刚改过：先确认一次 sha（用于覆盖同名文件），再上传
+        if (state.checkedName === filename) {
+            doUpload();
+        } else {
+            var seq = ++checkSeq;
+            checkExisting(seq).then(doUpload, doUpload);
+        }
     }
 
     // 在 textarea 光标处插入文本（供博客正文插入图片）

@@ -272,6 +272,11 @@
                     });
                 });
                 tags.sort(function (a, b) { return String(a).localeCompare(String(b), 'zh-CN'); });
+                if (state.tag && tags.indexOf(state.tag) === -1) {
+                    // URL 里的标签已不存在（例如文章被删除），自动清掉避免空白筛选
+                    state.tag = '';
+                    writeParams();
+                }
                 if (tagSelect) {
                     tags.forEach(function (tag) {
                         var opt = document.createElement('option');
@@ -279,7 +284,7 @@
                         opt.textContent = tag;
                         tagSelect.appendChild(opt);
                     });
-                    if (state.tag && tags.indexOf(state.tag) !== -1) tagSelect.value = state.tag;
+                    if (state.tag) tagSelect.value = state.tag;
                 }
                 if (sortSelect) sortSelect.value = state.sort;
                 render();

@@ -121,6 +121,7 @@
     }
 
     function openDetail(id) {
+        if (overlay) closeDetail();
         var project = state.projects.filter(function (p) { return p.id === id; })[0];
         if (!project) return;
         lastFocus = document.activeElement;

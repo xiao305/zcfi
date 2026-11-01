@@ -151,7 +151,8 @@
     function buildShare(articleBox) {
         if (articleBox.querySelector('.article-share')) return;
         var url = window.location.href;
-        var title = (document.querySelector('.article-title') || document.title || '').textContent || document.title;
+        var titleEl = document.querySelector('.article-title') || document.querySelector('main h1');
+        var title = ((titleEl && titleEl.textContent) ? titleEl.textContent : document.title) || 'zcfi.cn';
         var box = document.createElement('div');
         box.className = 'article-share';
         box.innerHTML =

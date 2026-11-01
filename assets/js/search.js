@@ -71,6 +71,10 @@ window.SiteSearch = (function () {
             if (e.target === overlay) close();
         });
         overlay.querySelector('.zs-close').addEventListener('click', close);
+        // 点击搜索结果后关闭弹层（再跳转）
+        body.addEventListener('click', function (e) {
+            if (e.target.closest('.zs-item')) close();
+        });
         input.addEventListener('input', debounce(function () { render(input.value); }, 120));
         input.addEventListener('keydown', function (e) {
             if (e.key === 'Enter') {
@@ -108,7 +112,15 @@ window.SiteSearch = (function () {
 
     function open(prefill) {
         ensureDom();
+        if (!overlay.hidden) {
+            if (input) { input.focus(); input.select(); }
+            return;
+        }
         lastFocus = document.activeElement;
+        // 从页面上的搜索框触发时，不能把焦点还给它，否则 close() 会再次触发 focusin 打开弹层
+        if (lastFocus && lastFocus.matches && lastFocus.matches('[data-site-search-input]')) {
+            lastFocus = null;
+        }
         overlay.hidden = false;
         document.body.style.overflow = 'hidden';
         input.value = prefill || '';
@@ -118,10 +130,14 @@ window.SiteSearch = (function () {
     }
 
     function close() {
-        if (!overlay) return;
+        if (!overlay || overlay.hidden) return;
         overlay.hidden = true;
         document.body.style.overflow = '';
-        if (lastFocus && typeof lastFocus.focus === 'function') lastFocus.focus();
+        var restore = lastFocus;
+        lastFocus = null;
+        if (restore && typeof restore.focus === 'function' && !(restore.matches && restore.matches('[data-site-search-input]'))) {
+            restore.focus();
+        }
     }
 
     function render(q) {
@@ -197,10 +213,10 @@ window.SiteSearch = (function () {
         });
         document.addEventListener('focusin', function (e) {
             var target = e.target;
-            if (target && target.matches && target.matches('[data-site-search-input]')) {
-                open(target.value || '');
-                if (input) input.value = target.value || '';
-            }
+            if (!target || !target.matches || !target.matches('[data-site-search-input]')) return;
+            if (overlay && !overlay.hidden) return; // 弹层已打开时不要重复打开
+            open(target.value || '');
+            if (input) input.value = target.value || '';
         });
         document.addEventListener('keydown', function (e) {
             if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey) return;
