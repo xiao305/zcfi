@@ -154,6 +154,7 @@
             color: #dee2e6;
         }
     </style>
+    <link rel="stylesheet" href="assets/css/features.css">
 </head>
 <body>
     <!-- 头部导航 -->
@@ -167,6 +168,9 @@
                     <li><a href="../blog.html">博客</a></li>
                     <li><a href="../contact.html">联系我</a></li>
                 </ul>
+                <button type="button" class="nav-search-btn" data-site-search-open aria-label="站内搜索" title="站内搜索">
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                </button>
                 <button type="button" class="mobile-menu-btn" aria-label="打开导航菜单" aria-expanded="false" aria-controls="primary-nav">
                     <i class="fas fa-bars" aria-hidden="true"></i>
                 </button>
@@ -183,6 +187,19 @@
                     <p>我的网页设计、开发项目和其他创作</p>
                 </div>
                 
+                <div class="portfolio-toolbar">
+                    <select id="portfolioTech" aria-label="按技术栈筛选">
+                        <option value="">全部技术栈</option>
+                    </select>
+                    <select id="portfolioSort" aria-label="排序方式">
+                        <option value="default">默认排序</option>
+                        <option value="updated">最近更新</option>
+                        <option value="title">名称排序</option>
+                        <option value="featured">首页展示优先</option>
+                    </select>
+                    <span class="portfolio-count" id="portfolioCount"></span>
+                </div>
+
                 <div id="portfolio-container">
                     <div class="loading-message">
                         <i class="fas fa-spinner fa-spin"></i>
@@ -222,155 +239,9 @@
     <script src="assets/js/main.js"></script>
     
     <!-- 作品集动态加载脚本 -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const portfolioContainer = document.getElementById('portfolio-container');
-            
-            // 作品集Gist URL - 使用您提供的Gist ID
-            const PORTFOLIO_GIST_ID = '311b9a0a483aafc4314d17f577e859bb';
-            const PORTFOLIO_DATA_URL = `https://gist.githubusercontent.com/xiao305/${PORTFOLIO_GIST_ID}/raw/portfolio.json`;
-            
-            // 图标映射 - 根据技术栈或项目类型显示不同图标
-            const iconMap = {
-                'web': 'fas fa-globe',
-                'design': 'fas fa-palette',
-                'mobile': 'fas fa-mobile-alt',
-                'database': 'fas fa-database',
-                'api': 'fas fa-server',
-                'default': 'fas fa-laptop-code'
-            };
-            
-            // 获取项目图标
-            function getProjectIcon(project) {
-                // 可以根据技术栈或项目名称来匹配图标
-                if (project.tech) {
-                    const tech = project.tech.join(' ').toLowerCase();
-                    if (tech.includes('react') || tech.includes('vue') || tech.includes('angular')) {
-                        return iconMap.web;
-                    }
-                    if (tech.includes('android') || tech.includes('ios') || tech.includes('mobile')) {
-                        return iconMap.mobile;
-                    }
-                    if (tech.includes('mysql') || tech.includes('mongodb') || tech.includes('postgresql')) {
-                        return iconMap.database;
-                    }
-                    if (tech.includes('node') || tech.includes('express') || tech.includes('api')) {
-                        return iconMap.api;
-                    }
-                }
-                return iconMap.default;
-            }
-            
-            // 加载作品集数据
-            async function loadPortfolio() {
-                try {
-                    console.log('正在从Gist加载作品集数据...');
-                    
-                    // 添加时间戳防止缓存
-                    const timestamp = new Date().getTime();
-                    const response = await fetch(`${PORTFOLIO_DATA_URL}?t=${timestamp}`);
-                    
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                    }
-                    
-                    const data = await response.json();
-                    
-                    // 兼容处理数据格式
-                    const projects = Array.isArray(data) ? data : [];
-                    console.log(`成功加载 ${projects.length} 个项目`);
-                    
-                    // 过滤已发布的项目
-                    const publishedProjects = projects.filter(project => 
-                        project.status === 'published' || !project.status
-                    );
-                    
-                    if (publishedProjects.length === 0) {
-                        portfolioContainer.innerHTML = `
-                            <div class="empty-state">
-                                <i class="fas fa-briefcase"></i>
-                                <h3>暂无项目展示</h3>
-                                <p>正在准备精彩的作品，敬请期待...</p>
-                            </div>
-                        `;
-                        return;
-                    }
-                    
-                    // 渲染项目列表
-                    portfolioContainer.innerHTML = `
-                        <div class="portfolio-grid">
-                            ${publishedProjects.map(project => `
-                                <div class="portfolio-item">
-                                    <div class="portfolio-img">
-                                        ${project.image ? 
-                                            `<img src="${project.image}" alt="${project.title}" loading="lazy">` : 
-                                            `<i class="${getProjectIcon(project)}"></i>`
-                                        }
-                                    </div>
-                                    <div class="portfolio-content">
-                                        <h3>${escapeHtml(project.title)}</h3>
-                                        <p>${escapeHtml(project.description || '项目描述')}</p>
-                                        
-                                        ${project.tech && project.tech.length > 0 ? `
-                                            <div class="tech-stack">
-                                                ${project.tech.slice(0, 3).map(tech => 
-                                                    `<span class="tech-tag">${escapeHtml(tech)}</span>`
-                                                ).join('')}
-                                                ${project.tech.length > 3 ? 
-                                                    `<span class="tech-tag">+${project.tech.length - 3}</span>` : 
-                                                    ''
-                                                }
-                                            </div>
-                                        ` : ''}
-                                        
-                                        <div class="project-links">
-                                            ${project.demoUrl ? `
-                                                <a href="${project.demoUrl}" target="_blank" class="project-link" rel="noopener noreferrer">
-                                                    <i class="fas fa-external-link-alt"></i> 演示
-                                                </a>
-                                            ` : ''}
-                                            
-                                            ${project.githubUrl ? `
-                                                <a href="${project.githubUrl}" target="_blank" class="project-link" rel="noopener noreferrer">
-                                                    <i class="fab fa-github"></i> 代码
-                                                </a>
-                                            ` : ''}
-                                            
-                                            ${!project.demoUrl && !project.githubUrl ? `
-                                                <span class="project-link" style="color: #999;">
-                                                    <i class="fas fa-info-circle"></i> 详细信息
-                                                </span>
-                                            ` : ''}
-                                        </div>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    `;
-                    
-                } catch (error) {
-                    console.error('加载作品集失败:', error);
-                    portfolioContainer.innerHTML = `
-                        <div class="error-message">
-                            <h3>❌ 加载失败</h3>
-                            <p>无法加载作品集数据: ${error.message}</p>
-                            <p>请检查网络连接，或稍后重试。</p>
-                        </div>
-                    `;
-                }
-            }
-            
-            // HTML转义函数
-            function escapeHtml(text) {
-                if (!text) return '';
-                const div = document.createElement('div');
-                div.textContent = text;
-                return div.innerHTML;
-            }
-            
-            // 初始加载
-            loadPortfolio();
-        });
-    </script>
+    <script src="assets/js/site-data.js"></script>
+    <script src="assets/js/portfolio-page.js"></script>
+    <script src="assets/js/search.js"></script>
+    <script src="assets/js/analytics.js"></script>
 </body>
 </html>

@@ -47,6 +47,7 @@
             margin: 20px 0;
         }
     </style>
+    <link rel="stylesheet" href="assets/css/features.css">
 </head>
 <body>
     <!-- 头部导航 -->
@@ -60,6 +61,9 @@
                     <li><a href="../blog.html" class="active">博客</a></li>
                     <li><a href="../contact.html">联系我</a></li>
                 </ul>
+                <button type="button" class="nav-search-btn" data-site-search-open aria-label="站内搜索" title="站内搜索">
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                </button>
                 <button type="button" class="mobile-menu-btn" aria-label="打开导航菜单" aria-expanded="false" aria-controls="primary-nav">
                     <i class="fas fa-bars" aria-hidden="true"></i>
                 </button>
@@ -75,8 +79,29 @@
                     <h2>最新博客</h2>
                     <p>分享我的思考、学习心得和技术文章</p>
                 </div>
-                <div id="blog-container">
+                <div class="blog-toolbar" role="search">
+                    <label class="blog-search">
+                        <i class="fas fa-search" aria-hidden="true"></i>
+                        <input type="search" id="blogSearch" placeholder="搜索标题、摘要、标签…" aria-label="搜索博客文章">
+                    </label>
+                    <select id="blogTag" aria-label="按标签筛选">
+                        <option value="">全部标签</option>
+                    </select>
+                    <select id="blogSort" aria-label="排序方式">
+                        <option value="newest">最新优先</option>
+                        <option value="oldest">最早优先</option>
+                        <option value="title">标题排序</option>
+                    </select>
+                    <button type="button" class="blog-clear" id="blogClear">重置</button>
+                    <span class="blog-count" id="blogCount"></span>
+                </div>
+                <div id="blog-container" class="blog-grid">
                     <div class="loading-message">加载博客中...</div>
+                </div>
+                <div class="blog-loadmore-wrap" id="blogMoreWrap" hidden>
+                    <button type="button" class="blog-loadmore" id="blogMore">
+                        <i class="fas fa-chevron-down" aria-hidden="true"></i> 加载更多
+                    </button>
                 </div>
             </div>
         </section>
@@ -106,64 +131,165 @@
         </div>
     </footer>
 
+    <script src="assets/js/site-data.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const blogContainer = document.getElementById('blog-container');
-            // 添加时间戳防止缓存
-            const timestamp = new Date().getTime();
-            const BLOG_DATA_URL = `https://gist.githubusercontent.com/xiao305/73cc78400c25eb9effed665e2c89843d/raw/blog.json?${timestamp}`;
-            
-            async function loadBlogs() {
-                try {
-                    console.log('正在加载博客数据...');
-                    const response = await fetch(BLOG_DATA_URL);
-                    
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                    }
-                    
-                    const data = await response.json();
-                    // 从新格式中提取 blog 数组
-                    const blogs = Array.isArray(data) ? data : (data.blog || []);
-                    console.log('加载成功:', blogs);
-                    
-                    if (!Array.isArray(blogs)) {
-                        throw new Error('数据格式错误：返回的不是数组');
-                    }
-                    
-                    // 过滤已发布的文章
-                    const publishedBlogs = blogs.filter(blog => blog.status === 'published');
-                    
-                    if (publishedBlogs.length === 0) {
-                        blogContainer.innerHTML = '<div class="loading-message">暂无博客文章</div>';
-                        return;
-                    }
-                    
-                    blogContainer.innerHTML = publishedBlogs.map(blog => `
-                        <div class="blog-card">
-                            <div class="blog-date">${blog.date}</div>
-                            <div class="blog-content">
-                                <h3>${blog.title}</h3>
-                                <p>${blog.excerpt}</p>
-                                <a href="${blog.customUrl || `blogs/${blog.id}`}" class="read-more">阅读更多 →</a>
-                            </div>
-                        </div>
-                    `).join('');
-                    
-                } catch (error) {
-                    console.error('加载博客失败:', error);
-                    blogContainer.innerHTML = `
-                        <div class="error-message">
-                            <p>❌ 博客加载失败：${error.message}</p>
-                            <p>请检查 Gist 链接是否正确，或稍后重试。</p>
-                        </div>
-                    `;
-                }
+        document.addEventListener('DOMContentLoaded', function () {
+            var container = document.getElementById('blog-container');
+            var searchInput = document.getElementById('blogSearch');
+            var tagSelect = document.getElementById('blogTag');
+            var sortSelect = document.getElementById('blogSort');
+            var clearBtn = document.getElementById('blogClear');
+            var countEl = document.getElementById('blogCount');
+            var moreWrap = document.getElementById('blogMoreWrap');
+            var moreBtn = document.getElementById('blogMore');
+            var esc = window.SiteData.escapeHtml;
+
+            var PAGE_SIZE = 9;
+            var state = { posts: [], q: '', tag: '', sort: 'newest', limit: PAGE_SIZE };
+
+            function stripHtml(html) {
+                var div = document.createElement('div');
+                div.innerHTML = html || '';
+                return div.textContent || '';
             }
-            
-            loadBlogs();
+
+            function readParams() {
+                var params = new URLSearchParams(window.location.search);
+                state.q = params.get('q') || '';
+                state.tag = params.get('tag') || '';
+                state.sort = params.get('sort') || 'newest';
+                if (['newest', 'oldest', 'title'].indexOf(state.sort) === -1) state.sort = 'newest';
+                if (searchInput) searchInput.value = state.q;
+            }
+
+            function writeParams() {
+                var params = new URLSearchParams();
+                if (state.q) params.set('q', state.q);
+                if (state.tag) params.set('tag', state.tag);
+                if (state.sort !== 'newest') params.set('sort', state.sort);
+                var qs = params.toString();
+                var url = window.location.pathname + (qs ? '?' + qs : '');
+                window.history.replaceState(null, '', url);
+            }
+
+            function postHref(post) {
+                if (post.customUrl && /^https?:\/\//i.test(post.customUrl)) return post.customUrl;
+                if (post.customUrl && /^[a-z0-9._-]+\.html$/i.test(post.customUrl)) return 'blogs/' + post.customUrl;
+                return 'blogs/' + encodeURIComponent(post.id || '') + '.html';
+            }
+
+            function filtered() {
+                var q = state.q.trim().toLowerCase();
+                var list = state.posts.filter(function (post) {
+                    if (state.tag && (post.tags || []).map(String).map(function (t) { return t.toLowerCase(); }).indexOf(state.tag.toLowerCase()) === -1) return false;
+                    if (!q) return true;
+                    var hay = [post.title, post.excerpt, stripHtml(post.content), (post.tags || []).join(' '), post.date].join(' ').toLowerCase();
+                    return hay.indexOf(q) !== -1;
+                });
+                if (state.sort === 'newest') {
+                    list.sort(function (a, b) { return window.SiteData.postTimestamp(b) - window.SiteData.postTimestamp(a); });
+                } else if (state.sort === 'oldest') {
+                    list.sort(function (a, b) { return window.SiteData.postTimestamp(a) - window.SiteData.postTimestamp(b); });
+                } else if (state.sort === 'title') {
+                    list.sort(function (a, b) { return String(a.title || '').localeCompare(String(b.title || ''), 'zh-CN'); });
+                }
+                return list;
+            }
+
+            function render() {
+                var list = filtered();
+                var shown = list.slice(0, state.limit);
+                if (countEl) countEl.textContent = list.length ? ('共 ' + list.length + ' 篇') : '';
+                if (moreWrap) moreWrap.hidden = list.length <= state.limit;
+
+                if (!list.length) {
+                    container.innerHTML = '<div class="blog-empty">没有找到匹配的文章' +
+                        (state.q || state.tag ? '<div class="blog-empty-tags">试试更换关键词或点击“重置”</div>' : '') + '</div>';
+                    return;
+                }
+
+                container.innerHTML = shown.map(function (post) {
+                    var tags = (post.tags || []).slice(0, 4).map(function (tag) {
+                        return '<span class="tech-tag">' + esc(tag) + '</span>';
+                    }).join('');
+                    return '<div class="blog-card">' +
+                        '<div class="blog-date">' + esc(post.date || post.lastUpdated || '近期') + '</div>' +
+                        '<div class="blog-content">' +
+                            '<h3><a href="' + esc(postHref(post)) + '" style="color:inherit;text-decoration:none;">' + esc(post.title || '未命名文章') + '</a></h3>' +
+                            '<p>' + esc(post.excerpt || stripHtml(post.content).slice(0, 90) || '文章摘要') + '</p>' +
+                            (tags ? '<div class="tech-stack" style="margin-bottom:12px;">' + tags + '</div>' : '') +
+                            '<a href="' + esc(postHref(post)) + '" class="read-more">阅读更多 →</a>' +
+                        '</div>' +
+                    '</div>';
+                }).join('');
+            }
+
+            function bind() {
+                if (searchInput) searchInput.addEventListener('input', function () {
+                    state.q = searchInput.value;
+                    state.limit = PAGE_SIZE;
+                    writeParams();
+                    render();
+                });
+                if (tagSelect) tagSelect.addEventListener('change', function () {
+                    state.tag = tagSelect.value;
+                    state.limit = PAGE_SIZE;
+                    writeParams();
+                    render();
+                });
+                if (sortSelect) sortSelect.addEventListener('change', function () {
+                    state.sort = sortSelect.value;
+                    state.limit = PAGE_SIZE;
+                    writeParams();
+                    render();
+                });
+                if (clearBtn) clearBtn.addEventListener('click', function () {
+                    state.q = '';
+                    state.tag = '';
+                    state.sort = 'newest';
+                    state.limit = PAGE_SIZE;
+                    if (searchInput) searchInput.value = '';
+                    if (tagSelect) tagSelect.value = '';
+                    if (sortSelect) sortSelect.value = 'newest';
+                    writeParams();
+                    render();
+                });
+                if (moreBtn) moreBtn.addEventListener('click', function () {
+                    state.limit += PAGE_SIZE;
+                    render();
+                });
+            }
+
+            readParams();
+            bind();
+
+            window.SiteData.load().then(function (data) {
+                state.posts = window.SiteData.publishedPosts(data.blog);
+                var tags = [];
+                state.posts.forEach(function (post) {
+                    (post.tags || []).forEach(function (tag) {
+                        if (tags.indexOf(tag) === -1) tags.push(tag);
+                    });
+                });
+                tags.sort(function (a, b) { return String(a).localeCompare(String(b), 'zh-CN'); });
+                if (tagSelect) {
+                    tags.forEach(function (tag) {
+                        var opt = document.createElement('option');
+                        opt.value = tag;
+                        opt.textContent = tag;
+                        tagSelect.appendChild(opt);
+                    });
+                    if (state.tag && tags.indexOf(state.tag) !== -1) tagSelect.value = state.tag;
+                }
+                if (sortSelect) sortSelect.value = state.sort;
+                render();
+            }).catch(function () {
+                container.innerHTML = '<div class="error-message"><p>❌ 博客加载失败</p><p>请检查网络连接，或稍后重试。</p></div>';
+            });
         });
     </script>
     <script src="assets/js/main.js"></script>
+    <script src="assets/js/search.js"></script>
+    <script src="assets/js/analytics.js"></script>
 </body>
 </html>

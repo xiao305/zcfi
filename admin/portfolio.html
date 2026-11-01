@@ -20,7 +20,9 @@
     <link rel="stylesheet" href="assets/css/admin-common.css">
     <!-- 后台统一外壳与公共内核 -->
     <link rel="stylesheet" href="assets/css/admin-shell.css">
+    <link rel="stylesheet" href="assets/css/image-uploader.css">
     <script src="assets/js/admin-core.js" defer></script>
+    <script src="assets/js/image-uploader.js" defer></script>
     
     <!-- 作品集管理特定样式 -->
     <style>
@@ -323,7 +325,13 @@
                 
                 <div class="form-group">
                     <label for="projectImage"><i class="fas fa-image"></i> 项目图片 URL:</label>
-                    <input type="text" id="projectImage" placeholder="https://example.com/image.jpg">
+                    <div class="upload-inline">
+                        <input type="text" id="projectImage" placeholder="https://example.com/image.jpg" style="flex:1;min-width:220px;">
+                        <button type="button" class="admin-btn btn-info" id="uploadProjectImageBtn">
+                            <i class="fas fa-cloud-upload-alt"></i> 上传图片
+                        </button>
+                    </div>
+                    <img id="projectImagePreview" class="upload-thumb" alt="项目图片预览" hidden>
                 </div>
                 
                 <div class="form-group">
@@ -1308,6 +1316,26 @@
         }
         
         // 会话由 admin-core.js 统一管理：刷新/切换板块不再清除 Token
+    </script>
+    <script>
+        // 项目图片上传（B1）：自定义文件名 + 上传前预估 URL
+        document.addEventListener('DOMContentLoaded', function () {
+            var btn = document.getElementById('uploadProjectImageBtn');
+            if (!btn || !window.AdminImageUploader) return;
+            btn.addEventListener('click', function () {
+                var titleEl = document.getElementById('projectTitle');
+                var base = (titleEl && titleEl.value.trim()) || 'project-cover';
+                AdminImageUploader.open({
+                    defaultName: base,
+                    onUploaded: function (url) {
+                        var input = document.getElementById('projectImage');
+                        if (input) input.value = url;
+                        var thumb = document.getElementById('projectImagePreview');
+                        if (thumb) { thumb.src = url; thumb.hidden = false; }
+                    }
+                });
+            });
+        });
     </script>
 </body>
 </html>

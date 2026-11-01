@@ -167,6 +167,9 @@ class GistRenderer {
                         <ul class="nav-links">
                             ${navLinksHtml}
                         </ul>
+                        <button type="button" class="nav-search-btn" data-site-search-open aria-label="站内搜索" title="站内搜索">
+                            <i class="fas fa-search" aria-hidden="true"></i>
+                        </button>
                         <div class="mobile-menu-btn">
                             <i class="fas fa-bars"></i>
                         </div>

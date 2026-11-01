@@ -129,6 +129,7 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="assets/css/features.css">
 </head>
 <body>
     <!-- 头部导航容器 -->
@@ -142,6 +143,10 @@
                 <h1>你好，我是<span style="color: var(--primary-color);" id="siteOwnerName">网站所有者</span></h1>
                 <p id="siteDescriptionHero">欢迎来到我的个人空间。这里将展示我的作品、分享我的思考，记录我的学习与成长历程。</p>
                 <a href="contact.html" class="cta-button">联系我</a>
+                <div class="hero-search">
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                    <input type="search" data-site-search-input placeholder="搜索文章、作品或页面…" aria-label="站内搜索">
+                </div>
             </div>
         </section>
 
@@ -490,5 +495,8 @@
     
     <!-- 主交互脚本 -->
     <script src="assets/js/main.js"></script>
+    <script src="assets/js/site-data.js"></script>
+    <script src="assets/js/search.js"></script>
+    <script src="assets/js/analytics.js"></script>
 </body>
 </html>

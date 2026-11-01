@@ -11,11 +11,14 @@
     <link rel="icon" type="image/x-icon" href="/favicon/favicon.ico">
     <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
     
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="assets/css/icons.css">
+    <!-- Font Awesome（404 可出现在任意路径，必须使用站点绝对路径） -->
+    <link rel="stylesheet" href="/assets/css/icons.css">
     
-    <!-- Google Fonts -->
-    <link rel="stylesheet" href="assets/css/fonts.css">
+    <!-- Google Fonts（本地自托管子集） -->
+    <link rel="stylesheet" href="/assets/css/fonts.css">
+
+    <!-- 功能组件样式 -->
+    <link rel="stylesheet" href="/assets/css/features.css">
     
     <style>
         :root {
@@ -331,17 +334,25 @@
                 可能是链接已失效、页面已被移动，或者这个页面从未存在过。
             </p>
             
-            <div class="error-hint">
-                <p><i class="fas fa-lightbulb"></i> <strong>调试提示：</strong>检查 URL 是否正确，或尝试以下解决方案：</p>
-                <ul style="text-align: left; margin-top: 10px; padding-left: 20px;">
-                    <li>确保链接拼写正确</li>
-                    <li>清除浏览器缓存后重试</li>
-                    <li>从首页开始重新导航</li>
-                </ul>
+            <div class="nf-search">
+                <i class="fas fa-search" aria-hidden="true"></i>
+                <input type="search" id="nfSearch" data-site-search-input placeholder="搜索文章、作品或页面…" aria-label="站内搜索">
             </div>
-            
-            <!-- 修改：添加按钮组，包含返回上一页和返回首页 -->
-            <div class="button-group">
+
+            <div class="nf-recent" id="nfRecent" hidden>
+                <p class="nf-recent-title"><i class="fas fa-clock-rotate-left" aria-hidden="true"></i> 最近文章</p>
+                <ul id="nfRecentList"></ul>
+            </div>
+
+            <div class="nf-links">
+                <a href="/">首页</a>
+                <a href="/portfolio.html">作品集</a>
+                <a href="/blog.html">博客</a>
+                <a href="/contact.html">联系我</a>
+            </div>
+
+            <!-- 按钮组：返回上一页和返回首页 -->
+            <div class="button-group" style="margin-top: 26px;">
                 <button id="goBack" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> 返回上一页
                 </button>
@@ -420,6 +431,30 @@
                 timestamp: new Date().toISOString(),
                 userAgent: navigator.userAgent
             });
+        });
+    </script>
+    <script src="/assets/js/site-data.js"></script>
+    <script src="/assets/js/search.js"></script>
+    <script src="/assets/js/analytics.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (!window.SiteData) return;
+            window.SiteData.load().then(function (data) {
+                var posts = window.SiteData.publishedPosts(data.blog)
+                    .slice()
+                    .sort(function (a, b) { return window.SiteData.postTimestamp(b) - window.SiteData.postTimestamp(a); })
+                    .slice(0, 4);
+                if (!posts.length) return;
+                var wrap = document.getElementById('nfRecent');
+                var list = document.getElementById('nfRecentList');
+                if (!wrap || !list) return;
+                list.innerHTML = posts.map(function (p) {
+                    return '<li><a href="' + window.SiteData.escapeHtml(window.SiteData.postHref(p)) + '">' +
+                        window.SiteData.escapeHtml(p.title || '') +
+                        '<span>' + window.SiteData.escapeHtml(p.date || p.lastUpdated || '') + '</span></a></li>';
+                }).join('');
+                wrap.hidden = false;
+            }).catch(function () {});
         });
     </script>
 </body>

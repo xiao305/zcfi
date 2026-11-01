@@ -1,0 +1,240 @@
+/* ===========================================================
+   image-uploader.css — 后台上传图片弹层
+   =========================================================== */
+.upla-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 6000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    background: rgba(15, 23, 38, 0.55);
+}
+
+.upla-overlay[hidden] {
+    display: none !important;
+}
+
+.upla-dialog {
+    width: 100%;
+    max-width: 560px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 30px 70px rgba(10, 20, 40, 0.35);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.upla-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid #eef1f5;
+}
+
+.upla-head h3 {
+    font-size: 17px;
+    color: #26303d;
+}
+
+.upla-head h3 i {
+    color: #4a6fa5;
+    margin-right: 6px;
+}
+
+.upla-x {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    background: #f1f4f8;
+    color: #6c757d;
+    cursor: pointer;
+}
+
+.upla-body {
+    padding: 18px 20px;
+}
+
+.upla-drop {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 26px 16px;
+    border: 2px dashed #d5deea;
+    border-radius: 12px;
+    background: #fafbfd;
+    cursor: pointer;
+    text-align: center;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.upla-drop:hover,
+.upla-drop.is-over {
+    border-color: #4a6fa5;
+    background: #f3f8ff;
+}
+
+.upla-drop > i {
+    font-size: 30px;
+    color: #4a6fa5;
+}
+
+.upla-drop > span {
+    font-size: 14px;
+    color: #33404f;
+    font-weight: 600;
+}
+
+.upla-drop > small {
+    font-size: 12px;
+    color: #9aa3af;
+    line-height: 1.6;
+}
+
+.upla-preview {
+    margin-top: 14px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #f1f4f8;
+    max-height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.upla-preview img {
+    max-width: 100%;
+    max-height: 220px;
+    object-fit: contain;
+    display: block;
+}
+
+.upla-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.upla-label {
+    flex: none;
+    font-size: 13px;
+    color: #6c757d;
+    font-weight: 600;
+}
+
+.upla-name {
+    flex: 1;
+    min-width: 0;
+    padding: 9px 11px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    color: #26303d;
+}
+
+.upla-name:focus {
+    outline: none;
+    border-color: #4a6fa5;
+    box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.12);
+}
+
+.upla-size {
+    flex: none;
+    font-size: 12px;
+    color: #8a94a3;
+}
+
+.upla-path {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    margin-top: 10px;
+    font-size: 12px;
+}
+
+.upla-path > span {
+    flex: none;
+    width: 60px;
+    color: #8a94a3;
+}
+
+.upla-path code {
+    flex: 1;
+    min-width: 0;
+    word-break: break-all;
+    background: #f7f9fc;
+    border: 1px solid #eef1f5;
+    border-radius: 6px;
+    padding: 6px 8px;
+    color: #33404f;
+    font-size: 12px;
+}
+
+.upla-tip {
+    margin-top: 12px;
+    font-size: 12px;
+    color: #9aa3af;
+    line-height: 1.6;
+}
+
+.upla-error {
+    margin-top: 10px;
+    padding: 9px 12px;
+    background: #fdecec;
+    border: 1px solid #f5c6c6;
+    border-radius: 8px;
+    color: #b02a37;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.upla-foot {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 14px 20px 18px;
+    border-top: 1px solid #eef1f5;
+}
+
+.upla-foot .admin-btn {
+    padding: 9px 18px;
+}
+
+.upla-foot .admin-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* 表单里的上传按钮 */
+.upload-inline {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.upload-inline .form-control,
+.upload-inline input[type=text] {
+    flex: 1;
+    min-width: 220px;
+}
+
+.upload-inline .admin-btn {
+    flex: none;
+    padding: 10px 14px;
+    font-size: 13px;
+}
+
+.upload-thumb {
+    margin-top: 10px;
+    max-height: 120px;
+    border-radius: 8px;
+    border: 1px solid #eef1f5;
+}

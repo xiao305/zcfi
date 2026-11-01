@@ -14,7 +14,9 @@
 <link rel="stylesheet" href="assets/css/admin-common.css">
 <!-- 后台统一外壳与公共内核 -->
 <link rel="stylesheet" href="assets/css/admin-shell.css">
+<link rel="stylesheet" href="assets/css/image-uploader.css">
 <script src="assets/js/admin-core.js" defer></script>
+<script src="assets/js/image-uploader.js" defer></script>
 <style>
 /* 博客管理特定样式 */
 .article-meta {
@@ -335,7 +337,10 @@ width: 100%;
 <textarea id="excerpt" placeholder="请输入文章摘要（简短描述）"></textarea>
 </div>
 <div class="form-group">
-<label for="content"><i class="fas fa-file-alt"></i> 完整内容 (支持 HTML):</label>
+<label for="content"><i class="fas fa-file-alt"></i> 完整内容 (支持 HTML):
+<button type="button" id="insertImageBtn" class="admin-btn btn-info" style="margin-left:10px;padding:4px 10px;font-size:12px;">
+<i class="fas fa-image"></i> 插入图片</button>
+</label>
 <textarea id="content" placeholder="请输入完整的文章内容，可以包含 HTML 标签"></textarea>
 </div>
 </div>
@@ -936,6 +941,7 @@ return `<!DOCTYPE html>
     
     <!-- Google Fonts（本地自托管子集） -->
     <link rel="stylesheet" href="../assets/css/fonts.css">
+    <link rel="stylesheet" href="../assets/css/features.css">
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -1093,6 +1099,9 @@ return `<!DOCTYPE html>
             </div>
         </div>
     </div>
+    <script src="../assets/js/site-data.js"><\/script>
+    <script src="../assets/js/search.js"><\/script>
+    <script src="../assets/js/article-enhance.js"><\/script>
 </body>
 </html>`;
 }
@@ -1125,6 +1134,8 @@ return `<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${escapeHtml(post.title)} | zcfi.cn</title>
 <link rel="stylesheet" href="../assets/css/icons.css">
+<link rel="stylesheet" href="../assets/css/fonts.css">
+<link rel="stylesheet" href="../assets/css/features.css">
 <style>
 body { font-family: 'Noto Sans SC', sans-serif; background: #f5f5f5; margin: 0; padding: 0; }
 .container { max-width: 800px; margin: 0 auto; padding: 20px; }
@@ -1148,6 +1159,9 @@ ${post.content || '<p>暂无内容</p>'}
 <p style="margin-top: 30px;"><a href="../blog.html"><i class="fas fa-arrow-left"></i> 返回博客列表</a></p>
 </div>
 </div>
+<script src="../assets/js/site-data.js"><\/script>
+<script src="../assets/js/search.js"><\/script>
+<script src="../assets/js/article-enhance.js"><\/script>
 </body>
 </html>`;
 }
@@ -1691,6 +1705,24 @@ div.textContent = text;
 return div.innerHTML;
 }
 // 会话由 admin-core.js 统一管理：刷新/切换板块不再清除 Token
+</script>
+<script>
+// 正文插入图片（B1）：自定义文件名 + 上传前预估 URL
+document.addEventListener('DOMContentLoaded', function () {
+    var btn = document.getElementById('insertImageBtn');
+    if (!btn || !window.AdminImageUploader) return;
+    btn.addEventListener('click', function () {
+        var idEl = document.getElementById('postId');
+        var base = (idEl && idEl.value.trim()) || 'article';
+        AdminImageUploader.open({
+            defaultName: base + '-img',
+            onUploaded: function (url) {
+                var ta = document.getElementById('content');
+                AdminImageUploader.insertAtCursor(ta, '<p><img src="' + url + '" alt="" loading="lazy"></p>');
+            }
+        });
+    });
+});
 </script>
 </body>
 </html>
