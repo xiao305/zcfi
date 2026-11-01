@@ -197,6 +197,7 @@
         '<a class="admin-shell-brand" href="dashboard.html">zcfi<span class="brand-dot">.</span>cn <em>后台</em></a>' +
         '<nav class="admin-shell-nav" aria-label="后台板块导航">' + links + '</nav>' +
         '<div class="admin-shell-user">' +
+          '<span class="admin-task-state" id="adminTaskState" hidden></span>' +
           '<span class="admin-token-chip" title="' + escapeAttr(tokenText) + '">' +
             escapeHtml(tokenText) +
             ' <span class="' + (permissions.gist ? 'ok' : 'missing') + '">gist ' + gistOk + '</span>' +

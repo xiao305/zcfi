@@ -270,52 +270,36 @@ window.AdminImageUploader = (function () {
         uploadBtn.textContent = '上传中…';
         errEl.hidden = true;
 
-        function doUpload() {
-            var reader = new FileReader();
-            reader.onload = function () {
-                var base64 = String(reader.result).split(',')[1] || '';
-                var body = {
+        var reader = new FileReader();
+        reader.onload = function () {
+            var base64 = String(reader.result).split(',')[1] || '';
+            // 统一走 AdminTasks：串行排队 + 冲突自动重试 + 实时状态 + 立即成功反馈
+            var task = (window.AdminTasks)
+                ? AdminTasks.saveFile({
+                    path: path,
+                    contentBase64: base64,
                     message: 'upload image: ' + filename + ' (admin)',
-                    content: base64,
-                    branch: REPO.branch
-                };
-                if (state.sha) body.sha = state.sha;
-                AdminCore.apiFetch('https://api.github.com/repos/' + REPO.owner + '/' + REPO.repo + '/contents/' + path, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
-                }).then(function (res) {
-                    if (res.ok) return res.json();
-                    return res.json().catch(function () { return {}; }).then(function (data) {
-                        throw new Error(data.message || ('上传失败 HTTP ' + res.status));
-                    });
-                }).then(function () {
-                    var url = SITE_ORIGIN + '/' + path;
-                    state.busy = false;
-                    uploadBtn.disabled = false;
-                    uploadBtn.textContent = '确认上传';
-                    close();
-                    if (typeof state.callback === 'function') state.callback(url, path);
-                    if (window.AdminCore && AdminCore.toast) {
-                        AdminCore.toast('图片已上传：' + filename + '（约 1 分钟后全站可用）', 'success');
-                    }
-                }).catch(function (err) {
-                    state.busy = false;
-                    uploadBtn.disabled = false;
-                    uploadBtn.textContent = '确认上传';
-                    showError(err && err.message ? err.message : '上传失败，请检查 Token 权限或网络');
-                });
-            };
-            reader.readAsDataURL(state.blob);
-        }
-
-        // 文件名可能刚改过：先确认一次 sha（用于覆盖同名文件），再上传
-        if (state.checkedName === filename) {
-            doUpload();
-        } else {
-            var seq = ++checkSeq;
-            checkExisting(seq).then(doUpload, doUpload);
-        }
+                    title: '上传图片：' + filename
+                })
+                : Promise.reject(new Error('任务中心未加载，请刷新页面后重试'));
+            task.then(function () {
+                var url = SITE_ORIGIN + '/' + path;
+                state.busy = false;
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = '确认上传';
+                close();
+                if (typeof state.callback === 'function') state.callback(url, path);
+                if (window.AdminCore && AdminCore.toast) {
+                    AdminCore.toast('图片已上传：' + filename, 'success');
+                }
+            }).catch(function (err) {
+                state.busy = false;
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = '确认上传';
+                showError(err && err.message ? err.message : '上传失败，请检查 Token 权限或网络');
+            });
+        };
+        reader.readAsDataURL(state.blob);
     }
 
     // 在 textarea 光标处插入文本（供博客正文插入图片）

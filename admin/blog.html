@@ -15,8 +15,10 @@
 <link rel="stylesheet" href="assets/css/admin-common.css">
 <!-- 后台统一外壳与公共内核 -->
 <link rel="stylesheet" href="assets/css/admin-shell.css">
+<link rel="stylesheet" href="assets/css/task-center.css">
 <link rel="stylesheet" href="assets/css/image-uploader.css">
 <script src="assets/js/admin-core.js" defer></script>
+<script src="assets/js/task-center.js" defer></script>
 <script src="assets/js/image-uploader.js" defer></script>
 <style>
 /* 博客管理特定样式 */
@@ -801,61 +803,20 @@ showResult('error', '保存失败', error.message);
 }
 }, 100);
 }
-// 创建/更新页面文件
+// 创建/更新页面文件（统一走 AdminTasks：排队 + 冲突重试 + 状态显示）
 async function createOrUpdatePageFile(post) {
 if (!hasRepoPermission) {
 throw new Error('缺少repo权限，无法生成页面文件');
 }
-try {
 const pageContent = await buildPageContent(post);
 const filePath = `blogs/${post.id}.html`;
-let currentFile = null;
-let fileExists = false;
-try {
-const checkUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}?ref=${REPO_BRANCH}`;
-const checkResponse = await fetchWithRetry(checkUrl, {
-headers: {
-'Authorization': `token ${token}`,
-'Accept': 'application/vnd.github.v3+json'
-}
-});
-if (checkResponse.ok) {
-currentFile = await checkResponse.json();
-fileExists = true;
-} else if (checkResponse.status === 404) {
-fileExists = false;
-}
-} catch (error) {
-fileExists = false;
-}
 const contentBase64 = btoa(unescape(encodeURIComponent(pageContent)));
-const requestData = {
+return await AdminTasks.saveFile({
+path: filePath,
+contentBase64: contentBase64,
 message: `Update blog page: ${post.title}`,
-content: contentBase64,
-branch: REPO_BRANCH
-};
-if (fileExists && currentFile && currentFile.sha) {
-requestData.sha = currentFile.sha;
-}
-const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}`;
-const response = await fetchWithRetry(apiUrl, {
-method: 'PUT',
-headers: {
-'Authorization': `token ${token}`,
-'Accept': 'application/vnd.github.v3+json',
-'Content-Type': 'application/json'
-},
-body: JSON.stringify(requestData)
+title: `生成文章页：${post.title}`
 });
-if (!response.ok) {
-const errorData = await response.json();
-throw new Error(`创建/更新页面文件失败: ${response.status} ${errorData.message || response.statusText}`);
-}
-return await response.json();
-} catch (error) {
-console.error('创建/更新页面文件失败:', error);
-throw error;
-}
 }
 // 构建页面内容
 async function buildPageContent(post) {
@@ -1172,41 +1133,11 @@ if (!hasRepoPermission) {
 console.log('缺少repo权限，跳过删除页面文件');
 return;
 }
-try {
-const filePath = `blogs/${postId}.html`;
-const checkUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}?ref=${REPO_BRANCH}`;
-const checkResponse = await fetchWithRetry(checkUrl, {
-headers: {
-'Authorization': `token ${token}`,
-'Accept': 'application/vnd.github.v3+json'
-}
-});
-if (!checkResponse.ok) {
-console.log('文件不存在，无需删除');
-return;
-}
-const currentFile = await checkResponse.json();
-const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}`;
-const response = await fetchWithRetry(apiUrl, {
-method: 'DELETE',
-headers: {
-'Authorization': `token ${token}`,
-'Accept': 'application/vnd.github.v3+json',
-'Content-Type': 'application/json'
-},
-body: JSON.stringify({
+await AdminTasks.deleteFile({
+path: `blogs/${postId}.html`,
 message: `Delete blog page: ${postId}`,
-sha: currentFile.sha,
-branch: REPO_BRANCH
-})
+title: `删除文章页：${postId}`
 });
-if (!response.ok) {
-const errorData = await response.json();
-console.error(`删除页面文件失败: ${response.status} ${errorData.message}`);
-}
-} catch (error) {
-console.error('删除页面文件失败:', error);
-}
 }
 // 模板管理功能
 async function manageTemplate() {
@@ -1233,44 +1164,12 @@ return;
 }
 showLoading('保存模板', '正在保存模板文件...');
 const contentBase64 = btoa(unescape(encodeURIComponent(templateContent)));
-let currentFile = null;
-let fileExists = false;
-try {
-const checkUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${TEMPLATE_PATH}`;
-const checkResponse = await fetchWithRetry(checkUrl, {
-headers: {
-'Authorization': `token ${token}`,
-'Accept': 'application/vnd.github.v3+json'
-}
-});
-if (checkResponse.ok) {
-currentFile = await checkResponse.json();
-fileExists = true;
-}
-} catch (error) {
-fileExists = false;
-}
-const requestData = {
+await AdminTasks.saveFile({
+path: TEMPLATE_PATH,
+contentBase64: contentBase64,
 message: 'Update blog page template',
-content: contentBase64,
-branch: REPO_BRANCH
-};
-if (fileExists && currentFile && currentFile.sha) {
-requestData.sha = currentFile.sha;
-}
-const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${TEMPLATE_PATH}`;
-const response = await fetchWithRetry(apiUrl, {
-method: 'PUT',
-headers: {
-'Authorization': `token ${token}`,
-'Accept': 'application/vnd.github.v3+json',
-'Content-Type': 'application/json'
-},
-body: JSON.stringify(requestData)
+title: '保存文章模板'
 });
-if (!response.ok) {
-throw new Error('保存模板失败');
-}
 hideLoading();
 showResult('success', '保存成功', '模板已保存');
 closeTemplateModal();
@@ -1514,25 +1413,13 @@ seoDescription: post.seoDescription || ''
 }));
 }
 async function updateGistData(newData) {
-const updateResponse = await fetchWithRetry(GIST_URL, {
-method: 'PATCH',
-headers: {
-'Authorization': `token ${token}`,
-'Accept': 'application/vnd.github.v3+json',
-'Content-Type': 'application/json'
-},
-body: JSON.stringify({
-files: {
-'blog.json': {
-content: JSON.stringify(newData, null, 2)
-}
-}
-})
+await AdminTasks.gist({
+gistId: GIST_ID,
+filename: 'blog.json',
+data: newData,
+title: '保存博客数据',
+description: '博客数据'
 });
-if (!updateResponse.ok) {
-const errorText = await updateResponse.text();
-throw new Error(`更新失败: ${updateResponse.status} ${errorText}`);
-}
 }
 // 主加载函数
 async function loadBlogData(isInitialLoad = false, showRefreshResult = false) {

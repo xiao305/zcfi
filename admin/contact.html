@@ -15,7 +15,9 @@
     <link rel="stylesheet" href="../assets/css/icons.css">
     <!-- 后台统一外壳与公共内核 -->
     <link rel="stylesheet" href="assets/css/admin-shell.css">
+<link rel="stylesheet" href="assets/css/task-center.css">
     <script src="assets/js/admin-core.js" defer></script>
+<script src="assets/js/task-center.js" defer></script>
     
     <style>
         * {
@@ -691,35 +693,19 @@
                     'Accept': 'application/vnd.github.v3+json'
                 }
             });
-            
             if (!response.ok) {
                 throw new Error(`获取完整数据失败: ${response.status} ${response.statusText}`);
             }
-            
             const gist = await response.json();
             const fullData = JSON.parse(gist.files['blog.json'].content);
-            
             fullData.messages = messagesData;
-            
-            const updateResponse = await fetch(GIST_URL, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `token ${token}`,
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    files: {
-                        'blog.json': {
-                            content: JSON.stringify(fullData, null, 2)
-                        }
-                    }
-                })
+            await AdminTasks.gist({
+                gistId: GIST_ID,
+                filename: 'blog.json',
+                data: fullData,
+                title: '更新留言数据',
+                description: '博客数据'
             });
-            
-            if (!updateResponse.ok) {
-                throw new Error(`更新失败: ${updateResponse.status} ${updateResponse.statusText}`);
-            }
         }
         
         async function loadMessages() {

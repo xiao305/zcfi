@@ -1,0 +1,357 @@
+/* ===========================================================
+   task-center.css — 后台 GitHub 任务中心
+   =========================================================== */
+
+/* ---------- 顶栏状态 chip ---------- */
+.admin-task-state {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 260px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    margin-right: 8px;
+}
+
+.admin-task-state.is-active {
+    background: #eef3fa;
+    color: #4a6fa5;
+}
+
+.admin-task-state.is-ok {
+    background: #e9f7ef;
+    color: #1e7e34;
+}
+
+.admin-task-state.is-error {
+    background: #fdecec;
+    color: #b02a37;
+}
+
+/* ---------- 右下角浮动按钮 ---------- */
+.admin-task-fab {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    z-index: 6500;
+    width: 48px;
+    height: 48px;
+    border: none;
+    border-radius: 50%;
+    background: #4a6fa5;
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: 0 10px 24px rgba(20, 40, 70, 0.28);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.admin-task-fab:hover {
+    background: #3a5a80;
+    transform: translateY(-2px);
+}
+
+.admin-task-fab.is-busy {
+    background: #2f7d5a;
+}
+
+.admin-task-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: #dc3545;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 20px;
+    text-align: center;
+}
+
+/* ---------- 面板 ---------- */
+.admin-task-panel {
+    position: fixed;
+    right: 22px;
+    bottom: 82px;
+    z-index: 6500;
+    width: 380px;
+    max-width: calc(100vw - 32px);
+    max-height: 66vh;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border: 1px solid #e6ebf2;
+    border-radius: 16px;
+    box-shadow: 0 24px 60px rgba(16, 33, 60, 0.3);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+}
+
+.admin-task-panel[hidden] {
+    display: none !important;
+}
+
+.admin-task-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid #eef1f5;
+    background: #fafbfd;
+}
+
+.admin-task-head strong {
+    font-size: 14px;
+    color: #26303d;
+}
+
+.admin-task-head strong i {
+    color: #4a6fa5;
+    margin-right: 4px;
+}
+
+.admin-task-sub {
+    margin-top: 4px;
+    font-size: 12px;
+    color: #8a94a3;
+    line-height: 1.5;
+    max-width: 290px;
+}
+
+.admin-task-close {
+    width: 30px;
+    height: 30px;
+    flex: none;
+    border: none;
+    border-radius: 8px;
+    background: #f1f4f8;
+    color: #6c757d;
+    cursor: pointer;
+}
+
+.admin-task-close:hover {
+    background: #e6ebf2;
+}
+
+.admin-task-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 12px;
+}
+
+.admin-task-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 10px 10px 9px;
+    border: 1px solid #eef1f5;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    background: #fff;
+}
+
+.admin-task-item.is-running,
+.admin-task-item.is-retrying {
+    border-color: #cfe0f5;
+    background: #f7fbff;
+}
+
+.admin-task-item.is-success {
+    border-color: #d6efdf;
+    background: #f7fdf9;
+}
+
+.admin-task-item.is-failed {
+    border-color: #f5c6c6;
+    background: #fff8f8;
+}
+
+.admin-task-icon {
+    flex: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    background: #eef3fa;
+    color: #4a6fa5;
+    margin-top: 1px;
+}
+
+.admin-task-item.is-success .admin-task-icon {
+    background: #e9f7ef;
+    color: #1e7e34;
+}
+
+.admin-task-item.is-failed .admin-task-icon {
+    background: #fdecec;
+    color: #b02a37;
+}
+
+.admin-task-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.admin-task-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #26303d;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.admin-task-state-text {
+    font-size: 11px;
+    font-weight: 500;
+    color: #6c757d;
+    background: #f1f4f8;
+    border-radius: 999px;
+    padding: 1px 7px;
+}
+
+.admin-task-item.is-success .admin-task-state-text {
+    background: #e9f7ef;
+    color: #1e7e34;
+}
+
+.admin-task-item.is-failed .admin-task-state-text {
+    background: #fdecec;
+    color: #b02a37;
+}
+
+.admin-task-detail {
+    margin-top: 3px;
+    font-size: 12px;
+    color: #5b6675;
+    line-height: 1.5;
+    word-break: break-all;
+}
+
+.admin-task-meta {
+    margin-top: 3px;
+    font-size: 11px;
+    color: #9aa3af;
+}
+
+.admin-task-retry {
+    flex: none;
+    align-self: center;
+    border: 1px solid #f0c6c6;
+    background: #fff;
+    color: #b02a37;
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.admin-task-retry:hover {
+    background: #fdecec;
+}
+
+.admin-task-empty {
+    padding: 24px 12px;
+    text-align: center;
+    font-size: 13px;
+    color: #9aa3af;
+}
+
+.admin-task-history {
+    border-top: 1px solid #eef1f5;
+    padding: 10px 14px 12px;
+    background: #fafbfd;
+    max-height: 170px;
+    overflow-y: auto;
+}
+
+.admin-task-history-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #8a94a3;
+    margin-bottom: 6px;
+}
+
+.admin-task-clear {
+    border: none;
+    background: transparent;
+    color: #9aa3af;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.admin-task-clear:hover {
+    color: #4a6fa5;
+}
+
+.admin-task-history ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.admin-task-history li {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 5px 0;
+    font-size: 12px;
+    color: #5b6675;
+    border-bottom: 1px dashed #eef1f5;
+}
+
+.admin-task-history li:last-child {
+    border-bottom: none;
+}
+
+.admin-task-history li em {
+    flex: none;
+    font-style: normal;
+    color: #9aa3af;
+}
+
+.admin-task-history li.is-success span::before {
+    content: '✓ ';
+    color: #1e7e34;
+}
+
+.admin-task-history li.is-failed span::before {
+    content: '✕ ';
+    color: #b02a37;
+}
+
+.admin-task-empty-li {
+    color: #b3bcc9 !important;
+    justify-content: center !important;
+}
+
+@media (max-width: 520px) {
+    .admin-task-panel {
+        right: 12px;
+        left: 12px;
+        width: auto;
+        bottom: 78px;
+    }
+
+    .admin-task-fab {
+        right: 16px;
+        bottom: 16px;
+    }
+}

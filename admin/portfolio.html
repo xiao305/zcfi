@@ -21,8 +21,10 @@
     <link rel="stylesheet" href="assets/css/admin-common.css">
     <!-- 后台统一外壳与公共内核 -->
     <link rel="stylesheet" href="assets/css/admin-shell.css">
+<link rel="stylesheet" href="assets/css/task-center.css">
     <link rel="stylesheet" href="assets/css/image-uploader.css">
     <script src="assets/js/admin-core.js" defer></script>
+<script src="assets/js/task-center.js" defer></script>
     <script src="assets/js/image-uploader.js" defer></script>
     
     <!-- 作品集管理特定样式 -->
@@ -1092,58 +1094,16 @@
             }
         }
         
-        // 更新Gist数据
+        // 更新Gist数据（统一走 AdminTasks：串行排队、状态显示、失败重试）
         async function updateGistData(newData) {
-            try {
-                // 首先获取当前Gist信息，以保留其他文件
-                const response = await fetch(GIST_URL, {
-                    headers: {
-                        'Authorization': `token ${token}`,
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`获取Gist信息失败: ${response.status} ${response.statusText}`);
-                }
-                
-                const gist = await response.json();
-                const files = gist.files;
-                
-                // 查找现有的portfolio文件，如果没有则创建新文件
-                const fileName = Object.keys(files).find(name => name.includes('portfolio')) || 'portfolio.json';
-                
-                // 准备更新数据
-                const updateData = {
-                    description: '作品集数据',
-                    files: {
-                        ...files, // 保留其他文件
-                        [fileName]: {
-                            content: JSON.stringify(newData, null, 2)
-                        }
-                    }
-                };
-                
-                const updateResponse = await fetch(GIST_URL, {
-                    method: 'PATCH',
-                    headers: {
-                        'Authorization': `token ${token}`,
-                        'Accept': 'application/vnd.github.v3+json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(updateData)
-                });
-                
-                if (!updateResponse.ok) {
-                    throw new Error(`更新失败: ${updateResponse.status} ${updateResponse.statusText}`);
-                }
-                
-                return true;
-                
-            } catch (error) {
-                console.error('更新Gist失败:', error);
-                throw error;
-            }
+            await AdminTasks.gist({
+                gistId: GIST_ID,
+                filename: 'portfolio.json',
+                data: newData,
+                title: '保存作品集数据',
+                description: '作品集数据'
+            });
+            return true;
         }
         
         // 主加载函数

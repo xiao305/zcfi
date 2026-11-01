@@ -76,8 +76,8 @@
 │   ├── contact.html            # 留言管理
 │   ├── config.html             # 站点配置
 │   └── assets/
-│       ├── css/                # admin-common / admin-shell / image-uploader
-│       └── js/                 # admin-core（统一会话+顶栏）/ image-uploader
+│       ├── css/                # admin-common / admin-shell / image-uploader / task-center
+│       └── js/                 # admin-core（统一会话+顶栏）/ image-uploader / task-center
 │
 └── xy/                         # 独立子站（媒体浏览工具），与主站分开维护
 ```
@@ -104,6 +104,7 @@
 - 作品集：编辑项目、首页展示排序、图片上传（浏览器压缩、自定义文件名、上传前 URL 预估）
 - 配置：站点信息、导航、页脚、法律文本
 - 留言：查看/标记状态（数据模型待完善）
+- **GitHub 任务中心**：所有保存/提交/上传统一进入串行队列（避免并发冲突），右下角面板实时显示状态、耗时与失败原因，支持一键重试与历史记录；顶栏会显示"保存中 / 已保存 / 失败"状态；有任务未完成时离开页面会提醒。
 
 ---
 
