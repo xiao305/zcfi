@@ -177,6 +177,36 @@
     background: #fff8f8;
 }
 
+.admin-task-item.is-deploying {
+    border-color: #cfe0f5;
+    background: #f4f9ff;
+}
+
+.admin-task-item.is-superseded {
+    border-color: #e3e6ea;
+    background: #fafbfc;
+}
+
+.admin-task-item.is-unknown {
+    border-color: #f3e2c0;
+    background: #fffdf6;
+}
+
+.admin-task-item.is-superseded .admin-task-icon {
+    background: #eef1f4;
+    color: #8a94a3;
+}
+
+.admin-task-item.is-unknown .admin-task-icon {
+    background: #fdf3e0;
+    color: #a06a12;
+}
+
+.admin-task-item.is-deploying .admin-task-icon {
+    background: #e8f2fd;
+    color: #2f6fb5;
+}
+
 .admin-task-icon {
     flex: none;
     width: 24px;
@@ -233,6 +263,21 @@
 .admin-task-item.is-failed .admin-task-state-text {
     background: #fdecec;
     color: #b02a37;
+}
+
+.admin-task-item.is-deploying .admin-task-state-text {
+    background: #e8f2fd;
+    color: #2f6fb5;
+}
+
+.admin-task-item.is-superseded .admin-task-state-text {
+    background: #eef1f4;
+    color: #6c757d;
+}
+
+.admin-task-item.is-unknown .admin-task-state-text {
+    background: #fdf3e0;
+    color: #a06a12;
 }
 
 .admin-task-detail {

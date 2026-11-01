@@ -279,7 +279,8 @@ window.AdminImageUploader = (function () {
                     path: path,
                     contentBase64: base64,
                     message: 'upload image: ' + filename + ' (admin)',
-                    title: '上传图片：' + filename
+                    title: '上传图片：' + filename,
+                    verifyUrl: SITE_ORIGIN + '/' + path
                 })
                 : Promise.reject(new Error('任务中心未加载，请刷新页面后重试'));
             task.then(function () {

@@ -815,7 +815,8 @@ return await AdminTasks.saveFile({
 path: filePath,
 contentBase64: contentBase64,
 message: `Update blog page: ${post.title}`,
-title: `生成文章页：${post.title}`
+title: `生成文章页：${post.title}`,
+verifyUrl: `https://zcfi.cn/${filePath}`
 });
 }
 // 构建页面内容
@@ -1136,7 +1137,9 @@ return;
 await AdminTasks.deleteFile({
 path: `blogs/${postId}.html`,
 message: `Delete blog page: ${postId}`,
-title: `删除文章页：${postId}`
+title: `删除文章页：${postId}`,
+verifyUrl: `https://zcfi.cn/blogs/${postId}.html`,
+expected: 'delete'
 });
 }
 // 模板管理功能
@@ -1168,7 +1171,8 @@ await AdminTasks.saveFile({
 path: TEMPLATE_PATH,
 contentBase64: contentBase64,
 message: 'Update blog page template',
-title: '保存文章模板'
+title: '保存文章模板',
+verifyUrl: `https://zcfi.cn/${TEMPLATE_PATH}`
 });
 hideLoading();
 showResult('success', '保存成功', '模板已保存');
