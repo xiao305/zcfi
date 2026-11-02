@@ -781,6 +781,7 @@ if (!post) {
 throw new Error('未找到指定文章');
 }
 const before = JSON.parse(JSON.stringify(post));
+const originalData = JSON.parse(JSON.stringify(currentData));
 const generatePageBefore = before.generatePage === true;
 const pageFields = ['title', 'content', 'excerpt', 'date', 'status', 'enabled', 'tags', 'author', 'seoKeywords', 'seoDescription', 'customUrl'];
 function pageSignature(p) {
@@ -803,8 +804,8 @@ closeAdvancedConfigModal();
 showResult('info', '没有修改', '页面内容和配置都没有变化，已跳过重新生成和提交。');
 return;
 }
-// 已知有部署在跑：不要先显示“正在保存”转圈，直接提示已排队，内容准备/提交在后台继续
 const willQueue = window.AdminTasks && AdminTasks.isDeploying && AdminTasks.isDeploying();
+let queueNotified = !!willQueue;
 if (willQueue) {
 closeAdvancedConfigModal();
 showResult('info', '已加入队列', '当前有部署正在进行，页面内容准备完成后会自动排队提交；可在右下角「任务中心」查看进度。');
@@ -814,27 +815,63 @@ showLoading('保存配置', '正在保存高级配置...');
 // 如果当前有部署在跑，任务会排队等待。此时先关闭 loading，让任务在后台继续，
 // 避免"一直正在保存"卡住页面；完成后再刷新列表/提示结果。
 const onQueued = function() {
+queueNotified = true;
 hideLoading();
 closeAdvancedConfigModal();
 showResult('info', '已加入队列', '当前有部署正在进行，本次修改已排队等待；部署完成后会自动提交并更新页面，可在右下角「任务中心」查看进度。');
 };
+let pagePromise;
 if (generatePage) {
 // 已经是生成状态且页面内容没有变化时，不再重复生成
 if (!generatePageBefore || pageChanged) {
-await createOrUpdatePageFile(post, onQueued);
+pagePromise = createOrUpdatePageFile(post, onQueued);
+} else {
+pagePromise = Promise.resolve();
 }
 } else if (generatePageBefore) {
-await deletePageFile(postId, onQueued);
+pagePromise = deletePageFile(postId, onQueued);
+} else {
+pagePromise = Promise.resolve();
 }
-await updateGistData(currentData);
+// Gist 与仓库 Pages 部署互不冲突：Gist 立即写入，页面文件任务按队列执行
+const gistPromise = updateGistData(currentData);
+const results = await Promise.allSettled([pagePromise, gistPromise]);
+if (results[0].status === 'rejected') {
+// 页面文件失败时，尽量把 Gist 恢复到修改前，避免标志与文件不一致
+if (results[1].status === 'fulfilled') {
+try { await updateGistData(originalData); } catch (rollbackError) { console.warn('回滚 Gist 失败:', rollbackError); }
+}
+throw results[0].reason;
+}
+if (results[1].status === 'rejected') {
+throw results[1].reason;
+}
 currentBlogData = currentData;
 hideLoading();
+displayArticlesList(currentBlogData);
+if (queueNotified) {
+// 后台排队完成：不再弹出阻塞式“保存成功”弹窗，并清掉之前的“已加入队列”提示
+var queuedTitleEl = document.getElementById('resultTitle');
+if (queuedTitleEl && queuedTitleEl.textContent === '已加入队列') closeResultModal();
+if (!document.hidden && window.AdminCore && AdminCore.toast) {
+AdminCore.toast('高级配置已在后台保存完成', 'success');
+}
+} else {
 showResult('success', '保存成功', '高级配置已保存');
 closeAdvancedConfigModal();
-displayArticlesList(currentBlogData);
+}
 } catch (error) {
 hideLoading();
+if (queueNotified) {
+var queuedFailEl = document.getElementById('resultTitle');
+if (queuedFailEl && queuedFailEl.textContent === '已加入队列') closeResultModal();
+if (!document.hidden && window.AdminCore && AdminCore.toast) {
+AdminCore.toast('高级配置保存失败：' + error.message, 'error');
+}
+if (window.AdminTasks && AdminTasks.openPanel) AdminTasks.openPanel(true);
+} else {
 showResult('error', '保存失败', error.message);
+}
 }
 }
 // 创建/更新页面文件（统一走 AdminTasks：排队 + 冲突重试 + 状态显示）
