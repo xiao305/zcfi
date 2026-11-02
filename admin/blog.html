@@ -564,6 +564,7 @@ const token = sessionStorage.getItem('admin_token');
 const permissions = JSON.parse(sessionStorage.getItem('admin_permissions') || '{}');
 // 全局状态
 let currentBlogData = [];
+let templateCache = null;
 let pendingAction = null;
 let pendingActionData = null;
 let hasRepoPermission = false;
@@ -573,6 +574,8 @@ document.addEventListener('DOMContentLoaded', function() {
 initEventListeners();
 checkAndDisplayPermissions();
 loadBlogData(true);
+// 提前缓存模板，避免保存时因模板请求耗时导致正在保存停留过久
+setTimeout(function() { fetchTemplateFile().catch(function() {}); }, 1200);
 });
 // 检查并显示权限
 function checkAndDisplayPermissions() {
@@ -754,7 +757,7 @@ showModal('advancedConfigModal');
 function closeAdvancedConfigModal() {
 hideModal('advancedConfigModal');
 }
-function saveAdvancedConfig() {
+async function saveAdvancedConfig() {
 const postId = document.getElementById('advancedConfigPostId').textContent;
 const generatePage = document.getElementById('generatePageToggle').checked;
 const seoKeywords = document.getElementById('seoKeywords').value.trim();
@@ -771,13 +774,19 @@ showResult('error', '错误', '未找到指定文章');
 closeAdvancedConfigModal();
 return;
 }
-showLoading('保存配置', '正在保存高级配置...');
-setTimeout(async () => {
 try {
 const currentData = await fetchCurrentData();
 const post = currentData.find(p => p.id === postId);
 if (!post) {
 throw new Error('未找到指定文章');
+}
+const before = JSON.parse(JSON.stringify(post));
+const generatePageBefore = before.generatePage === true;
+const pageFields = ['title', 'content', 'excerpt', 'date', 'status', 'enabled', 'tags', 'author', 'seoKeywords', 'seoDescription', 'customUrl'];
+function pageSignature(p) {
+return JSON.stringify(pageFields.map(function(key) {
+return p[key] === undefined ? null : p[key];
+}));
 }
 post.generatePage = generatePage;
 post.seoKeywords = seoKeywords;
@@ -786,6 +795,22 @@ post.author = author;
 post.tags = tags;
 post.enabled = enabled;
 post.lastUpdated = new Date().toISOString().split('T')[0];
+const pageChanged = pageSignature(before) !== pageSignature(post);
+const generateChanged = generatePage !== generatePageBefore;
+// 无任何变化：不重新生成页面、也不提交
+if (!pageChanged && !generateChanged) {
+closeAdvancedConfigModal();
+showResult('info', '没有修改', '页面内容和配置都没有变化，已跳过重新生成和提交。');
+return;
+}
+// 已知有部署在跑：不要先显示“正在保存”转圈，直接提示已排队，内容准备/提交在后台继续
+const willQueue = window.AdminTasks && AdminTasks.isDeploying && AdminTasks.isDeploying();
+if (willQueue) {
+closeAdvancedConfigModal();
+showResult('info', '已加入队列', '当前有部署正在进行，页面内容准备完成后会自动排队提交；可在右下角「任务中心」查看进度。');
+} else {
+showLoading('保存配置', '正在保存高级配置...');
+}
 // 如果当前有部署在跑，任务会排队等待。此时先关闭 loading，让任务在后台继续，
 // 避免"一直正在保存"卡住页面；完成后再刷新列表/提示结果。
 const onQueued = function() {
@@ -794,8 +819,11 @@ closeAdvancedConfigModal();
 showResult('info', '已加入队列', '当前有部署正在进行，本次修改已排队等待；部署完成后会自动提交并更新页面，可在右下角「任务中心」查看进度。');
 };
 if (generatePage) {
+// 已经是生成状态且页面内容没有变化时，不再重复生成
+if (!generatePageBefore || pageChanged) {
 await createOrUpdatePageFile(post, onQueued);
-} else {
+}
+} else if (generatePageBefore) {
 await deletePageFile(postId, onQueued);
 }
 await updateGistData(currentData);
@@ -808,7 +836,6 @@ displayArticlesList(currentBlogData);
 hideLoading();
 showResult('error', '保存失败', error.message);
 }
-}, 100);
 }
 // 创建/更新页面文件（统一走 AdminTasks：排队 + 冲突重试 + 状态显示）
 async function createOrUpdatePageFile(post, onQueued) {
@@ -879,14 +906,23 @@ return buildFallbackPageContent(post);
 }
 // ✅ 修复后的获取模板文件函数（使用 Raw API，避免乱码）
 async function fetchTemplateFile() {
+if (templateCache) return templateCache;
 try {
 // 使用 Raw API（公开仓库不需要 token）
 const rawUrl = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${REPO_BRANCH}/${TEMPLATE_PATH}`;
 // ⚠️ 关键：直接使用 fetch，不传递任何 headers（公开仓库不需要认证）
-const response = await fetch(rawUrl);
+const controller = new AbortController();
+const timeoutId = setTimeout(function() { controller.abort(); }, 8000);
+let response;
+try {
+response = await fetch(rawUrl, { signal: controller.signal });
+} finally {
+clearTimeout(timeoutId);
+}
 if (response.ok) {
 // ✅ 直接获取文本，自动 UTF-8 解码
 const content = await response.text();
+templateCache = content;
 return content;
 } else if (response.status === 404) {
 throw new Error('模板文件不存在，请先创建 blogs/template.html 文件');

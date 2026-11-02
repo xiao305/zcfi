@@ -13,6 +13,7 @@
     box-sizing: border-box;
     vertical-align: -2px;
     animation: admin-task-spin 0.7s linear infinite;
+    will-change: transform;
 }
 
 .admin-task-item.is-deploying .admin-task-spin,

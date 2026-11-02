@@ -158,9 +158,7 @@ window.AdminTasks = (function () {
             attempt: t.attempts,
             signal: controller.signal,
             onProgress: function (detail) {
-                t.detail = detail;
-                render();
-                updateShell();
+                setTaskDetail(t, detail);
             }
         };
         Promise.resolve().then(function () {
@@ -284,9 +282,7 @@ window.AdminTasks = (function () {
 
     function setDeployDetail(t, detail) {
         if (!t || t.status !== 'deploying') return;
-        t.detail = detail;
-        render();
-        updateShell();
+        setTaskDetail(t, detail);
     }
 
     function jobsSummary(jobs) {
@@ -576,40 +572,13 @@ window.AdminTasks = (function () {
         return t.status;
     }
 
-    function render() {
-        ensureUi();
-        var active = !!current || deploying.length > 0;
-        var count = queue.length + (current ? 1 : 0) + deploying.length;
-        // FAB
-        ui.fab.classList.toggle('is-busy', active);
-        var badge = ui.fab.querySelector('.admin-task-badge');
-        if (count > 0) { badge.hidden = false; badge.textContent = count; } else { badge.hidden = true; }
+    function findTaskItem(id) {
+        if (!ui.list) return null;
+        return ui.list.querySelector('.admin-task-item[data-task-id="' + id + '"]');
+    }
 
-        // 面板列表（新任务在上）
-        var visible = tasks.slice(-8).reverse();
-        if (!visible.length) {
-            ui.list.innerHTML = '<p class="admin-task-empty">暂无任务。保存、提交或上传图片时会显示状态。</p>';
-        } else {
-            ui.list.innerHTML = visible.map(function (t) {
-                var runMs = (t.status === 'deploying' && t.deploy)
-                    ? (now() - t.deploy.startedAt)
-                    : (t.startedAt ? ((t.finishedAt || now()) - t.startedAt) : 0);
-                var metaPrefix = t.status === 'deploying' ? '部署耗时 ' : '耗时 ';
-                return '<div class="admin-task-item is-' + t.status + '">' +
-                    '<span class="admin-task-icon">' + statusIcon(t) + '</span>' +
-                    '<div class="admin-task-body">' +
-                        '<div class="admin-task-title">' + esc(t.title) +
-                            '<span class="admin-task-state-text">' + statusText(t) + '</span></div>' +
-                        '<div class="admin-task-detail">' + esc(t.detail) + '</div>' +
-                        '<div class="admin-task-meta">' + (t.startedAt ? (metaPrefix + fmtDuration(runMs)) : '等待中') +
-                            (t.status === 'queued' ? ' · 前面还有 ' + queue.indexOf(t) + ' 个' : '') + '</div>' +
-                    '</div>' +
-                    (t.status === 'failed' && t.opts ? '<button type="button" class="admin-task-retry" data-task-retry="' + t.id + '">重试</button>' : '') +
-                '</div>';
-            }).join('');
-        }
-
-        // 当前状态文案
+    function updatePanelSub() {
+        if (!ui.sub) return;
         if (current) {
             ui.sub.textContent = current.title + ' · ' + current.detail + '（' + fmtDuration(now() - current.startedAt) + '）';
         } else if (deploying.length) {
@@ -620,6 +589,86 @@ window.AdminTasks = (function () {
         } else {
             ui.sub.textContent = '保存 / 提交 / 上传会在这里显示实时状态';
         }
+    }
+
+    function taskMetaText(t) {
+        var runMs = (t.status === 'deploying' && t.deploy)
+            ? (now() - t.deploy.startedAt)
+            : (t.startedAt ? ((t.finishedAt || now()) - t.startedAt) : 0);
+        var metaPrefix = t.status === 'deploying' ? '部署耗时 ' : '耗时 ';
+        return (t.startedAt ? (metaPrefix + fmtDuration(runMs)) : '等待中') +
+            (t.status === 'queued' ? ' · 前面还有 ' + queue.indexOf(t) + ' 个' : '');
+    }
+
+    // 只更新已有 DOM 的耗时/详情，避免每 500ms 重建 spinner 导致动画一卡一卡
+    function updateDurations() {
+        if (!ui.list) return;
+        var items = ui.list.querySelectorAll('.admin-task-item[data-task-id]');
+        for (var i = 0; i < items.length; i++) {
+            var id = parseInt(items[i].getAttribute('data-task-id'), 10);
+            var t = null;
+            for (var j = 0; j < tasks.length; j++) {
+                if (tasks[j].id === id) { t = tasks[j]; break; }
+            }
+            if (!t) continue;
+            var meta = items[i].querySelector('.admin-task-meta');
+            if (meta) meta.textContent = taskMetaText(t);
+        }
+        updatePanelSub();
+        updateBadge();
+    }
+
+    function updateBadge() {
+        var count = queue.length + (current ? 1 : 0) + deploying.length;
+        if (!ui.fab) return;
+        var badge = ui.fab.querySelector('.admin-task-badge');
+        if (!badge) return;
+        if (count > 0) {
+            badge.hidden = false;
+            badge.textContent = count;
+        } else {
+            badge.hidden = true;
+        }
+        ui.fab.classList.toggle('is-busy', count > 0);
+    }
+
+    function setTaskDetail(t, detail) {
+        t.detail = detail;
+        var it = findTaskItem(t.id);
+        if (it) {
+            var d = it.querySelector('.admin-task-detail');
+            if (d) d.textContent = detail;
+        } else {
+            render();
+        }
+        updatePanelSub();
+        updateShell();
+    }
+
+    function render() {
+        ensureUi();
+        updateBadge();
+
+        // 面板列表（新任务在上）
+        var visible = tasks.slice(-8).reverse();
+        if (!visible.length) {
+            ui.list.innerHTML = '<p class="admin-task-empty">暂无任务。保存、提交或上传图片时会显示状态。</p>';
+        } else {
+            ui.list.innerHTML = visible.map(function (t) {
+                return '<div class="admin-task-item is-' + t.status + '" data-task-id="' + t.id + '">' +
+                    '<span class="admin-task-icon">' + statusIcon(t) + '</span>' +
+                    '<div class="admin-task-body">' +
+                        '<div class="admin-task-title">' + esc(t.title) +
+                            '<span class="admin-task-state-text">' + statusText(t) + '</span></div>' +
+                        '<div class="admin-task-detail">' + esc(t.detail) + '</div>' +
+                        '<div class="admin-task-meta" data-task-id="' + t.id + '">' + esc(taskMetaText(t)) + '</div>' +
+                    '</div>' +
+                    (t.status === 'failed' && t.opts ? '<button type="button" class="admin-task-retry" data-task-retry="' + t.id + '">重试</button>' : '') +
+                '</div>';
+            }).join('');
+        }
+
+        updatePanelSub();
 
         // 历史
         var h = loadHistory().slice(0, 6);
@@ -635,40 +684,58 @@ window.AdminTasks = (function () {
         if (!chip) return;
         var activeCount = queue.length + (current ? 1 : 0) + deploying.length;
         var last = tasks.length ? tasks[tasks.length - 1] : null;
+        var kind = '';
+        var cls = '';
+        var icon = '';
+        var text = '';
         if (current) {
-            chip.hidden = false;
-            chip.className = 'admin-task-state is-active';
-            chip.innerHTML = spinIcon() + ' ' +
-                esc(current.title) + '… ' + fmtDuration(now() - current.startedAt);
+            kind = 'current';
+            cls = 'is-active';
+            icon = spinIcon();
+            text = current.title + '… ' + fmtDuration(now() - current.startedAt);
         } else if (deploying.length) {
             var d0 = deploying[0];
-            chip.hidden = false;
-            chip.className = 'admin-task-state is-active';
-            chip.innerHTML = spinIcon() + ' 部署中：' +
-                esc(d0.title) + '… ' + fmtDuration(now() - d0.deploy.startedAt);
+            kind = 'deploying';
+            cls = 'is-active';
+            icon = spinIcon();
+            text = '部署中：' + d0.title + '… ' + fmtDuration(now() - d0.deploy.startedAt);
         } else if (last && last.status === 'success' && now() - last.finishedAt < 15000) {
-            chip.hidden = false;
-            chip.className = 'admin-task-state is-ok';
-            chip.innerHTML = '<i class="fas fa-check" aria-hidden="true"></i> 已生效 ' + fmtClock(last.finishedAt);
+            kind = 'success';
+            cls = 'is-ok';
+            icon = '<i class="fas fa-check" aria-hidden="true"></i>';
+            text = '已生效 ' + fmtClock(last.finishedAt);
         } else if (last && last.status === 'failed' && now() - last.finishedAt < 30000) {
-            chip.hidden = false;
-            chip.className = 'admin-task-state is-error';
-            chip.innerHTML = '<i class="fas fa-times" aria-hidden="true"></i> 任务失败';
+            kind = 'failed';
+            cls = 'is-error';
+            icon = '<i class="fas fa-times" aria-hidden="true"></i>';
+            text = '任务失败';
         } else if (activeCount > 0) {
-            chip.hidden = false;
-            chip.className = 'admin-task-state is-active';
-            chip.innerHTML = '<i class="fas fa-clock" aria-hidden="true"></i> 排队中（' + activeCount + '）';
+            kind = 'queued';
+            cls = 'is-active';
+            icon = '<i class="fas fa-clock" aria-hidden="true"></i>';
+            text = '排队中（' + activeCount + '）';
         } else {
             chip.hidden = true;
             chip.innerHTML = '';
+            chip.removeAttribute('data-chip-kind');
+            return;
         }
+        chip.hidden = false;
+        chip.className = 'admin-task-state ' + cls;
+        // 同一种状态下只更新文字，保留 spinner 元素，避免每 500ms 重置 CSS 动画
+        if (chip.getAttribute('data-chip-kind') !== kind) {
+            chip.setAttribute('data-chip-kind', kind);
+            chip.innerHTML = icon + '<span class="admin-task-chip-text"></span>';
+        }
+        var span = chip.querySelector('.admin-task-chip-text');
+        if (span) span.textContent = text;
     }
 
     function ensureTicker() {
         if (tickTimer) return;
         tickTimer = setInterval(function () {
             var active = !!current || queue.length > 0 || deploying.length > 0;
-            if (document.querySelector('.admin-task-panel') && !document.querySelector('.admin-task-panel').hidden) render();
+            updateDurations();
             updateShell();
             if (!active) {
                 clearInterval(tickTimer);
@@ -854,6 +921,7 @@ window.AdminTasks = (function () {
         deleteFile: deleteFile,
         retry: retry,
         isBusy: isBusy,
+        isDeploying: function () { return deploying.length > 0; },
         openPanel: openPanel,
         clearHistory: clearHistory,
         _config: CONFIG
