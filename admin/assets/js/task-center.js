@@ -114,7 +114,12 @@ window.AdminTasks = (function () {
                 if (queue[i].kind === 'gist') { gistIdx = i; break; }
             }
             if (gistIdx === -1) {
-                queue[0].detail = '等待当前部署完成后再提交…';
+                var blockedTask = queue[0];
+                blockedTask.detail = '等待当前部署完成后再提交…';
+                if (!blockedTask._queueNotified && blockedTask.opts && typeof blockedTask.opts.onQueued === 'function') {
+                    blockedTask._queueNotified = true;
+                    try { blockedTask.opts.onQueued(blockedTask); } catch (e) { console.warn('onQueued 回调失败:', e); }
+                }
                 if (!queueBlockedNotice) {
                     queueBlockedNotice = true;
                     toast('当前有部署正在进行，新提交已排队等待（部署完成后自动提交）');
@@ -704,6 +709,7 @@ window.AdminTasks = (function () {
             kind: 'file',
             title: opts.title || ('提交文件：' + opts.path),
             timeout: opts.timeout || 120000,
+            onQueued: opts.onQueued,
             run: async function (ctx) {
                 var api = 'https://api.github.com/repos/' + REPO.owner + '/' + REPO.repo + '/contents/' + opts.path;
                 ctx.onProgress('检查远端文件状态…');
@@ -769,6 +775,7 @@ window.AdminTasks = (function () {
             kind: 'file',
             title: opts.title || ('删除文件：' + opts.path),
             timeout: opts.timeout || 60000,
+            onQueued: opts.onQueued,
             run: async function (ctx) {
                 var api = 'https://api.github.com/repos/' + REPO.owner + '/' + REPO.repo + '/contents/' + opts.path;
                 var baseline = opts.verifyUrl ? await baselineFor(opts.verifyUrl) : null;

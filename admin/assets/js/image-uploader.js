@@ -270,6 +270,8 @@ window.AdminImageUploader = (function () {
         errEl.hidden = false;
     }
 
+    var uploadSeq = 0;
+
     function upload() {
         if (state.busy) return;
         if (!state.blob) { showError('请先选择图片'); return; }
@@ -277,6 +279,7 @@ window.AdminImageUploader = (function () {
         if (state.blob.size > 1.2 * 1024 * 1024) { showError('压缩后仍超过 1.2MB，请换一张更小的图片'); return; }
         var filename = currentFile();
         var path = REPO.folder + '/' + filename;
+        var mySeq = ++uploadSeq;
         state.busy = true;
         uploadBtn.disabled = true;
         uploadBtn.textContent = '上传中…';
@@ -292,10 +295,23 @@ window.AdminImageUploader = (function () {
                     contentBase64: base64,
                     message: 'upload image: ' + filename + ' (admin)',
                     title: '上传图片：' + filename,
-                    verifyUrl: SITE_ORIGIN + '/' + path
+                    verifyUrl: SITE_ORIGIN + '/' + path,
+                    onQueued: function () {
+                        // 部署进行中：关闭弹窗，任务在后台排队，避免一直卡在"上传中"
+                        if (mySeq === uploadSeq) {
+                            state.busy = false;
+                            uploadBtn.disabled = false;
+                            uploadBtn.textContent = '确认上传';
+                        }
+                        if (!root.hidden) close();
+                        if (window.AdminCore && AdminCore.toast) {
+                            AdminCore.toast('当前有部署进行中，图片已排队等待；部署完成后自动提交并回填 URL');
+                        }
+                    }
                 })
                 : Promise.reject(new Error('任务中心未加载，请刷新页面后重试'));
             task.then(function () {
+                if (mySeq !== uploadSeq) return;
                 var url = SITE_ORIGIN + '/' + path;
                 state.busy = false;
                 uploadBtn.disabled = false;
@@ -306,6 +322,7 @@ window.AdminImageUploader = (function () {
                     AdminCore.toast('图片已上传：' + filename, 'success');
                 }
             }).catch(function (err) {
+                if (mySeq !== uploadSeq) return;
                 state.busy = false;
                 uploadBtn.disabled = false;
                 uploadBtn.textContent = '确认上传';
