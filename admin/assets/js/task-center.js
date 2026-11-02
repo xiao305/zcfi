@@ -20,6 +20,7 @@ window.AdminTasks = (function () {
     var seq = 0;
     var ui = {};
     var tickTimer = null;
+    var queueBlockedNotice = false;
 
     function now() { return Date.now(); }
 
@@ -104,6 +105,7 @@ window.AdminTasks = (function () {
     function pump() {
         if (current) { render(); updateShell(); return; }
         if (!queue.length) { render(); updateShell(); return; }
+        if (!deploying.length) queueBlockedNotice = false;
         // 部署期间不允许再提交仓库文件（否则会取消/取代正在进行的部署）
         // 新的文件任务排队等待；Gist 保存不影响部署，可以先执行
         if (deploying.length > 0) {
@@ -113,6 +115,11 @@ window.AdminTasks = (function () {
             }
             if (gistIdx === -1) {
                 queue[0].detail = '等待当前部署完成后再提交…';
+                if (!queueBlockedNotice) {
+                    queueBlockedNotice = true;
+                    toast('当前有部署正在进行，新提交已排队等待（部署完成后自动提交）');
+                    openPanel(true);
+                }
                 render();
                 updateShell();
                 ensureTicker();
@@ -537,10 +544,14 @@ window.AdminTasks = (function () {
         ui.fab.classList.remove('is-open');
     }
 
+    function spinIcon() {
+        return '<span class="admin-task-spin" aria-hidden="true"></span>';
+    }
+
     function statusIcon(t) {
-        if (t.status === 'running') return '<i class="fas fa-spinner fa-spin"></i>';
-        if (t.status === 'retrying') return '<i class="fas fa-rotate fa-spin"></i>';
-        if (t.status === 'deploying') return '<i class="fas fa-spinner fa-spin"></i>';
+        if (t.status === 'running') return spinIcon();
+        if (t.status === 'retrying') return spinIcon();
+        if (t.status === 'deploying') return spinIcon();
         if (t.status === 'success') return '<i class="fas fa-check"></i>';
         if (t.status === 'failed') return '<i class="fas fa-times"></i>';
         if (t.status === 'superseded') return '<i class="fas fa-ban"></i>';
@@ -622,13 +633,13 @@ window.AdminTasks = (function () {
         if (current) {
             chip.hidden = false;
             chip.className = 'admin-task-state is-active';
-            chip.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> ' +
+            chip.innerHTML = spinIcon() + ' ' +
                 esc(current.title) + '… ' + fmtDuration(now() - current.startedAt);
         } else if (deploying.length) {
             var d0 = deploying[0];
             chip.hidden = false;
             chip.className = 'admin-task-state is-active';
-            chip.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> 部署中：' +
+            chip.innerHTML = spinIcon() + ' 部署中：' +
                 esc(d0.title) + '… ' + fmtDuration(now() - d0.deploy.startedAt);
         } else if (last && last.status === 'success' && now() - last.finishedAt < 15000) {
             chip.hidden = false;

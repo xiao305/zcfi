@@ -2,6 +2,36 @@
    task-center.css — 后台 GitHub 任务中心
    =========================================================== */
 
+/* ---------- 平滑旋转指示器（替代字体图标，避免一卡一卡） ---------- */
+.admin-task-spin {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid rgba(74, 111, 165, 0.22);
+    border-top-color: #4a6fa5;
+    box-sizing: border-box;
+    vertical-align: -2px;
+    animation: admin-task-spin 0.7s linear infinite;
+}
+
+.admin-task-item.is-deploying .admin-task-spin,
+.admin-task-item.is-running .admin-task-spin,
+.admin-task-item.is-retrying .admin-task-spin {
+    border-color: rgba(47, 111, 181, 0.22);
+    border-top-color: #2f6fb5;
+}
+
+.admin-task-state .admin-task-spin {
+    width: 11px;
+    height: 11px;
+    vertical-align: -1px;
+}
+
+@keyframes admin-task-spin {
+    to { transform: rotate(360deg); }
+}
+
 /* ---------- 顶栏状态 chip ---------- */
 .admin-task-state {
     display: inline-flex;
