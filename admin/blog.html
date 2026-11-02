@@ -859,6 +859,9 @@ async function buildPageContent(post) {
 try {
 // ✅ 获取模板内容（已修复乱码问题）
 let templateContent = await fetchTemplateFile();
+if (templateContent.indexOf('gist-renderer') === -1 || templateContent.indexOf('{{content}}') === -1) {
+throw new Error('文章模板内容异常（缺少页眉页脚或内容占位），已停止生成，避免覆盖正确页面');
+}
 // 准备模板数据
 const templateData = {
 title: escapeHtml(post.title || '博客文章'),
@@ -900,13 +903,34 @@ return result;
 pageContent = processTemplateConditionals(pageContent, templateData);
 return pageContent;
 } catch (error) {
-console.error('构建页面失败，使用备用模板:', error);
-return buildFallbackPageContent(post);
+console.error('构建页面失败:', error);
+throw error;
 }
 }
 // ✅ 修复后的获取模板文件函数（使用 Raw API，避免乱码）
 async function fetchTemplateFile() {
 if (templateCache) return templateCache;
+// 优先使用 GitHub Contents API（api.github.com CORS 可靠、带 Token），
+// 避免 raw.githubusercontent.com 被拦截/超时时静默回退到备用模板
+try {
+const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${TEMPLATE_PATH}?ref=${REPO_BRANCH}`;
+const apiRes = window.AdminCore
+? await AdminCore.apiFetch(apiUrl)
+: await fetch(apiUrl, { headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' } });
+if (apiRes.ok) {
+const data = await apiRes.json();
+if (data && data.content) {
+const bin = atob(String(data.content).replace(/\s/g, ''));
+const bytes = new Uint8Array(bin.length);
+for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+const content = new TextDecoder('utf-8').decode(bytes);
+templateCache = content;
+return content;
+}
+}
+} catch (apiError) {
+console.warn('Contents API 获取模板失败，尝试 raw:', apiError);
+}
 try {
 // 使用 Raw API（公开仓库不需要 token）
 const rawUrl = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${REPO_BRANCH}/${TEMPLATE_PATH}`;
