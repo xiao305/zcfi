@@ -397,7 +397,7 @@ width: 100%;
 页面URL: <span class="page-url-preview" id="pageUrlPreview"></span>
 </p>
 <p style="font-size: 12px; color: #6c757d;">
-注意：启用页面生成功能后，自定义URL将被忽略，使用默认路径
+注意：启用页面生成功能后，自定义URL将被忽略，使用默认路径。修改作者、SEO、标签会重新生成页面；页面启用状态只更新数据，不重新生成。
 </p>
 </div>
 </div>
@@ -783,11 +783,34 @@ throw new Error('未找到指定文章');
 const before = JSON.parse(JSON.stringify(post));
 const originalData = JSON.parse(JSON.stringify(currentData));
 const generatePageBefore = before.generatePage === true;
-const pageFields = ['title', 'content', 'excerpt', 'date', 'status', 'enabled', 'tags', 'author', 'seoKeywords', 'seoDescription', 'customUrl'];
+// 真正参与生成页面的字段（与模板占位符一致：title/author/tags/seoKeywords/seoDescription/date/content）
 function pageSignature(p) {
-return JSON.stringify(pageFields.map(function(key) {
-return p[key] === undefined ? null : p[key];
-}));
+return JSON.stringify({
+title: p.title || '',
+content: p.content || '',
+date: p.date || '',
+author: p.author || '',
+tags: p.tags || [],
+seoKeywords: p.seoKeywords || '',
+seoDescription: p.seoDescription || p.excerpt || ''
+});
+}
+// 所有会写入 Gist 的字段（包含页面启用等），用于判断是否需要保存
+function gistSignature(p) {
+return JSON.stringify({
+generatePage: p.generatePage === true,
+enabled: p.enabled !== false,
+author: p.author || '',
+seoKeywords: p.seoKeywords || '',
+seoDescription: p.seoDescription || '',
+tags: p.tags || [],
+title: p.title || '',
+content: p.content || '',
+excerpt: p.excerpt || '',
+date: p.date || '',
+status: p.status || '',
+customUrl: p.customUrl || ''
+});
 }
 post.generatePage = generatePage;
 post.seoKeywords = seoKeywords;
@@ -797,14 +820,16 @@ post.tags = tags;
 post.enabled = enabled;
 post.lastUpdated = new Date().toISOString().split('T')[0];
 const pageChanged = pageSignature(before) !== pageSignature(post);
-const generateChanged = generatePage !== generatePageBefore;
-// 无任何变化：不重新生成页面、也不提交
-if (!pageChanged && !generateChanged) {
+const gistChanged = gistSignature(before) !== gistSignature(post);
+// 没有任何变化：不重新生成页面、也不提交
+if (!gistChanged) {
 closeAdvancedConfigModal();
 showResult('info', '没有修改', '页面内容和配置都没有变化，已跳过重新生成和提交。');
 return;
 }
-const willQueue = window.AdminTasks && AdminTasks.isDeploying && AdminTasks.isDeploying();
+// 只有真正需要重建页面时才可能排队；页面启用/状态等仅改 Gist，不需要等部署
+const needPageOp = generatePage ? (!generatePageBefore || pageChanged) : generatePageBefore;
+const willQueue = needPageOp && window.AdminTasks && AdminTasks.isDeploying && AdminTasks.isDeploying();
 let queueNotified = !!willQueue;
 if (willQueue) {
 closeAdvancedConfigModal();
@@ -821,25 +846,25 @@ closeAdvancedConfigModal();
 showResult('info', '已加入队列', '当前有部署正在进行，本次修改已排队等待；部署完成后会自动提交并更新页面，可在右下角「任务中心」查看进度。');
 };
 let pagePromise;
+if (needPageOp) {
 if (generatePage) {
-// 已经是生成状态且页面内容没有变化时，不再重复生成
-if (!generatePageBefore || pageChanged) {
 pagePromise = createOrUpdatePageFile(post, onQueued);
 } else {
-pagePromise = Promise.resolve();
-}
-} else if (generatePageBefore) {
 pagePromise = deletePageFile(postId, onQueued);
+}
 } else {
 pagePromise = Promise.resolve();
 }
 // Gist 与仓库 Pages 部署互不冲突：Gist 立即写入，页面文件任务按队列执行
-const gistPromise = updateGistData(currentData);
+// Gist 成功后立即更新内存数据，避免后台保存期间再次打开高级配置时读到旧数据
+const gistPromise = updateGistData(currentData).then(function() {
+currentBlogData = currentData;
+});
 const results = await Promise.allSettled([pagePromise, gistPromise]);
 if (results[0].status === 'rejected') {
 // 页面文件失败时，尽量把 Gist 恢复到修改前，避免标志与文件不一致
 if (results[1].status === 'fulfilled') {
-try { await updateGistData(originalData); } catch (rollbackError) { console.warn('回滚 Gist 失败:', rollbackError); }
+try { await updateGistData(originalData); currentBlogData = originalData; } catch (rollbackError) { console.warn('回滚 Gist 失败:', rollbackError); }
 }
 throw results[0].reason;
 }
