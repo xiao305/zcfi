@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>任务中心 | zcfi.cn 管理后台</title>
+<link rel="icon" type="image/svg+xml" href="../favicon/favicon.svg">
+<link rel="icon" type="image/png" sizes="96x96" href="../favicon/favicon-96x96.png">
+<link rel="icon" type="image/x-icon" href="../favicon/favicon.ico">
+<link rel="stylesheet" href="../assets/css/icons.css">
+<link rel="stylesheet" href="assets/css/admin-common.css">
+<link rel="stylesheet" href="assets/css/admin-shell.css">
+<link rel="stylesheet" href="assets/css/task-center.css">
+<script src="assets/js/admin-core.js" defer></script>
+<script src="assets/js/task-center.js" defer></script>
+</head>
+<body class="admin-body has-task-page" data-admin-module="tasks">
+<div class="tasks-page" id="task-center-page">
+
+    <section class="tasks-hero">
+        <div class="tasks-hero-copy">
+            <p class="tasks-eyebrow">GitHub 控制台 · 实时状态</p>
+            <h1 class="tasks-title">任务中心</h1>
+            <p class="tasks-sub">保存、提交、构建、部署、生效，一条链路看清；Gist 与 Pages 部署互不阻塞。</p>
+        </div>
+        <div class="tasks-hero-actions">
+            <button type="button" class="tasks-btn" id="tcRefresh"><i class="fas fa-rotate" aria-hidden="true"></i> 刷新状态</button>
+            <button type="button" class="tasks-btn tasks-btn-ghost" id="tcClear"><i class="fas fa-trash" aria-hidden="true"></i> 清空历史</button>
+        </div>
+    </section>
+
+    <section class="tc-summary" aria-label="任务概览">
+        <div class="tc-stat tc-stat-active">
+            <span class="tc-stat-icon"><i class="fas fa-tasks" aria-hidden="true"></i></span>
+            <div><strong id="tcActiveCount">0</strong><span>进行中 / 部署中</span></div>
+        </div>
+        <div class="tc-stat tc-stat-queue">
+            <span class="tc-stat-icon"><i class="fas fa-clock" aria-hidden="true"></i></span>
+            <div><strong id="tcQueuedCount">0</strong><span>排队等待</span></div>
+        </div>
+        <div class="tc-stat tc-stat-ok">
+            <span class="tc-stat-icon"><i class="fas fa-check" aria-hidden="true"></i></span>
+            <div><strong id="tcSuccessCount">0</strong><span>最近成功记录</span></div>
+        </div>
+        <div class="tc-stat tc-stat-error">
+            <span class="tc-stat-icon"><i class="fas fa-times" aria-hidden="true"></i></span>
+            <div><strong id="tcFailedCount">0</strong><span>最近失败记录</span></div>
+        </div>
+    </section>
+
+    <section class="tc-board">
+        <header class="tc-board-head">
+            <h2><i class="fas fa-bolt" aria-hidden="true"></i> 当前任务</h2>
+            <span class="tc-board-hint" id="tcActiveHint">没有任务时这里保持安静</span>
+        </header>
+        <div class="tc-active-list" id="tcActiveList"></div>
+        <div class="tc-empty" id="tcActiveEmpty">
+            <i class="fas fa-check-circle" aria-hidden="true"></i>
+            <p>当前没有进行中的任务</p>
+            <span>在博客、作品集、配置里的保存/提交/上传会实时出现在这里。</span>
+        </div>
+    </section>
+
+    <section class="tc-board">
+        <header class="tc-board-head">
+            <h2><i class="fas fa-clock" aria-hidden="true"></i> 最近记录</h2>
+            <span class="tc-board-hint">最近 20 条 · 打开页面即可回看</span>
+        </header>
+        <div class="tc-history" id="tcHistory"></div>
+    </section>
+
+    <p class="tc-footnote">
+        <i class="fas fa-circle-info" aria-hidden="true"></i>
+        Gist 保存无需等待部署；仓库文件提交会排队等待当前部署结束，避免中断正在进行的 GitHub Pages 构建。
+    </p>
+</div>
+</body>
+</html>

@@ -19,6 +19,8 @@ window.AdminTasks = (function () {
     var current = null;
     var seq = 0;
     var ui = {};
+    var pageRoot = null;
+    var pageUi = { ready: false };
     var tickTimer = null;
     var queueBlockedNotice = false;
 
@@ -496,7 +498,12 @@ window.AdminTasks = (function () {
 
     // ---------- UI ----------
     function ensureUi() {
-        if (ui.fab) return;
+        if (ui.fab || pageUi.ready) return;
+        pageRoot = document.getElementById('task-center-page');
+        if (pageRoot) {
+            setupPage();
+            return;
+        }
         ui.fab = document.createElement('button');
         ui.fab.type = 'button';
         ui.fab.className = 'admin-task-fab';
@@ -515,7 +522,8 @@ window.AdminTasks = (function () {
             '</div>' +
             '<div class="admin-task-list"></div>' +
             '<div class="admin-task-history"><div class="admin-task-history-head"><span>最近记录</span>' +
-                '<button type="button" class="admin-task-clear">清除</button></div><ul></ul></div>';
+                '<button type="button" class="admin-task-clear">清除</button></div><ul></ul></div>' +
+            '<div class="admin-task-panel-foot"><a href="tasks.html">打开完整任务中心 <span aria-hidden="true">→</span></a></div>';
         document.body.appendChild(ui.panel);
 
         ui.list = ui.panel.querySelector('.admin-task-list');
@@ -534,6 +542,7 @@ window.AdminTasks = (function () {
 
     function openPanel(force) {
         ensureUi();
+        if (pageRoot) return;
         ui.panel.hidden = false;
         ui.fab.classList.add('is-open');
         render();
@@ -573,8 +582,9 @@ window.AdminTasks = (function () {
     }
 
     function findTaskItem(id) {
-        if (!ui.list) return null;
-        return ui.list.querySelector('.admin-task-item[data-task-id="' + id + '"]');
+        var el = ui.list ? ui.list.querySelector('.admin-task-item[data-task-id="' + id + '"]') : null;
+        if (!el) el = document.querySelector('.tc-task[data-task-id="' + id + '"]');
+        return el;
     }
 
     function updatePanelSub() {
@@ -602,20 +612,19 @@ window.AdminTasks = (function () {
 
     // 只更新已有 DOM 的耗时/详情，避免每 500ms 重建 spinner 导致动画一卡一卡
     function updateDurations() {
-        if (!ui.list) return;
-        var items = ui.list.querySelectorAll('.admin-task-item[data-task-id]');
-        for (var i = 0; i < items.length; i++) {
-            var id = parseInt(items[i].getAttribute('data-task-id'), 10);
+        var metas = document.querySelectorAll('.admin-task-meta[data-task-id], .tc-task-meta[data-task-id]');
+        for (var i = 0; i < metas.length; i++) {
+            var id = parseInt(metas[i].getAttribute('data-task-id'), 10);
             var t = null;
             for (var j = 0; j < tasks.length; j++) {
                 if (tasks[j].id === id) { t = tasks[j]; break; }
             }
             if (!t) continue;
-            var meta = items[i].querySelector('.admin-task-meta');
-            if (meta) meta.textContent = taskMetaText(t);
+            metas[i].textContent = taskMetaText(t);
         }
         updatePanelSub();
         updateBadge();
+        updatePageSummary();
     }
 
     function updateBadge() {
@@ -636,8 +645,9 @@ window.AdminTasks = (function () {
         t.detail = detail;
         var it = findTaskItem(t.id);
         if (it) {
-            var d = it.querySelector('.admin-task-detail');
+            var d = it.querySelector('.admin-task-detail, .tc-task-detail');
             if (d) d.textContent = detail;
+            if (pageRoot) updatePageTaskSteps(t);
         } else {
             render();
         }
@@ -647,6 +657,11 @@ window.AdminTasks = (function () {
 
     function render() {
         ensureUi();
+        if (pageRoot) {
+            renderPage();
+            updateShell();
+            return;
+        }
         updateBadge();
 
         // 面板列表（新任务在上）
@@ -742,6 +757,134 @@ window.AdminTasks = (function () {
                 tickTimer = null;
             }
         }, 500);
+    }
+
+    // ---------- 任务中心整页 ----------
+    var PAGE_STEPS = ['提交', '构建', '部署', '生效'];
+
+    function pageStatusLabel(status) {
+        var labels = {
+            success: '已生效', failed: '失败', superseded: '已取代', unknown: '未验证',
+            deploying: '部署中', running: '进行中', queued: '排队中', retrying: '重试中'
+        };
+        return labels[status] || status;
+    }
+
+    function pageStepIndex(t) {
+        if (t.status === 'deploying') {
+            var d = t.detail || '';
+            if (d.indexOf('步骤 3/3') !== -1 || d.indexOf('部署中') !== -1) return 2;
+            if (d.indexOf('步骤 2/3') !== -1 || d.indexOf('构建') !== -1) return 1;
+            return 1;
+        }
+        return 0;
+    }
+
+    function pageStepsHtml(t) {
+        var active = pageStepIndex(t);
+        var doneAll = t.status === 'success';
+        return '<div class="tc-steps" data-task-id="' + t.id + '">' + PAGE_STEPS.map(function (label, idx) {
+            var cls = doneAll ? 'done' : (idx < active ? 'done' : (idx === active ? 'active' : 'pending'));
+            return '<span class="tc-step ' + cls + '"><em>' + (idx + 1) + '</em>' + label + '</span>';
+        }).join('') + '</div>';
+    }
+
+    function updatePageTaskSteps(t) {
+        if (!pageRoot) return;
+        var steps = document.querySelector('.tc-steps[data-task-id="' + t.id + '"]');
+        if (!steps) return;
+        var active = pageStepIndex(t);
+        var children = steps.querySelectorAll('.tc-step');
+        for (var i = 0; i < children.length; i++) {
+            children[i].className = 'tc-step ' + (i < active ? 'done' : (i === active ? 'active' : 'pending'));
+        }
+    }
+
+    function pageTaskCard(t) {
+        var qpos = t.status === 'queued' ? ('队列第 ' + (queue.indexOf(t) + 1) + ' 位') : '';
+        return '<article class="tc-task is-' + t.status + '" data-task-id="' + t.id + '">' +
+            '<div class="tc-task-head">' +
+                '<span class="tc-task-icon">' + statusIcon(t) + '</span>' +
+                '<div class="tc-task-copy">' +
+                    '<div class="tc-task-title">' + esc(t.title) +
+                        '<span class="tc-task-badge">' + esc(pageStatusLabel(t.status)) + '</span></div>' +
+                    '<p class="tc-task-detail">' + esc(t.detail) + '</p>' +
+                '</div>' +
+                '<span class="tc-task-meta" data-task-id="' + t.id + '">' + esc(taskMetaText(t)) + '</span>' +
+            '</div>' +
+            pageStepsHtml(t) +
+            (qpos ? '<div class="tc-task-queue">' + qpos + '</div>' : '') +
+            (t.status === 'failed' && t.opts ? '<button type="button" class="admin-task-retry" data-task-retry="' + t.id + '">重试</button>' : '') +
+        '</article>';
+    }
+
+    function updatePageSummary() {
+        if (!pageRoot) return;
+        var activeCount = (current ? 1 : 0) + deploying.length;
+        var h = loadHistory();
+        var success = h.filter(function (x) { return x.status === 'success'; }).length;
+        var failed = h.filter(function (x) { return x.status === 'failed'; }).length;
+        var activeEl = document.getElementById('tcActiveCount');
+        var queueEl = document.getElementById('tcQueuedCount');
+        var successEl = document.getElementById('tcSuccessCount');
+        var failEl = document.getElementById('tcFailedCount');
+        if (activeEl) activeEl.textContent = activeCount;
+        if (queueEl) queueEl.textContent = queue.length;
+        if (successEl) successEl.textContent = success;
+        if (failEl) failEl.textContent = failed;
+        var hint = document.getElementById('tcActiveHint');
+        if (hint) hint.textContent = (activeCount || queue.length) ? ('进行中 ' + activeCount + ' · 排队 ' + queue.length) : '当前空闲';
+    }
+
+    function renderPage() {
+        if (!pageRoot) return;
+        updatePageSummary();
+        var list = document.getElementById('tcActiveList');
+        var empty = document.getElementById('tcActiveEmpty');
+        if (!list || !empty) return;
+        var activeTasks = [];
+        if (current) activeTasks.push(current);
+        deploying.forEach(function (t) { activeTasks.push(t); });
+        queue.forEach(function (t) { activeTasks.push(t); });
+        if (!activeTasks.length) {
+            list.innerHTML = '';
+            empty.hidden = false;
+        } else {
+            empty.hidden = true;
+            list.innerHTML = activeTasks.map(pageTaskCard).join('');
+        }
+        var historyEl = document.getElementById('tcHistory');
+        if (historyEl) {
+            var h = loadHistory().slice(0, 20);
+            if (!h.length) {
+                historyEl.innerHTML = '<div class="tc-history-empty">还没有记录。完成一次保存/提交后，这里会留下结果。</div>';
+            } else {
+                historyEl.innerHTML = h.map(function (x) {
+                    return '<div class="tc-history-row is-' + x.status + '">' +
+                        '<span class="tc-history-time">' + fmtClock(x.time) + '</span>' +
+                        '<span class="tc-history-title">' + esc(x.title) + '</span>' +
+                        '<span class="tc-history-state">' + esc(pageStatusLabel(x.status)) + '</span>' +
+                        '<span class="tc-history-duration">' + (x.duration ? fmtDuration(x.duration) : '—') + '</span>' +
+                        '<span class="tc-history-detail">' + esc(x.detail || '') + '</span>' +
+                    '</div>';
+                }).join('');
+            }
+        }
+    }
+
+    function setupPage() {
+        pageRoot = document.getElementById('task-center-page');
+        pageUi.ready = true;
+        var refresh = document.getElementById('tcRefresh');
+        if (refresh) refresh.addEventListener('click', function () { renderPage(); updateShell(); toast('任务状态已刷新'); });
+        var clear = document.getElementById('tcClear');
+        if (clear) clear.addEventListener('click', clearHistory);
+        var list = document.getElementById('tcActiveList');
+        if (list) list.addEventListener('click', function (e) {
+            var btn = e.target.closest('[data-task-retry]');
+            if (btn) retry(parseInt(btn.getAttribute('data-task-retry'), 10));
+        });
+        renderPage();
     }
 
     // ---------- 常用写操作封装 ----------
