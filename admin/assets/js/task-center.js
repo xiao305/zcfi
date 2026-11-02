@@ -11,6 +11,7 @@ window.AdminTasks = (function () {
     var REPO = { owner: 'xiao305', repo: 'zcfi', branch: 'main' };
     var HISTORY_KEY = 'zcfi:admin-tasks:v1';
     var PENDING_KEY = 'zcfi:admin-deploy-pending:v1';
+    var WRITE_QUEUE_KEY = 'zcfi:admin-write-queue:v1';
     var CONFIG = { deployPollMs: 4000, deployVerifyMs: 4000, deployTimeoutMs: 5 * 60 * 1000 };
     var MAX_TASKS = 30;
     var tasks = [];       // 本轮会话的任务
@@ -91,6 +92,7 @@ window.AdminTasks = (function () {
             opts: opts,
             error: null
         };
+        if (opts.persist) rememberWrite(task, opts.persist);
         tasks.push(task);
         if (tasks.length > MAX_TASKS) tasks = tasks.slice(-MAX_TASKS);
         queue.push(task);
@@ -185,6 +187,7 @@ window.AdminTasks = (function () {
     function finishSuccess(t, result) {
         // 仓库写入：提交成功只是第 1 步，后续还要构建、部署、生效
         if (result && result.deploy) {
+            forgetWrite(t);
             startDeployment(t, result);
             current = null;
             if (t._resolve) t._resolve(result);
@@ -195,6 +198,7 @@ window.AdminTasks = (function () {
         t.finishedAt = now();
         t.detail = (result && result.detail) ? result.detail : '成功';
         current = null;
+        forgetWrite(t);
         addHistory(t);
         render();
         updateShell();
@@ -209,6 +213,7 @@ window.AdminTasks = (function () {
         t.error = err;
         t.detail = (err && err.message) ? err.message : '失败';
         current = null;
+        forgetWrite(t);
         addHistory(t);
         render();
         updateShell();
@@ -261,6 +266,50 @@ window.AdminTasks = (function () {
                 };
             })));
         } catch (e) {}
+    }
+
+    function loadWriteQueue() {
+        try { return JSON.parse(localStorage.getItem(WRITE_QUEUE_KEY) || '[]'); } catch (e) { return []; }
+    }
+
+    function saveWriteQueue(list) {
+        try { localStorage.setItem(WRITE_QUEUE_KEY, JSON.stringify(list)); } catch (e) {}
+    }
+
+    function rememberWrite(t, desc) {
+        t.pid = 'w' + now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+        var list = loadWriteQueue();
+        var item = { pid: t.pid };
+        Object.keys(desc || {}).forEach(function (key) { item[key] = desc[key]; });
+        list.push(item);
+        saveWriteQueue(list);
+    }
+
+    function forgetWrite(t) {
+        if (!t || !t.pid) return;
+        var list = loadWriteQueue().filter(function (item) { return item.pid !== t.pid; });
+        saveWriteQueue(list);
+    }
+
+    function restoreWriteQueue() {
+        var list = loadWriteQueue();
+        if (!list.length) return 0;
+        saveWriteQueue([]); // 先清空，重新入队时会重新持久化
+        list.forEach(function (item) {
+            try {
+                if (item.type === 'gist') {
+                    gist({ gistId: item.gistId, filename: item.filename, data: item.data, title: item.title, description: item.description });
+                } else if (item.type === 'saveFile') {
+                    saveFile({ path: item.path, contentBase64: item.contentBase64, message: item.message, title: item.title, verifyUrl: item.verifyUrl, expected: item.expected });
+                } else if (item.type === 'deleteFile') {
+                    deleteFile({ path: item.path, message: item.message, title: item.title, verifyUrl: item.verifyUrl, expected: item.expected });
+                }
+            } catch (e) {
+                console.warn('恢复未完成任务失败:', e);
+            }
+        });
+        if (!pageRoot) setTimeout(function () { toast('已恢复 ' + list.length + ' 个未完成的任务'); }, 600);
+        return list.length;
     }
 
     function startDeployment(t, info) {
@@ -607,7 +656,7 @@ window.AdminTasks = (function () {
             : (t.startedAt ? ((t.finishedAt || now()) - t.startedAt) : 0);
         var metaPrefix = t.status === 'deploying' ? '部署耗时 ' : '耗时 ';
         return (t.startedAt ? (metaPrefix + fmtDuration(runMs)) : '等待中') +
-            (t.status === 'queued' ? ' · 前面还有 ' + queue.indexOf(t) + ' 个' : '');
+            (t.status === 'queued' ? ' · 队列第 ' + (queue.indexOf(t) + 1) + ' 位' : '');
     }
 
     // 只更新已有 DOM 的耗时/详情，避免每 500ms 重建 spinner 导致动画一卡一卡
@@ -893,6 +942,14 @@ window.AdminTasks = (function () {
             kind: 'gist',
             title: opts.title || '保存数据',
             timeout: opts.timeout || 45000,
+            persist: {
+                type: 'gist',
+                gistId: opts.gistId,
+                filename: opts.filename,
+                data: opts.data,
+                title: opts.title,
+                description: opts.description
+            },
             run: async function (ctx) {
                 ctx.onProgress('正在写入 Gist…');
                 var files = {};
@@ -920,6 +977,15 @@ window.AdminTasks = (function () {
             title: opts.title || ('提交文件：' + opts.path),
             timeout: opts.timeout || 120000,
             onQueued: opts.onQueued,
+            persist: {
+                type: 'saveFile',
+                path: opts.path,
+                contentBase64: opts.contentBase64,
+                message: opts.message,
+                title: opts.title,
+                verifyUrl: opts.verifyUrl,
+                expected: opts.expected
+            },
             run: async function (ctx) {
                 var api = 'https://api.github.com/repos/' + REPO.owner + '/' + REPO.repo + '/contents/' + opts.path;
                 ctx.onProgress('检查远端文件状态…');
@@ -986,6 +1052,14 @@ window.AdminTasks = (function () {
             title: opts.title || ('删除文件：' + opts.path),
             timeout: opts.timeout || 60000,
             onQueued: opts.onQueued,
+            persist: {
+                type: 'deleteFile',
+                path: opts.path,
+                message: opts.message,
+                title: opts.title,
+                verifyUrl: opts.verifyUrl,
+                expected: opts.expected
+            },
             run: async function (ctx) {
                 var api = 'https://api.github.com/repos/' + REPO.owner + '/' + REPO.repo + '/contents/' + opts.path;
                 var baseline = opts.verifyUrl ? await baselineFor(opts.verifyUrl) : null;
@@ -1031,15 +1105,6 @@ window.AdminTasks = (function () {
         return !!current || queue.length > 0 || deploying.length > 0;
     }
 
-    // 离开页面前提醒（有未完成任务时）
-    window.addEventListener('beforeunload', function (e) {
-        if (isBusy()) {
-            e.preventDefault();
-            e.returnValue = '还有 GitHub 任务未完成，确定离开吗？';
-            return e.returnValue;
-        }
-    });
-
     // 网络状态提示（弱网/断网时任务会自动重试）
     window.addEventListener('offline', function () {
         toast('网络已断开：任务会等待并自动重试，请勿关闭页面', 'error');
@@ -1053,6 +1118,7 @@ window.AdminTasks = (function () {
         var chip = document.getElementById('adminTaskState');
         if (chip) chip.addEventListener('click', function () { openPanel(); });
         resumePending();
+        restoreWriteQueue();
         updateShell();
         ensureTicker();
     });
