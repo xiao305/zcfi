@@ -141,14 +141,22 @@ window.AdminImageUploader = (function () {
         return sanitizeName(nameInput.value) + '.' + state.ext;
     }
 
+    var EXIST_WARNING = ' · 已存在同名文件，上传将覆盖';
+
+    function clearExistWarning() {
+        if (!sizeEl || !sizeEl.textContent) return;
+        while (sizeEl.textContent.indexOf(EXIST_WARNING) !== -1) {
+            sizeEl.textContent = sizeEl.textContent.replace(EXIST_WARNING, '');
+        }
+    }
+
     function updatePath() {
         var file = currentFile();
         var path = REPO.folder + '/' + file;
         pathEl.textContent = path;
         urlEl.textContent = SITE_ORIGIN + '/' + path;
-        if (sizeEl.textContent) {
-            sizeEl.textContent = sizeEl.textContent.replace(/\s*·\s*已存在$/, '');
-        }
+        // 改名后先清掉上一个文件名的"已存在"提示，等新名字检测结果回来再决定是否提示
+        clearExistWarning();
     }
 
     var checkSeq = 0;
@@ -174,14 +182,18 @@ window.AdminImageUploader = (function () {
                     return res.json().then(function (data) {
                         if (seq !== checkSeq) return;
                         state.sha = data.sha;
-                        var warning = ' · 已存在同名文件，上传将覆盖';
-                        if (sizeEl.textContent.indexOf('已存在') === -1) sizeEl.textContent += warning;
+                        clearExistWarning();
+                        sizeEl.textContent += EXIST_WARNING;
                     });
                 }
                 state.sha = null;
+                clearExistWarning();
             })
             .catch(function () {
-                if (seq === checkSeq) state.sha = null;
+                if (seq === checkSeq) {
+                    state.sha = null;
+                    clearExistWarning();
+                }
             });
     }
 

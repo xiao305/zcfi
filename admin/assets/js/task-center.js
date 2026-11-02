@@ -102,8 +102,29 @@ window.AdminTasks = (function () {
     }
 
     function pump() {
-        if (current || !queue.length) { render(); updateShell(); return; }
-        var t = queue.shift();
+        if (current) { render(); updateShell(); return; }
+        if (!queue.length) { render(); updateShell(); return; }
+        // 部署期间不允许再提交仓库文件（否则会取消/取代正在进行的部署）
+        // 新的文件任务排队等待；Gist 保存不影响部署，可以先执行
+        if (deploying.length > 0) {
+            var gistIdx = -1;
+            for (var i = 0; i < queue.length; i++) {
+                if (queue[i].kind === 'gist') { gistIdx = i; break; }
+            }
+            if (gistIdx === -1) {
+                queue[0].detail = '等待当前部署完成后再提交…';
+                render();
+                updateShell();
+                ensureTicker();
+                return;
+            }
+            startTask(queue.splice(gistIdx, 1)[0]);
+            return;
+        }
+        startTask(queue.shift());
+    }
+
+    function startTask(t) {
         current = t;
         t.status = 'running';
         t.startedAt = now();
@@ -387,6 +408,8 @@ window.AdminTasks = (function () {
         addHistory(t);
         render();
         updateShell();
+        // 部署结束后，恢复等待中的文件任务
+        pump();
         if (status === 'success') {
             toast(t.title + '：' + detail, 'success');
         } else if (status === 'failed') {
