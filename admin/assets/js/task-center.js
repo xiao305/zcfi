@@ -22,6 +22,9 @@ window.AdminTasks = (function () {
     var ui = {};
     var pageRoot = null;
     var pageUi = { ready: false };
+    var suppressRender = false;
+    var pendingRender = false;
+    var lastHistoryTime = null;
     var tickTimer = null;
     var queueBlockedNotice = false;
 
@@ -184,6 +187,38 @@ window.AdminTasks = (function () {
         });
     }
 
+    function playSuccessAnimation(t, done) {
+        var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (!pageRoot || reduced) { done(); return; }
+        var card = document.querySelector('.tc-task[data-task-id="' + t.id + '"]');
+        if (!card) { done(); return; }
+        suppressRender = true;
+        card.classList.remove('is-running', 'is-deploying', 'is-queued', 'is-retrying');
+        card.classList.add('is-success', 'is-animating');
+        var badge = card.querySelector('.tc-task-badge');
+        if (badge) badge.textContent = '已完成';
+        var icon = card.querySelector('.tc-task-icon');
+        if (icon) {
+            icon.innerHTML = '<svg class="tc-check-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>';
+        }
+        var detail = card.querySelector('.tc-task-detail');
+        if (detail) detail.textContent = t.detail || '已完成，已生效';
+        setTimeout(function () {
+            card.classList.add('is-exiting');
+            setTimeout(function () {
+                card.style.maxHeight = card.offsetHeight + 'px';
+                void card.offsetHeight;
+                card.classList.add('is-collapsing');
+                setTimeout(function () {
+                    if (card.parentNode) card.parentNode.removeChild(card);
+                    suppressRender = false;
+                    pendingRender = false;
+                    done();
+                }, 400);
+            }, 250);
+        }, 500);
+    }
+
     function finishSuccess(t, result) {
         // 仓库写入：提交成功只是第 1 步，后续还要构建、部署、生效
         if (result && result.deploy) {
@@ -199,12 +234,19 @@ window.AdminTasks = (function () {
         t.detail = (result && result.detail) ? result.detail : '成功';
         current = null;
         forgetWrite(t);
-        addHistory(t);
-        render();
-        updateShell();
-        toast(t.title + '：成功（' + fmtDuration(t.finishedAt - t.startedAt) + '）', 'success');
-        if (t._resolve) t._resolve(result || {});
-        pump();
+        var completeSuccess = function () {
+            addHistory(t);
+            render();
+            updateShell();
+            toast(t.title + '：成功（' + fmtDuration(t.finishedAt - t.startedAt) + '）', 'success');
+            if (t._resolve) t._resolve(result || {});
+            pump();
+        };
+        if (pageRoot) {
+            playSuccessAnimation(t, completeSuccess);
+        } else {
+            completeSuccess();
+        }
     }
 
     function finishFailure(t, err) {
@@ -464,18 +506,25 @@ window.AdminTasks = (function () {
         t.detail = detail;
         deploying = deploying.filter(function (x) { return x.id !== t.id; });
         savePending();
-        addHistory(t);
-        render();
-        updateShell();
-        // 部署结束后，恢复等待中的文件任务
-        pump();
-        if (status === 'success') {
-            toast(t.title + '：' + detail, 'success');
-        } else if (status === 'failed') {
-            toast(t.title + '：' + detail, 'error');
-            openPanel(true);
+        var completeDeploy = function () {
+            addHistory(t);
+            render();
+            updateShell();
+            // 部署结束后，恢复等待中的文件任务
+            pump();
+            if (status === 'success') {
+                toast(t.title + '：' + detail, 'success');
+            } else if (status === 'failed') {
+                toast(t.title + '：' + detail, 'error');
+                openPanel(true);
+            } else {
+                toast(t.title + '：' + detail);
+            }
+        };
+        if (status === 'success' && pageRoot) {
+            playSuccessAnimation(t, completeDeploy);
         } else {
-            toast(t.title + '：' + detail);
+            completeDeploy();
         }
     }
 
@@ -537,6 +586,7 @@ window.AdminTasks = (function () {
                 time: t.finishedAt
             });
             localStorage.setItem(HISTORY_KEY, JSON.stringify(h.slice(0, 20)));
+            lastHistoryTime = t.finishedAt;
         } catch (e) {}
     }
 
@@ -706,6 +756,10 @@ window.AdminTasks = (function () {
 
     function render() {
         ensureUi();
+        if (suppressRender) {
+            pendingRender = true;
+            return;
+        }
         if (pageRoot) {
             renderPage();
             updateShell();
@@ -886,7 +940,7 @@ window.AdminTasks = (function () {
     }
 
     function renderPage() {
-        if (!pageRoot) return;
+        if (!pageRoot || suppressRender) return;
         updatePageSummary();
         var list = document.getElementById('tcActiveList');
         var empty = document.getElementById('tcActiveEmpty');
@@ -908,8 +962,11 @@ window.AdminTasks = (function () {
             if (!h.length) {
                 historyEl.innerHTML = '<div class="tc-history-empty">还没有记录。完成一次保存/提交后，这里会留下结果。</div>';
             } else {
-                historyEl.innerHTML = h.map(function (x) {
-                    return '<div class="tc-history-row is-' + x.status + '">' +
+                var highlightTime = lastHistoryTime;
+                historyEl.innerHTML = h.map(function (x, idx) {
+                    var rowClass = 'tc-history-row is-' + x.status;
+                    if (idx === 0 && highlightTime && x.time === highlightTime && now() - highlightTime < 2000) rowClass += ' is-new';
+                    return '<div class="' + rowClass + '">' +
                         '<span class="tc-history-time">' + fmtClock(x.time) + '</span>' +
                         '<span class="tc-history-title">' + esc(x.title) + '</span>' +
                         '<span class="tc-history-state">' + esc(pageStatusLabel(x.status)) + '</span>' +
