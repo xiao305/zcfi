@@ -195,6 +195,9 @@ window.AdminTasks = (function () {
         suppressRender = true;
         card.classList.remove('is-running', 'is-deploying', 'is-queued', 'is-retrying');
         card.classList.add('is-success', 'is-animating');
+        // 成功时四步全部标记完成，连线填充
+        var steps = card.querySelectorAll('.tc-step');
+        for (var i = 0; i < steps.length; i++) steps[i].className = 'tc-step done';
         var badge = card.querySelector('.tc-task-badge');
         if (badge) badge.textContent = '已完成';
         var icon = card.querySelector('.tc-task-icon');
