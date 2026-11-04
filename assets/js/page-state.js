@@ -62,8 +62,8 @@
     }
 
     function applyTemplate(template) {
-        document.body.classList.remove('page-template-minimal', 'page-template-wide');
-        if (template === 'minimal' || template === 'wide') {
+        document.body.classList.remove('page-template-minimal', 'page-template-wide', 'page-template-compact', 'page-template-card');
+        if (template === 'minimal' || template === 'wide' || template === 'compact' || template === 'card') {
             document.body.classList.add('page-template-' + template);
         }
     }
@@ -74,24 +74,66 @@
         document.body.classList.remove('page-state-disabled');
     }
 
-    function showDisabled(key) {
-        if (document.getElementById('pageStateOverlay')) return;
+    var MAINT_TEMPLATES = { classic: 1, legal: 1, minimal: 1, gradient: 1, notice: 1 };
+    var LEGAL_PAGES = { privacy: 1, terms: 1, copyright: 1 };
+
+    function maintenanceTemplate(cfg, key) {
+        if (cfg && MAINT_TEMPLATES[cfg.maintenanceTemplate]) return cfg.maintenanceTemplate;
+        return LEGAL_PAGES[key] ? 'legal' : 'classic';
+    }
+
+    function showDisabled(key, template) {
+        var existing = document.getElementById('pageStateOverlay');
+        if (existing) {
+            if (existing.getAttribute('data-template') === template) return;
+            existing.parentNode.removeChild(existing);
+        }
         var name = PAGE_NAMES[key] || '页面';
-        var overlay = document.createElement('div');
-        overlay.id = 'pageStateOverlay';
-        overlay.className = 'page-state-overlay';
-        overlay.setAttribute('role', 'alertdialog');
-        overlay.setAttribute('aria-label', name + '维护中');
-        overlay.innerHTML =
-            '<div class="page-state-card">' +
+        var html;
+        if (template === 'legal') {
+            html = '<div class="page-state-card ps-legal-card">' +
+                '<span class="ps-legal-icon">!</span>' +
+                '<h1>页面不可用</h1>' +
+                '<p>该页面暂时不可用</p>' +
+                '<p class="ps-muted">' + name + '页面当前已被管理员禁用。</p>' +
+                '<div class="page-state-actions"><a class="primary" href="/">返回首页</a></div>' +
+            '</div>';
+        } else if (template === 'minimal') {
+            html = '<div class="ps-minimal-card">' +
+                '<span class="ps-minimal-dot"></span>' +
+                '<h1>' + name + '暂时无法访问</h1>' +
+                '<p>这个页面正在调整或维护，请稍后再来。</p>' +
+                '<a class="ps-text-link" href="/">返回首页 →</a>' +
+            '</div>';
+        } else if (template === 'gradient') {
+            html = '<div class="page-state-card ps-gradient-card">' +
+                '<span class="page-state-badge">页面维护中</span>' +
+                '<h1>' + name + '</h1>' +
+                '<p>我们正在为这个页面做一点更新，请稍后再来。</p>' +
+                '<div class="page-state-actions"><a class="primary" href="/">返回首页</a><a href="/contact.html">联系我</a></div>' +
+            '</div>';
+        } else if (template === 'notice') {
+            html = '<div class="ps-notice-wrap">' +
+                '<div class="ps-notice-bar"><span>维护通知</span><em>预计稍后恢复</em></div>' +
+                '<div class="ps-notice-card"><h2>' + name + '暂停访问</h2>' +
+                '<p>该页面正在调整中，请稍后重试。</p>' +
+                '<div class="page-state-actions"><a class="primary" href="/">返回首页</a><a href="/contact.html">联系我</a></div></div>' +
+            '</div>';
+        } else {
+            html = '<div class="page-state-card ps-classic-card">' +
                 '<span class="page-state-badge">页面维护中</span>' +
                 '<h1>' + name + '暂时无法访问</h1>' +
                 '<p>这个页面正在调整或维护，请稍后再来。你也可以先返回首页，或通过联系页留言。</p>' +
-                '<div class="page-state-actions">' +
-                    '<a class="primary" href="/">返回首页</a>' +
-                    '<a href="/contact.html">联系我</a>' +
-                '</div>' +
+                '<div class="page-state-actions"><a class="primary" href="/">返回首页</a><a href="/contact.html">联系我</a></div>' +
             '</div>';
+        }
+        var overlay = document.createElement('div');
+        overlay.id = 'pageStateOverlay';
+        overlay.className = 'page-state-overlay ps-maint ps-maint--' + template;
+        overlay.setAttribute('data-template', template);
+        overlay.setAttribute('role', 'alertdialog');
+        overlay.setAttribute('aria-label', name + '维护中');
+        overlay.innerHTML = html;
         document.body.appendChild(overlay);
         document.body.classList.add('page-state-disabled');
     }
@@ -104,7 +146,7 @@
         if (!cfg || typeof cfg !== 'object') { finishCheck(); return; }
         applyTemplate(cfg.template);
         if (cfg.enabled === false) {
-            showDisabled(key);
+            showDisabled(key, maintenanceTemplate(cfg, key));
         } else {
             removeDisabled();
         }

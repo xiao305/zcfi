@@ -1,38 +1,46 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-04T12:46:08.038Z",
+  "updatedAt": "2026-11-04T13:24:18.334827+00:00",
   "pages": {
     "home": {
       "enabled": true,
-      "template": "default"
+      "template": "default",
+      "maintenanceTemplate": "classic"
     },
     "blog": {
       "enabled": true,
-      "template": "default"
+      "template": "default",
+      "maintenanceTemplate": "classic"
     },
     "portfolio": {
       "enabled": true,
-      "template": "default"
+      "template": "default",
+      "maintenanceTemplate": "classic"
     },
     "contact": {
       "enabled": false,
-      "template": "default"
+      "template": "default",
+      "maintenanceTemplate": "classic"
     },
     "privacy": {
       "enabled": true,
-      "template": "default"
+      "template": "default",
+      "maintenanceTemplate": "legal"
     },
     "terms": {
       "enabled": true,
-      "template": "default"
+      "template": "default",
+      "maintenanceTemplate": "legal"
     },
     "copyright": {
       "enabled": true,
-      "template": "default"
+      "template": "default",
+      "maintenanceTemplate": "legal"
     },
     "notfound": {
       "enabled": true,
-      "template": "default"
+      "template": "default",
+      "maintenanceTemplate": "classic"
     }
   }
 }

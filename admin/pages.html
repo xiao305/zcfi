@@ -104,6 +104,173 @@
         .pages-title { font-size: 21px; }
         .page-card-link { margin-left: 0; }
     }
+
+/* ===== 模板选择 / 预览（批次23） ===== */
+.page-card-controls {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    margin-top: 12px;
+}
+.page-template-field {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; color: #8a94a3;
+}
+.page-template-field[hidden] { display: none !important; }
+.page-template-field select {
+    padding: 6px 9px; border: 1px solid #dde5ef; border-radius: 8px;
+    background: #fff; color: #495057; font-size: 12.5px; outline: none;
+}
+.page-card-actions {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    margin-top: 10px;
+}
+.page-preview-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 11px; border: 1px solid #d9e4f2; border-radius: 8px;
+    background: #f7faff; color: #4a6fa5; font-size: 12px; cursor: pointer;
+    transition: all .2s ease;
+}
+.page-preview-btn:hover { border-color: #b9cbe2; background: #eef5ff; }
+.page-card-actions .page-card-link { margin-left: auto; }
+
+body.tp-modal-open { overflow: hidden; }
+.template-preview-modal {
+    position: fixed; inset: 0; z-index: 100000;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px; background: rgba(20, 30, 46, 0.55);
+    backdrop-filter: blur(3px);
+}
+.template-preview-modal[hidden] { display: none; }
+.template-preview-dialog {
+    width: min(980px, 100%); max-height: calc(100vh - 40px);
+    display: flex; flex-direction: column;
+    background: #fff; border-radius: 18px; overflow: hidden;
+    box-shadow: 0 28px 80px rgba(10, 20, 35, .35);
+}
+.template-preview-head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 16px; padding: 18px 22px 14px;
+    border-bottom: 1px solid #eef1f5;
+}
+.template-preview-head p { font-size: 11.5px; color: #8a94a3; margin-bottom: 4px; }
+.template-preview-head h3 { font-size: 18px; color: #26303d; }
+.tp-close {
+    width: 32px; height: 32px; border-radius: 9px; border: 1px solid #e3e9f1;
+    background: #f8fafc; color: #7b8491; cursor: pointer; font-size: 14px;
+}
+.template-preview-toolbar {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 12px 22px; border-bottom: 1px solid #eef1f5; background: #fbfcfe;
+}
+.tp-kind {
+    font-size: 11px; padding: 3px 9px; border-radius: 999px;
+    background: #eef3fa; color: #4a6fa5; font-weight: 500;
+}
+.template-preview-toolbar select {
+    flex: 1; min-width: 220px; padding: 7px 10px;
+    border: 1px solid #dde5ef; border-radius: 8px;
+    font-size: 12.5px; color: #495057; background: #fff;
+}
+.tp-apply {
+    padding: 7px 12px; border-radius: 8px; border: 1px solid #4a6fa5;
+    background: #4a6fa5; color: #fff; font-size: 12px; cursor: pointer;
+}
+.template-preview-stage {
+    flex: 1; min-height: 420px; overflow: auto;
+    background: #eef2f7; padding: 18px;
+}
+.template-preview-hint {
+    padding: 10px 22px; font-size: 11.5px; color: #8a94a3;
+    border-top: 1px solid #eef1f5; background: #fbfcfe;
+}
+
+/* ===== 公开模板预览 ===== */
+.tp-public { min-height: 390px; display: flex; align-items: flex-start; justify-content: center; }
+.tp-browser {
+    width: 100%; max-width: 950px; border-radius: 12px; overflow: hidden;
+    background: #fff; box-shadow: 0 14px 34px rgba(28, 44, 72, .12);
+}
+.tp-browser-bar {
+    display: flex; align-items: center; gap: 6px; padding: 8px 12px;
+    background: #f2f5f9; border-bottom: 1px solid #e8edf4;
+}
+.tp-browser-bar span { width: 8px; height: 8px; border-radius: 50%; background: #d3dbe6; }
+.tp-browser-bar span:first-child { background: #e6a5a5; }
+.tp-browser-bar span:nth-child(2) { background: #e8d49c; }
+.tp-browser-bar span:nth-child(3) { background: #a8d5b5; }
+.tp-browser-bar em { margin-left: 8px; font-style: normal; font-size: 10.5px; color: #9aa3af; }
+.tp-site { max-width: 900px; margin: 0 auto; padding: 16px 24px 0; }
+.tp-site-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-bottom: 12px; border-bottom: 1px solid #eef1f5;
+    font-size: 11px; color: #8a94a3;
+}
+.tp-site-nav strong { font-size: 15px; color: #26303d; }
+.tp-site-nav strong span { color: #4a6fa5; }
+.tp-site-hero { padding: 24px 0 18px; }
+.tp-site-hero .tp-kicker { font-size: 10px; color: #9aa3af; letter-spacing: .08em; text-transform: uppercase; }
+.tp-site-hero h1 { margin: 5px 0 8px; font-size: 25px; color: #26303d; }
+.tp-site-hero p { font-size: 12px; color: #8a94a3; }
+.tp-site-content { padding: 4px 0 22px; }
+.tp-line { height: 9px; border-radius: 5px; background: #eef2f7; margin-bottom: 9px; }
+.tp-line.w90 { width: 90%; } .tp-line.w85 { width: 85%; } .tp-line.w80 { width: 80%; }
+.tp-line.w75 { width: 75%; } .tp-line.w60 { width: 60%; }
+.tp-block-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 14px 0; }
+.tp-block-row span { height: 58px; border-radius: 9px; background: #f2f6fb; border: 1px solid #e9eff6; }
+.tp-site-footer { padding: 12px 0; border-top: 1px solid #eef1f5; font-size: 10px; color: #9aa3af; }
+.tp-public-minimal .tp-site { max-width: 680px; }
+.tp-public-wide .tp-site { max-width: 1000px; }
+.tp-public-compact .tp-site { padding-top: 10px; }
+.tp-public-compact .tp-site-hero { padding: 14px 0 10px; }
+.tp-public-compact .tp-site-hero h1 { font-size: 21px; }
+.tp-public-card .tp-site { background: #fff; border-radius: 14px; margin-top: 6px; box-shadow: 0 14px 30px rgba(28,44,72,.09); padding: 20px 26px; }
+
+/* ===== 维护模板预览 ===== */
+.tp-maint {
+    min-height: 390px; border-radius: 13px; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px; background: linear-gradient(135deg, #f6f9ff, #eef6f2);
+}
+.tp-maint-classic .tp-classic-card {
+    width: min(460px, 100%); background: #fff; border: 1px solid #e3ebf5;
+    border-radius: 18px; padding: 28px 26px; text-align: center;
+    box-shadow: 0 18px 45px rgba(28,44,72,.12);
+}
+.tp-icon {
+    width: 36px; height: 36px; margin: 0 auto 10px; border-radius: 50%;
+    background: #fdf6e7; color: #a06a12; display: flex; align-items: center;
+    justify-content: center; font-weight: 700;
+}
+.tp-badge { display: inline-block; font-size: 10.5px; padding: 3px 10px; border-radius: 999px; background: #fdf6e7; color: #a06a12; margin-bottom: 10px; }
+.tp-maint h2 { margin: 0 0 8px; font-size: 21px; color: #26303d; }
+.tp-maint p { margin: 0 0 16px; font-size: 12.5px; line-height: 1.7; color: #7b8491; }
+.tp-maint .tp-muted { color: #9aa3af; font-size: 11.5px; }
+.tp-actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.tp-btn { display: inline-flex; align-items: center; justify-content: center; min-width: 90px; padding: 7px 13px; border-radius: 8px; border: 1px solid #d9e4f2; background: #f7faff; color: #4a6fa5; font-size: 11.5px; text-decoration: none; }
+.tp-btn.primary { background: #4a6fa5; border-color: #4a6fa5; color: #fff; }
+
+.tp-maint-legal { background: #f7f8fa; }
+.tp-legal-card { width: min(440px, 100%); background: #fff; border: 1px solid #e3e7ee; border-radius: 6px; padding: 30px; text-align: center; box-shadow: 0 8px 24px rgba(28,44,72,.07); }
+.tp-legal-icon { width: 34px; height: 34px; margin: 0 auto 12px; border-radius: 50%; background: #fdecec; color: #b02a37; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+.tp-maint-legal h2 { font-size: 20px; margin-bottom: 6px; }
+.tp-maint-legal .tp-muted { margin-bottom: 18px; }
+
+.tp-maint-minimal { background: #fff; justify-content: flex-start; padding-left: 48px; }
+.tp-minimal-card { max-width: 520px; }
+.tp-minimal-dot { display: block; width: 8px; height: 8px; border-radius: 50%; background: #4a6fa5; margin-bottom: 16px; }
+.tp-maint-minimal h2 { font-size: 32px; letter-spacing: -.02em; margin-bottom: 12px; }
+.tp-maint-minimal p { font-size: 13px; }
+.tp-text-link { font-size: 12px; color: #4a6fa5; text-decoration: none; }
+
+.tp-maint-gradient { background: linear-gradient(135deg, #4a6fa5, #6d9dc5 55%, #8fc9b4); }
+.tp-gradient-card { width: min(460px, 100%); padding: 30px; border-radius: 20px; background: rgba(255,255,255,.88); backdrop-filter: blur(8px); text-align: center; box-shadow: 0 22px 55px rgba(20,40,70,.22); }
+.tp-gradient-card .tp-badge { background: #eef3fa; color: #4a6fa5; }
+
+.tp-maint-notice { background: #f7f9fc; align-items: flex-start; padding-top: 32px; }
+.tp-notice-wrap { width: min(520px, 100%); }
+.tp-notice-bar { display: flex; justify-content: space-between; gap: 10px; padding: 8px 12px; border-radius: 8px 8px 0 0; background: #4a6fa5; color: #fff; font-size: 11px; }
+.tp-notice-bar em { font-style: normal; opacity: .8; }
+.tp-notice-card { background: #fff; border: 1px solid #e3ebf5; border-top: none; border-radius: 0 0 12px 12px; padding: 24px; }
+.tp-notice-card h2 { font-size: 23px; }
 </style>
 </head>
 <body class="admin-body" data-admin-module="pages">
@@ -134,12 +301,32 @@
     <div class="pages-note">
         <strong>说明：</strong>
         页面状态与模板保存在 Config Gist 的 <code>pages.json</code>，同时提交同源 <code>data/pages.json</code> 供前台读取；保存会触发 Pages 部署。
-        维护中的页面会显示统一的维护提示，不再展示原内容。模板：
-        <code>标准布局</code> 保持原样；<code>阅读版（窄）</code> 限制内容宽度；
-        <code>宽屏版</code> 放宽内容宽度。保存后需等待 Pages 部署完成（约 1–2 分钟），部署完成后刷新页面即可生效；任务中心会显示部署进度。
+        每个页面有两套模板：<strong>公开访问</strong>时使用公开模板（标准/阅读/宽屏/紧凑/卡片），
+        <strong>维护中</strong>时使用维护模板（经典/法律声明风/极简/渐变/公告）。
+        点击卡片上的“预览模板”可查看当前模板效果；保存后需等待 Pages 部署完成（约 1–2 分钟），任务中心会显示进度。
     </div>
 </div>
 <div class="pages-toast" id="pagesToast"></div>
+
+<div class="template-preview-modal" id="templatePreviewModal" hidden>
+    <div class="template-preview-dialog" role="dialog" aria-modal="true" aria-labelledby="tpTitle">
+        <div class="template-preview-head">
+            <div>
+                <p>模板预览 · 不加载具体页面内容</p>
+                <h3 id="tpTitle">模板预览</h3>
+            </div>
+            <button type="button" class="tp-close" id="tpClose" aria-label="关闭预览">✕</button>
+        </div>
+        <div class="template-preview-toolbar">
+            <span class="tp-kind" id="tpKind">公开模板</span>
+            <select id="tpSelect" aria-label="选择模板"></select>
+            <button type="button" class="tp-apply" id="tpApply">应用到该页面</button>
+        </div>
+        <div class="template-preview-stage" id="tpStage"></div>
+        <p class="template-preview-hint">预览的是模板布局；保存页面设置并等待部署后，前台才会使用该模板。</p>
+    </div>
+</div>
+
 
 <script>
 (function () {
@@ -155,11 +342,22 @@
         { key: 'copyright', name: '版权声明',   path: '/copyright.html',   icon: 'fas fa-copyright' },
         { key: 'notfound',  name: '404 页面',   path: '/404.html',         icon: 'fas fa-exclamation-triangle' }
     ];
-    var TEMPLATES = [
-        { id: 'default', name: '标准布局' },
-        { id: 'minimal', name: '阅读版（窄）' },
-        { id: 'wide',    name: '宽屏版' }
+    var PUBLIC_TEMPLATES = [
+        { id: 'default', name: '标准布局',  desc: '保持站点原有布局' },
+        { id: 'minimal', name: '阅读版（窄）', desc: '收窄内容宽度，适合长文' },
+        { id: 'wide',    name: '宽屏版',      desc: '放宽内容宽度，适合作品展示' },
+        { id: 'compact', name: '紧凑版',      desc: '缩小区块间距，信息更密集' },
+        { id: 'card',    name: '卡片版',      desc: '内容容器加白色卡片背景' }
     ];
+    var MAINTENANCE_TEMPLATES = [
+        { id: 'classic', name: '经典维护卡', desc: '居中卡片 + 维护提示' },
+        { id: 'legal',   name: '法律声明风', desc: '沿用原隐私/条款/版权维护样式' },
+        { id: 'minimal', name: '极简留白',   desc: '大标题 + 简短说明' },
+        { id: 'gradient',name: '渐变欢迎页', desc: '渐变背景 + 玻璃卡片' },
+        { id: 'notice',  name: '公告通知',   desc: '顶部状态徽标 + 公告卡' }
+    ];
+    var LEGAL_PAGES = { privacy: 1, terms: 1, copyright: 1 };
+    function defaultMaintenance(key) { return LEGAL_PAGES[key] ? 'legal' : 'classic'; }
     var state = { pages: {} };
 
     function esc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -174,7 +372,13 @@
 
     function defaults() {
         var pages = {};
-        PAGES.forEach(function (p) { pages[p.key] = { enabled: true, template: 'default' }; });
+        PAGES.forEach(function (p) {
+            pages[p.key] = {
+                enabled: true,
+                template: 'default',
+                maintenanceTemplate: defaultMaintenance(p.key)
+            };
+        });
         return { version: 1, pages: pages };
     }
 
@@ -185,7 +389,8 @@
                 var v = raw.pages[p.key];
                 if (!v || typeof v !== 'object') return;
                 base.pages[p.key].enabled = v.enabled !== false;
-                base.pages[p.key].template = TEMPLATES.some(function (t) { return t.id === v.template; }) ? v.template : 'default';
+                base.pages[p.key].template = PUBLIC_TEMPLATES.some(function (t) { return t.id === v.template; }) ? v.template : 'default';
+                base.pages[p.key].maintenanceTemplate = MAINTENANCE_TEMPLATES.some(function (t) { return t.id === v.maintenanceTemplate; }) ? v.maintenanceTemplate : defaultMaintenance(p.key);
             });
         }
         return base;
@@ -206,7 +411,7 @@
         var grid = document.getElementById('pagesGrid');
         if (!grid) return;
         grid.innerHTML = PAGES.map(function (p) {
-            var cfg = state.pages[p.key] || { enabled: true, template: 'default' };
+            var cfg = state.pages[p.key] || { enabled: true, template: 'default', maintenanceTemplate: defaultMaintenance(p.key) };
             return '<article class="page-card ' + (cfg.enabled ? '' : 'is-disabled') + '" data-page-key="' + p.key + '">' +
                 '<div class="page-card-head">' +
                     '<span class="page-card-icon"><i class="' + p.icon + '"></i></span>' +
@@ -216,11 +421,21 @@
                         '<div class="page-card-path">' + esc(p.path) + '</div>' +
                     '</div>' +
                 '</div>' +
-                '<div class="page-card-body">' +
+                '<div class="page-card-controls">' +
                     '<label class="page-toggle"><input type="checkbox" data-page-toggle="' + p.key + '"' + (cfg.enabled ? ' checked' : '') + '> 公开访问</label>' +
-                    '<select data-page-template="' + p.key + '">' + TEMPLATES.map(function (t) {
-                        return '<option value="' + t.id + '"' + (cfg.template === t.id ? ' selected' : '') + '>' + t.name + '</option>';
-                    }).join('') + '</select>' +
+                    '<label class="page-template-field" data-field="public"' + (cfg.enabled ? '' : ' hidden') + '>' +
+                        '<span>公开模板</span><select data-page-template="' + p.key + '">' + PUBLIC_TEMPLATES.map(function (t) {
+                            return '<option value="' + t.id + '"' + (cfg.template === t.id ? ' selected' : '') + '>' + esc(t.name) + '</option>';
+                        }).join('') + '</select>' +
+                    '</label>' +
+                    '<label class="page-template-field" data-field="maintenance"' + (cfg.enabled ? ' hidden' : '') + '>' +
+                        '<span>维护模板</span><select data-page-maintenance="' + p.key + '">' + MAINTENANCE_TEMPLATES.map(function (t) {
+                            return '<option value="' + t.id + '"' + (cfg.maintenanceTemplate === t.id ? ' selected' : '') + '>' + esc(t.name) + '</option>';
+                        }).join('') + '</select>' +
+                    '</label>' +
+                '</div>' +
+                '<div class="page-card-actions">' +
+                    '<button type="button" class="page-preview-btn" data-page-preview="' + p.key + '"><i class="fas fa-eye"></i> 预览模板</button>' +
                     '<a class="page-card-link" href="https://zcfi.cn' + p.path + '" target="_blank" rel="noopener">打开页面 <i class="fas fa-arrow-right"></i></a>' +
                 '</div>' +
             '</article>';
@@ -228,6 +443,17 @@
         updateSummary();
     }
 
+    function updateCardMode(card, key) {
+        if (!card) return;
+        var cfg = state.pages[key];
+        var pub = card.querySelector('[data-field="public"]');
+        var maint = card.querySelector('[data-field="maintenance"]');
+        if (pub) pub.hidden = !cfg.enabled;
+        if (maint) maint.hidden = cfg.enabled;
+        card.classList.toggle('is-disabled', !cfg.enabled);
+        var pill = card.querySelector('.page-state-pill');
+        if (pill) pill.textContent = cfg.enabled ? '已启用' : '维护中';
+    }
     function bind() {
         var grid = document.getElementById('pagesGrid');
         if (grid) {
@@ -235,25 +461,146 @@
                 var key = e.target.getAttribute('data-page-toggle');
                 if (key) {
                     state.pages[key].enabled = !!e.target.checked;
-                    var card = e.target.closest('.page-card');
-                    if (card) {
-                        card.classList.toggle('is-disabled', !e.target.checked);
-                        var pill = card.querySelector('.page-state-pill');
-                        if (pill) pill.textContent = e.target.checked ? '已启用' : '维护中';
-                    }
+                    updateCardMode(e.target.closest('.page-card'), key);
                     updateSummary();
                     return;
                 }
                 key = e.target.getAttribute('data-page-template');
-                if (key) state.pages[key].template = e.target.value;
+                if (key) { state.pages[key].template = e.target.value; return; }
+                key = e.target.getAttribute('data-page-maintenance');
+                if (key) { state.pages[key].maintenanceTemplate = e.target.value; }
+            });
+            grid.addEventListener('click', function (e) {
+                var btn = e.target.closest('[data-page-preview]');
+                if (btn) openPreview(btn.getAttribute('data-page-preview'));
             });
         }
         var reload = document.getElementById('pagesReload');
         if (reload) reload.addEventListener('click', load);
         var save = document.getElementById('pagesSave');
         if (save) save.addEventListener('click', saveSettings);
+
+        var close = document.getElementById('tpClose');
+        if (close) close.addEventListener('click', closePreview);
+        var modal = document.getElementById('templatePreviewModal');
+        if (modal) modal.addEventListener('click', function (e) {
+            if (e.target === modal) closePreview();
+        });
+        var sel = document.getElementById('tpSelect');
+        if (sel) sel.addEventListener('change', renderPreview);
+        var apply = document.getElementById('tpApply');
+        if (apply) apply.addEventListener('click', applyPreviewTemplate);
     }
 
+    var previewState = { key: '', kind: 'public', template: 'default' };
+
+    function templateMeta(kind, id) {
+        var list = kind === 'maintenance' ? MAINTENANCE_TEMPLATES : PUBLIC_TEMPLATES;
+        for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+        return list[0];
+    }
+
+    function openPreview(key) {
+        var cfg = state.pages[key];
+        if (!cfg) return;
+        previewState.key = key;
+        previewState.kind = cfg.enabled ? 'public' : 'maintenance';
+        previewState.template = cfg.enabled ? cfg.template : cfg.maintenanceTemplate;
+        var page = PAGES.filter(function (p) { return p.key === key; })[0];
+        var title = document.getElementById('tpTitle');
+        var kind = document.getElementById('tpKind');
+        var modal = document.getElementById('templatePreviewModal');
+        if (title) title.textContent = '模板预览 · ' + (page ? page.name : key);
+        if (kind) kind.textContent = cfg.enabled ? '公开模板' : '维护模板';
+        var sel = document.getElementById('tpSelect');
+        if (sel) {
+            var list = previewState.kind === 'maintenance' ? MAINTENANCE_TEMPLATES : PUBLIC_TEMPLATES;
+            sel.innerHTML = list.map(function (t) {
+                return '<option value="' + t.id + '">' + esc(t.name) + ' · ' + esc(t.desc) + '</option>';
+            }).join('');
+            sel.value = previewState.template;
+        }
+        if (modal) modal.hidden = false;
+        document.body.classList.add('tp-modal-open');
+        renderPreview();
+    }
+
+    function closePreview() {
+        var modal = document.getElementById('templatePreviewModal');
+        if (modal) modal.hidden = true;
+        document.body.classList.remove('tp-modal-open');
+    }
+
+    function previewMarkup(kind, id, name) {
+        if (kind === 'public') {
+            return '<div class="tp-public tp-public-' + id + '">' +
+                '<div class="tp-browser">' +
+                    '<div class="tp-browser-bar"><span></span><span></span><span></span><em>zcfi.cn</em></div>' +
+                    '<div class="tp-site">' +
+                        '<div class="tp-site-nav"><strong>zcfi<span>.</span>cn</strong><span>首页&nbsp;&nbsp;博客&nbsp;&nbsp;作品集&nbsp;&nbsp;联系</span></div>' +
+                        '<div class="tp-site-hero"><p class="tp-kicker">页面标题</p><h1>' + esc(name) + '</h1><p>模板预览：公开访问时的页面布局</p></div>' +
+                        '<div class="tp-site-content">' +
+                            '<div class="tp-line w90"></div><div class="tp-line w75"></div><div class="tp-line w85"></div>' +
+                            '<div class="tp-block-row"><span></span><span></span><span></span></div>' +
+                            '<div class="tp-line w80"></div><div class="tp-line w60"></div>' +
+                        '</div>' +
+                        '<div class="tp-site-footer">© 2026 zcfi.cn · 页脚</div>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
+        }
+        var card = '';
+        if (id === 'legal') {
+            card = '<div class="tp-legal-card"><div class="tp-legal-icon">!</div><h2>页面不可用</h2>' +
+                '<p>该页面暂时不可用</p><p class="tp-muted">' + esc(name) + '页面当前已被管理员禁用。</p>' +
+                '<a class="tp-btn primary" href="#">返回首页</a></div>';
+        } else if (id === 'minimal') {
+            card = '<div class="tp-minimal-card"><span class="tp-minimal-dot"></span><h2>' + esc(name) + '暂时无法访问</h2>' +
+                '<p>这个页面正在调整或维护，请稍后再来。</p><a class="tp-text-link" href="#">返回首页 →</a></div>';
+        } else if (id === 'gradient') {
+            card = '<div class="tp-gradient-card"><span class="tp-badge">页面维护中</span><h2>' + esc(name) + '</h2>' +
+                '<p>我们正在为这个页面做一点更新，请稍后再来。</p><div class="tp-actions"><a class="tp-btn primary" href="#">返回首页</a><a class="tp-btn" href="#">联系我</a></div></div>';
+        } else if (id === 'notice') {
+            card = '<div class="tp-notice-wrap"><div class="tp-notice-bar"><span>维护通知</span><em>预计稍后恢复</em></div>' +
+                '<div class="tp-notice-card"><h2>' + esc(name) + '暂停访问</h2><p>该页面正在调整中，请稍后重试。</p>' +
+                '<div class="tp-actions"><a class="tp-btn primary" href="#">返回首页</a><a class="tp-btn" href="#">联系我</a></div></div></div>';
+        } else {
+            card = '<div class="tp-classic-card"><span class="tp-icon">!</span><span class="tp-badge">页面维护中</span><h2>' + esc(name) + '暂时无法访问</h2>' +
+                '<p>这个页面正在调整或维护，请稍后再来。你也可以先返回首页，或通过联系页留言。</p>' +
+                '<div class="tp-actions"><a class="tp-btn primary" href="#">返回首页</a><a class="tp-btn" href="#">联系我</a></div></div>';
+        }
+        return '<div class="tp-maint tp-maint-' + id + '">' + card + '</div>';
+    }
+
+    function renderPreview() {
+        var sel = document.getElementById('tpSelect');
+        if (sel) previewState.template = sel.value;
+        var stage = document.getElementById('tpStage');
+        if (!stage) return;
+        var page = PAGES.filter(function (p) { return p.key === previewState.key; })[0];
+        stage.innerHTML = previewMarkup(previewState.kind, previewState.template, page ? page.name : '页面');
+        var kind = document.getElementById('tpKind');
+        if (kind) kind.textContent = previewState.kind === 'maintenance' ? '维护模板' : '公开模板';
+    }
+
+    function applyPreviewTemplate() {
+        var cfg = state.pages[previewState.key];
+        if (!cfg) return;
+        if (previewState.kind === 'maintenance') cfg.maintenanceTemplate = previewState.template;
+        else cfg.template = previewState.template;
+        var card = document.querySelector('.page-card[data-page-key="' + previewState.key + '"]');
+        if (card) {
+            if (previewState.kind === 'maintenance') {
+                var sel = card.querySelector('[data-page-maintenance]');
+                if (sel) sel.value = previewState.template;
+            } else {
+                var sel2 = card.querySelector('[data-page-template]');
+                if (sel2) sel2.value = previewState.template;
+            }
+        }
+        toast('已选择模板，保存页面设置后生效');
+        closePreview();
+    }
     async function load() {
         var grid = document.getElementById('pagesGrid');
         if (grid && !grid.querySelector('.page-card')) {
