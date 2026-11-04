@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-04T12:34:38.731Z",
+  "updatedAt": "2026-11-04T12:46:08.038Z",
   "pages": {
     "home": {
       "enabled": true,
@@ -15,7 +15,7 @@
       "template": "default"
     },
     "contact": {
-      "enabled": true,
+      "enabled": false,
       "template": "default"
     },
     "privacy": {
