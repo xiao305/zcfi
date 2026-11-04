@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-04T11:38:33.100Z",
+  "updatedAt": "2026-11-04T12:34:38.731Z",
   "pages": {
     "home": {
       "enabled": true,
@@ -24,11 +24,11 @@
     },
     "terms": {
       "enabled": true,
-      "template": "minimal"
+      "template": "default"
     },
     "copyright": {
       "enabled": true,
-      "template": "wide"
+      "template": "default"
     },
     "notfound": {
       "enabled": true,
