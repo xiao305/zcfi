@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-04T13:24:18.334827+00:00",
+  "updatedAt": "2026-11-04T13:29:55.292Z",
   "pages": {
     "home": {
       "enabled": true,
@@ -20,22 +20,22 @@
     "contact": {
       "enabled": false,
       "template": "default",
-      "maintenanceTemplate": "classic"
+      "maintenanceTemplate": "minimal"
     },
     "privacy": {
-      "enabled": true,
+      "enabled": false,
       "template": "default",
-      "maintenanceTemplate": "legal"
+      "maintenanceTemplate": "classic"
     },
     "terms": {
-      "enabled": true,
+      "enabled": false,
       "template": "default",
       "maintenanceTemplate": "legal"
     },
     "copyright": {
-      "enabled": true,
+      "enabled": false,
       "template": "default",
-      "maintenanceTemplate": "legal"
+      "maintenanceTemplate": "notice"
     },
     "notfound": {
       "enabled": true,
