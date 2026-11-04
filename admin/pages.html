@@ -133,10 +133,10 @@
 
     <div class="pages-note">
         <strong>说明：</strong>
-        页面状态与模板保存在 Config Gist 的 <code>pages.json</code>；前台页面加载时会读取并应用。
+        页面状态与模板保存在 Config Gist 的 <code>pages.json</code>，同时提交同源 <code>data/pages.json</code> 供前台读取；保存会触发 Pages 部署。
         维护中的页面会显示统一的维护提示，不再展示原内容。模板：
         <code>标准布局</code> 保持原样；<code>阅读版（窄）</code> 限制内容宽度；
-        <code>宽屏版</code> 放宽内容宽度。前台优先通过 GitHub API 读取最新配置，保存后刷新即可生效；API 异常时会使用会话内最后一次成功配置。
+        <code>宽屏版</code> 放宽内容宽度。保存后需等待 Pages 部署完成（约 1–2 分钟），部署完成后刷新页面即可生效；任务中心会显示部署进度。
     </div>
 </div>
 <div class="pages-toast" id="pagesToast"></div>
@@ -285,13 +285,26 @@
                 updatedAt: new Date().toISOString(),
                 pages: state.pages
             };
-            await AdminTasks.gist({
+            var stateJson = JSON.stringify(data, null, 2);
+            var contentBase64 = btoa(unescape(encodeURIComponent(stateJson)));
+            // 同源文件随 Pages 部署更新；Gist 继续作为后台读取/备份来源
+            var repoTask = AdminTasks.saveFile({
+                path: 'data/pages.json',
+                contentBase64: contentBase64,
+                message: 'Update page states: ' + new Date().toISOString(),
+                title: '更新页面状态配置',
+                verifyUrl: 'https://zcfi.cn/data/pages.json'
+            });
+            var gistTask = AdminTasks.gist({
                 gistId: CONFIG_GIST_ID,
                 filename: 'pages.json',
                 data: data,
-                title: '保存页面状态与模板'
+                title: '保存页面状态与模板（Gist 备份）'
             });
-            toast('页面设置已保存，前台刷新即可生效');
+            var results = await Promise.allSettled([repoTask, gistTask]);
+            var failed = results.filter(function (r) { return r.status === 'rejected'; });
+            if (failed.length) throw (failed[0].reason || new Error('保存失败'));
+            toast('页面设置已保存，Pages 部署完成后生效（约 1–2 分钟）');
         } catch (e) {
             toast('保存失败：' + (e.message || e));
         } finally {

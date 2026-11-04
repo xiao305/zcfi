@@ -1,12 +1,11 @@
-/* 全站页面状态：读取 Config Gist 的 pages.json，应用启用状态与布局模板。
-   优先走 GitHub API（Gist raw 有 5 分钟 CDN 缓存，后台保存后不能及时生效）；
-   API 失败时使用本会话最后一次成功结果；仍失败则 fail-open，不改变页面。 */
+/* 全站页面状态：读取同源 data/pages.json（由页面管理保存时提交到仓库并部署），
+   应用启用状态与布局模板。Gist raw 有 5 分钟 CDN 缓存且本机网络可能无法直连
+   api.github.com，因此前台不依赖 Gist/API；同源文件随 Pages 部署一起更新。 */
 (function () {
     'use strict';
 
-    var CONFIG_GIST_ID = '983bb7371ddb439a2fcbfb4885e34d14';
-    var API_URL = 'https://api.github.com/gists/' + CONFIG_GIST_ID;
-    var CACHE_KEY = 'zcfi:pages-state:v1';
+    var STATE_URL = '/data/pages.json';
+    var CACHE_KEY = 'zcfi:pages-state:v2';
     var CACHE_MAX_AGE = 10 * 60 * 1000;
     var PAGE_NAMES = {
         home: '首页',
@@ -110,24 +109,19 @@
         var timer = null;
         try {
             controller = window.AbortController ? new AbortController() : null;
-            if (controller) timer = setTimeout(function () { controller.abort(); }, 5000);
-            fetch(API_URL + '?t=' + Date.now(), {
+            if (controller) timer = setTimeout(function () { controller.abort(); }, 4500);
+            fetch(STATE_URL + '?t=' + Date.now(), {
                 method: 'GET',
                 cache: 'no-store',
-                headers: { 'Accept': 'application/vnd.github+json' },
                 signal: controller ? controller.signal : undefined
             }).then(function (res) {
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 return res.json();
-            }).then(function (gist) {
-                if (!gist.files || !gist.files['pages.json'] || !gist.files['pages.json'].content) {
-                    throw new Error('pages.json missing');
-                }
-                var raw = JSON.parse(gist.files['pages.json'].content);
+            }).then(function (raw) {
                 writeCache(raw);
                 apply(raw);
             }).catch(function () {
-                // API 失败（限流/网络）时只用本会话最后一次成功结果；没有就保持原页面
+                // 同源文件异常时使用本会话最后一次成功结果；仍没有则保持原页面
                 var cached = readCache();
                 if (cached) apply(cached);
             }).finally(function () {
@@ -140,7 +134,7 @@
         }
     }
 
-    // 打开页面时应用；切回标签页时刷新一次，避免看到旧状态
+    // 打开页面时应用；切回标签页时刷新一次
     document.addEventListener('visibilitychange', function () {
         if (!document.hidden) load();
     });

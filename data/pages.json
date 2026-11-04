@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "updatedAt": "2026-11-04T10:55:44.135969+00:00",
+  "pages": {
+    "home": {
+      "enabled": true,
+      "template": "default"
+    },
+    "blog": {
+      "enabled": true,
+      "template": "default"
+    },
+    "portfolio": {
+      "enabled": true,
+      "template": "default"
+    },
+    "contact": {
+      "enabled": true,
+      "template": "default"
+    },
+    "privacy": {
+      "enabled": true,
+      "template": "default"
+    },
+    "terms": {
+      "enabled": true,
+      "template": "default"
+    },
+    "copyright": {
+      "enabled": true,
+      "template": "default"
+    },
+    "notfound": {
+      "enabled": true,
+      "template": "default"
+    }
+  }
+}
