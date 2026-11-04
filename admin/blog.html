@@ -259,20 +259,6 @@ width: 100%;
 </div>
 </div>
 <div class="admin-main-content">
-<!-- 权限提示栏 -->
-<div class="permissions-banner" id="permissionsBanner">
-<div>
-<i class="fas fa-shield-alt"></i>
-<span>Token权限: <strong id="tokenPermissionLevel">检查中...</strong></span>
-<div class="permissions-info">
-<i class="fas fa-info-circle" style="font-size: 14px; margin-left: 8px;"></i>
-<span class="tooltip-text">点击了解权限详情</span>
-</div>
-</div>
-<div id="permissionActions">
-<!-- 权限相关操作按钮将在这里动态生成 -->
-</div>
-</div>
 <div class="admin-button-group">
 <button class="admin-btn btn-primary" id="addArticleBtn">
 <i class="fas fa-plus"></i> 添加新文章
@@ -577,40 +563,13 @@ loadBlogData(true);
 // 提前缓存模板，避免保存时因模板请求耗时导致正在保存停留过久
 setTimeout(function() { fetchTemplateFile().catch(function() {}); }, 1200);
 });
-// 检查并显示权限
+// 权限状态统一由顶栏展示，这里只设置功能可用性
 function checkAndDisplayPermissions() {
-const banner = document.getElementById('permissionsBanner');
-const permissionLevel = document.getElementById('tokenPermissionLevel');
-const permissionGistStatus = document.getElementById('permissionGistStatus');
-const permissionRepoStatus = document.getElementById('permissionRepoStatus');
-const permissionActions = document.getElementById('permissionActions');
 const manageTemplateBtn = document.getElementById('manageTemplateBtn');
-if (permissions.gist && permissions.repo) {
-banner.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
-permissionLevel.innerHTML = '<i class="fas fa-check-circle"></i> 完整权限 (Gist + Repo)';
-permissionGistStatus.innerHTML = '<span style="color: #28a745;">✓ 已授权</span>';
-permissionRepoStatus.innerHTML = '<span style="color: #28a745;">✓ 已授权</span>';
-hasRepoPermission = true;
-manageTemplateBtn.style.display = 'inline-flex';
-} else if (permissions.gist && !permissions.repo) {
-banner.style.background = 'linear-gradient(135deg, #ffc107 0%, #fd7e14 100%)';
-permissionLevel.innerHTML = '<i class="fas fa-exclamation-triangle"></i> 基础权限 (仅Gist)';
-permissionGistStatus.innerHTML = '<span style="color: #28a745;">✓ 已授权</span>';
-permissionRepoStatus.innerHTML = '<span style="color: #dc3545;">✗ 未授权</span>';
-hasRepoPermission = false;
-permissionActions.innerHTML = `
-<button class="admin-btn btn-warning" onclick="showPermissionDetails()" style="padding: 6px 15px; font-size: 13px;">
-<i class="fas fa-info-circle"></i> 查看权限详情
-</button>
-`;
-} else {
-banner.style.background = 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)';
-permissionLevel.innerHTML = '<i class="fas fa-times-circle"></i> 权限不足';
-permissionGistStatus.innerHTML = '<span style="color: #dc3545;">✗ 未授权</span>';
-permissionRepoStatus.innerHTML = '<span style="color: #dc3545;">✗ 未授权</span>';
-hasRepoPermission = false;
+hasRepoPermission = !!(permissions.gist && permissions.repo);
+if (manageTemplateBtn) {
+manageTemplateBtn.style.display = hasRepoPermission ? 'inline-flex' : 'none';
 }
-document.querySelector('.permissions-info').addEventListener('click', showPermissionDetails);
 }
 // 显示权限详情
 function showPermissionDetails() {
@@ -1420,6 +1379,20 @@ if (!postId || !title || !date || !excerpt || !content) {
 showResult('error', '输入错误', '请填写所有必填字段');
 return;
 }
+// 与生成页面模板一致的字段签名（用于判断是否需要重建页面）
+function articlePageSignature(p) {
+return JSON.stringify({
+title: p.title || '',
+content: p.content || '',
+date: p.date || '',
+author: p.author || '',
+tags: p.tags || [],
+seoKeywords: p.seoKeywords || '',
+seoDescription: p.seoDescription || p.excerpt || ''
+});
+}
+let originalPost = null;
+let savedPost = null;
 try {
 showLoading('保存文章', editPostId ? '正在更新文章...' : '正在保存文章...');
 const currentData = await fetchCurrentData();
@@ -1444,6 +1417,7 @@ seoKeywords: '',
 seoDescription: ''
 };
 currentData.unshift(newPost);
+savedPost = newPost;
 } else {
 const postIndex = currentData.findIndex(post => post.id === editPostId);
 if (postIndex === -1) {
@@ -1454,6 +1428,7 @@ if (otherPost) {
 throw new Error('文章 ID 已被其他文章使用');
 }
 const oldPost = currentData[postIndex];
+originalPost = JSON.parse(JSON.stringify(oldPost));
 currentData[postIndex] = {
 id: postId,
 title: title,
@@ -1470,12 +1445,37 @@ generatePage: oldPost.generatePage || false,
 seoKeywords: oldPost.seoKeywords || '',
 seoDescription: oldPost.seoDescription || ''
 };
+savedPost = currentData[postIndex];
 }
-await updateGistData(currentData);
+// 内容/标题/日期等页面字段变化时，编辑文章也要重建页面；
+// 先让页面任务入队/持久化，再写 Gist，避免切页时 Gist 已改但页面没提交。
+const pageChanged = originalPost ? articlePageSignature(originalPost) !== articlePageSignature(savedPost) : false;
+let gistPromise = null;
+const saveGistOnce = function() {
+if (!gistPromise) gistPromise = updateGistData(currentData);
+return gistPromise;
+};
+let pageQueued = false;
+const onPageQueued = function() {
+pageQueued = true;
+hideLoading();
+closeArticleModal();
+showResult('info', '已加入队列', '文章内容已保存，页面生成会在当前部署完成后自动提交；可在任务中心查看进度。');
+};
+if (editPostId && savedPost && savedPost.generatePage && pageChanged) {
+await createOrUpdatePageFile(savedPost, onPageQueued, saveGistOnce);
+} else {
+await saveGistOnce();
+}
+if (gistPromise) await gistPromise;
+if (pageQueued) {
+loadBlogData(false, false);
+} else {
 hideLoading();
 showResult('success', '操作成功', editPostId ? '文章更新成功！' : '文章保存成功！');
 closeArticleModal();
 loadBlogData(false, false);
+}
 } catch (error) {
 hideLoading();
 showResult('error', '操作失败', error.message);

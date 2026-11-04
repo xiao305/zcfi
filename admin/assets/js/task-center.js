@@ -1193,6 +1193,27 @@ window.AdminTasks = (function () {
         isDeploying: function () { return deploying.length > 0; },
         openPanel: openPanel,
         clearHistory: clearHistory,
+        getSnapshot: function () {
+            var active = [];
+            if (current) active.push(current);
+            deploying.forEach(function (t) { active.push(t); });
+            queue.forEach(function (t) { active.push(t); });
+            return {
+                activeCount: active.length,
+                queueCount: queue.length,
+                deployingCount: deploying.length,
+                tasks: active.slice(0, 5).map(function (t) {
+                    return {
+                        title: t.title,
+                        status: t.status,
+                        statusText: statusText(t),
+                        detail: t.detail,
+                        meta: taskMetaText(t)
+                    };
+                }),
+                history: loadHistory().slice(0, 4)
+            };
+        },
         _config: CONFIG
     };
 })();

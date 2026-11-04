@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>页面管理 | zcfi.cn 管理后台</title>
+<link rel="icon" type="image/svg+xml" href="../favicon/favicon.svg">
+<link rel="icon" type="image/png" sizes="96x96" href="../favicon/favicon-96x96.png">
+<link rel="icon" type="image/x-icon" href="../favicon/favicon.ico">
+<link rel="stylesheet" href="../assets/css/icons.css">
+<link rel="stylesheet" href="assets/css/admin-common.css">
+<link rel="stylesheet" href="assets/css/admin-shell.css">
+<link rel="stylesheet" href="assets/css/task-center.css">
+<script src="assets/js/admin-core.js" defer></script>
+<script src="assets/js/task-center.js" defer></script>
+<style>
+    .pages-admin { max-width: 1180px; margin: 0 auto; padding-bottom: 40px; }
+    .pages-hero {
+        display: flex; align-items: center; justify-content: space-between; gap: 18px;
+        flex-wrap: wrap; padding: 24px 28px; margin-bottom: 16px;
+        border: 1px solid #e6ebf2; border-radius: 18px;
+        background: linear-gradient(135deg, #ffffff 0%, #f5f9ff 58%, #eef9f3 100%);
+        box-shadow: 0 12px 30px rgba(28, 44, 72, 0.06);
+    }
+    .pages-eyebrow { font-size: 12px; color: #8a94a3; margin-bottom: 5px; }
+    .pages-title { font-size: 24px; color: #26303d; margin-bottom: 6px; }
+    .pages-sub { font-size: 13px; color: #6c757d; max-width: 700px; line-height: 1.6; }
+    .pages-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .pages-btn {
+        display: inline-flex; align-items: center; gap: 7px; padding: 10px 16px;
+        border-radius: 10px; border: 1px solid #dde5ef; background: #fff;
+        color: #495057; font-size: 13px; cursor: pointer; transition: all .2s ease;
+    }
+    .pages-btn:hover { border-color: #b9cbe2; background: #f8fbff; }
+    .pages-btn.primary { background: #4a6fa5; border-color: #4a6fa5; color: #fff; }
+    .pages-btn.primary:hover { background: #3d5d8a; }
+    .pages-btn:disabled { opacity: .55; cursor: not-allowed; }
+    .pages-overview {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;
+        margin-bottom: 16px;
+    }
+    .pages-stat {
+        display: flex; align-items: center; gap: 12px; padding: 14px 16px;
+        border: 1px solid #e6ebf2; border-radius: 14px; background: #fff;
+        box-shadow: 0 8px 20px rgba(28, 44, 72, .05);
+    }
+    .pages-stat i { width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; background: #eef3fa; color: #4a6fa5; }
+    .pages-stat strong { font-size: 20px; color: #26303d; }
+    .pages-stat span { display: block; font-size: 12px; color: #8a94a3; }
+    .pages-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .page-card {
+        border: 1px solid #e6ebf2; border-radius: 16px; background: #fff;
+        padding: 16px 18px; box-shadow: 0 8px 22px rgba(28, 44, 72, .045);
+        transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+    .page-card:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(28, 44, 72, .08); }
+    .page-card.is-disabled { background: #fbfbfc; border-style: dashed; }
+    .page-card-head { display: flex; align-items: flex-start; gap: 11px; }
+    .page-card-icon {
+        width: 38px; height: 38px; flex: none; border-radius: 11px;
+        display: flex; align-items: center; justify-content: center;
+        background: #eef3fa; color: #4a6fa5; font-size: 15px;
+    }
+    .page-card.is-disabled .page-card-icon { background: #f3f4f6; color: #9aa3af; }
+    .page-card-copy { flex: 1; min-width: 0; }
+    .page-card-title { font-size: 14px; font-weight: 600; color: #26303d; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .page-card-path { margin-top: 3px; font-size: 11.5px; color: #9aa3af; word-break: break-all; }
+    .page-state-pill {
+        font-size: 11px; padding: 1px 8px; border-radius: 999px;
+        background: #e9f7ef; color: #1e7e34; font-weight: 500;
+    }
+    .page-card.is-disabled .page-state-pill { background: #fdecec; color: #b02a37; }
+    .page-card-body { margin-top: 13px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .page-toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; color: #5b6675; cursor: pointer; user-select: none; }
+    .page-toggle input { width: 17px; height: 17px; accent-color: #4a6fa5; cursor: pointer; }
+    .page-card-body select {
+        padding: 6px 10px; border: 1px solid #dde5ef; border-radius: 8px;
+        background: #fff; color: #495057; font-size: 12.5px; outline: none;
+    }
+    .page-card-link {
+        margin-left: auto; font-size: 12px; color: #4a6fa5; text-decoration: none;
+        display: inline-flex; align-items: center; gap: 4px;
+    }
+    .page-card-link:hover { text-decoration: underline; }
+    .pages-note {
+        margin-top: 16px; padding: 14px 16px; border-radius: 12px;
+        background: #f8fafc; border: 1px solid #eef1f5;
+        font-size: 12px; color: #7b8491; line-height: 1.7;
+    }
+    .pages-note code { background: #eef3fa; padding: 1px 5px; border-radius: 4px; color: #4a6fa5; }
+    .pages-toast {
+        position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(10px);
+        background: #26303d; color: #fff; padding: 10px 18px; border-radius: 10px;
+        font-size: 13px; opacity: 0; pointer-events: none; transition: all .25s ease; z-index: 9999;
+    }
+    .pages-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    @media (max-width: 900px) {
+        .pages-grid { grid-template-columns: 1fr; }
+        .pages-overview { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 560px) {
+        .pages-hero { padding: 20px; }
+        .pages-title { font-size: 21px; }
+        .page-card-link { margin-left: 0; }
+    }
+</style>
+</head>
+<body class="admin-body" data-admin-module="pages">
+<div class="pages-admin">
+
+    <section class="pages-hero">
+        <div>
+            <p class="pages-eyebrow">Gist 配置 · 全站页面</p>
+            <h1 class="pages-title">页面管理</h1>
+            <p class="pages-sub">统一控制页面的公开状态与布局模板；配置保存在 Gist，保存后前台加载时生效。</p>
+        </div>
+        <div class="pages-actions">
+            <button type="button" class="pages-btn" id="pagesReload"><i class="fas fa-rotate"></i> 重新读取</button>
+            <button type="button" class="pages-btn primary" id="pagesSave"><i class="fas fa-save"></i> 保存页面设置</button>
+        </div>
+    </section>
+
+    <section class="pages-overview">
+        <div class="pages-stat"><i class="fas fa-file-alt"></i><div><strong id="pagesTotal">8</strong><span>页面总数</span></div></div>
+        <div class="pages-stat"><i class="fas fa-check"></i><div><strong id="pagesEnabled">–</strong><span>公开访问中</span></div></div>
+        <div class="pages-stat"><i class="fas fa-eye-slash"></i><div><strong id="pagesDisabled">–</strong><span>维护中</span></div></div>
+    </section>
+
+    <section class="pages-grid" id="pagesGrid">
+        <div class="pages-note" style="grid-column:1/-1;">正在读取 pages 配置…</div>
+    </section>
+
+    <div class="pages-note">
+        <strong>说明：</strong>
+        页面状态与模板保存在 Config Gist 的 <code>pages.json</code>；前台页面加载时会读取并应用。
+        维护中的页面会显示统一的维护提示，不再展示原内容。模板：
+        <code>标准布局</code> 保持原样；<code>阅读版（窄）</code> 限制内容宽度；
+        <code>宽屏版</code> 放宽内容宽度。前台可能有最多约 5 分钟缓存，保存后请稍等再刷新。
+    </div>
+</div>
+<div class="pages-toast" id="pagesToast"></div>
+
+<script>
+(function () {
+    'use strict';
+    var CONFIG_GIST_ID = '983bb7371ddb439a2fcbfb4885e34d14';
+    var PAGES = [
+        { key: 'home',      name: '首页',       path: '/',                 icon: 'fas fa-home' },
+        { key: 'blog',      name: '博客列表',   path: '/blog.html',        icon: 'fas fa-blog' },
+        { key: 'portfolio', name: '作品集',     path: '/portfolio.html',   icon: 'fas fa-briefcase' },
+        { key: 'contact',   name: '联系我',     path: '/contact.html',     icon: 'fas fa-comments' },
+        { key: 'privacy',   name: '隐私政策',   path: '/privacy.html',     icon: 'fas fa-shield-alt' },
+        { key: 'terms',     name: '使用条款',   path: '/terms.html',       icon: 'fas fa-file-contract' },
+        { key: 'copyright', name: '版权声明',   path: '/copyright.html',   icon: 'fas fa-copyright' },
+        { key: 'notfound',  name: '404 页面',   path: '/404.html',         icon: 'fas fa-exclamation-triangle' }
+    ];
+    var TEMPLATES = [
+        { id: 'default', name: '标准布局' },
+        { id: 'minimal', name: '阅读版（窄）' },
+        { id: 'wide',    name: '宽屏版' }
+    ];
+    var state = { pages: {} };
+
+    function esc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+    function toast(msg) {
+        var el = document.getElementById('pagesToast');
+        if (!el) return;
+        el.textContent = msg;
+        el.classList.add('show');
+        clearTimeout(toast._t);
+        toast._t = setTimeout(function () { el.classList.remove('show'); }, 2600);
+    }
+
+    function defaults() {
+        var pages = {};
+        PAGES.forEach(function (p) { pages[p.key] = { enabled: true, template: 'default' }; });
+        return { version: 1, pages: pages };
+    }
+
+    function normalize(raw) {
+        var base = defaults();
+        if (raw && raw.pages && typeof raw.pages === 'object') {
+            PAGES.forEach(function (p) {
+                var v = raw.pages[p.key];
+                if (!v || typeof v !== 'object') return;
+                base.pages[p.key].enabled = v.enabled !== false;
+                base.pages[p.key].template = TEMPLATES.some(function (t) { return t.id === v.template; }) ? v.template : 'default';
+            });
+        }
+        return base;
+    }
+
+    function updateSummary() {
+        var enabled = 0, disabled = 0;
+        PAGES.forEach(function (p) { if (state.pages[p.key] && state.pages[p.key].enabled) enabled++; else disabled++; });
+        var total = document.getElementById('pagesTotal');
+        var en = document.getElementById('pagesEnabled');
+        var dis = document.getElementById('pagesDisabled');
+        if (total) total.textContent = PAGES.length;
+        if (en) en.textContent = enabled;
+        if (dis) dis.textContent = disabled;
+    }
+
+    function render() {
+        var grid = document.getElementById('pagesGrid');
+        if (!grid) return;
+        grid.innerHTML = PAGES.map(function (p) {
+            var cfg = state.pages[p.key] || { enabled: true, template: 'default' };
+            return '<article class="page-card ' + (cfg.enabled ? '' : 'is-disabled') + '" data-page-key="' + p.key + '">' +
+                '<div class="page-card-head">' +
+                    '<span class="page-card-icon"><i class="' + p.icon + '"></i></span>' +
+                    '<div class="page-card-copy">' +
+                        '<div class="page-card-title">' + esc(p.name) +
+                            '<span class="page-state-pill">' + (cfg.enabled ? '已启用' : '维护中') + '</span></div>' +
+                        '<div class="page-card-path">' + esc(p.path) + '</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="page-card-body">' +
+                    '<label class="page-toggle"><input type="checkbox" data-page-toggle="' + p.key + '"' + (cfg.enabled ? ' checked' : '') + '> 公开访问</label>' +
+                    '<select data-page-template="' + p.key + '">' + TEMPLATES.map(function (t) {
+                        return '<option value="' + t.id + '"' + (cfg.template === t.id ? ' selected' : '') + '>' + t.name + '</option>';
+                    }).join('') + '</select>' +
+                    '<a class="page-card-link" href="https://zcfi.cn' + p.path + '" target="_blank" rel="noopener">打开页面 <i class="fas fa-arrow-right"></i></a>' +
+                '</div>' +
+            '</article>';
+        }).join('');
+        updateSummary();
+    }
+
+    function bind() {
+        var grid = document.getElementById('pagesGrid');
+        if (grid) {
+            grid.addEventListener('change', function (e) {
+                var key = e.target.getAttribute('data-page-toggle');
+                if (key) {
+                    state.pages[key].enabled = !!e.target.checked;
+                    var card = e.target.closest('.page-card');
+                    if (card) {
+                        card.classList.toggle('is-disabled', !e.target.checked);
+                        var pill = card.querySelector('.page-state-pill');
+                        if (pill) pill.textContent = e.target.checked ? '已启用' : '维护中';
+                    }
+                    updateSummary();
+                    return;
+                }
+                key = e.target.getAttribute('data-page-template');
+                if (key) state.pages[key].template = e.target.value;
+            });
+        }
+        var reload = document.getElementById('pagesReload');
+        if (reload) reload.addEventListener('click', load);
+        var save = document.getElementById('pagesSave');
+        if (save) save.addEventListener('click', saveSettings);
+    }
+
+    async function load() {
+        var grid = document.getElementById('pagesGrid');
+        if (grid && !grid.querySelector('.page-card')) {
+            grid.innerHTML = '<div class="pages-note" style="grid-column:1/-1;">正在读取 pages 配置…</div>';
+        }
+        try {
+            var res = await AdminCore.apiFetch('https://api.github.com/gists/' + CONFIG_GIST_ID);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            var gist = await res.json();
+            var raw = null;
+            if (gist.files && gist.files['pages.json'] && gist.files['pages.json'].content) {
+                raw = JSON.parse(gist.files['pages.json'].content);
+            }
+            state = normalize(raw);
+            render();
+        } catch (e) {
+            if (!Object.keys(state.pages).length) state = defaults();
+            render();
+            toast('读取 pages.json 失败，已显示默认设置：' + e.message);
+        }
+    }
+
+    async function saveSettings() {
+        var btn = document.getElementById('pagesSave');
+        if (btn) btn.disabled = true;
+        try {
+            var data = {
+                version: 1,
+                updatedAt: new Date().toISOString(),
+                pages: state.pages
+            };
+            await AdminTasks.gist({
+                gistId: CONFIG_GIST_ID,
+                filename: 'pages.json',
+                data: data,
+                title: '保存页面状态与模板'
+            });
+            toast('页面设置已保存；前台刷新后生效（最多约 5 分钟缓存）');
+        } catch (e) {
+            toast('保存失败：' + (e.message || e));
+        } finally {
+            if (btn) btn.disabled = false;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        bind();
+        load();
+    });
+})();
+</script>
+</body>
+</html>

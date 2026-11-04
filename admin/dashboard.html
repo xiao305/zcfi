@@ -466,6 +466,178 @@
     .dash-actions { grid-template-columns: 1fr; }
     .dash-card { padding: 18px 16px; }
 }
+
+/* ===== 仪表盘：任务中心卡片 ===== */
+.dash-task-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f7fbff 60%, #f4fbf8 100%);
+    border: 1px solid #e6ebf2;
+    border-radius: 18px;
+    padding: 20px 22px;
+    margin-bottom: 16px;
+    box-shadow: 0 12px 30px rgba(28, 44, 72, 0.06);
+}
+
+.dash-task-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+
+.dash-task-eyebrow {
+    font-size: 12px;
+    color: #8a94a3;
+    margin-bottom: 3px;
+}
+
+.dash-task-top h2 {
+    font-size: 17px;
+    color: #26303d;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dash-task-top h2 i {
+    color: #4a6fa5;
+}
+
+.dash-task-stats {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.dash-task-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 12px;
+    color: #8a94a3;
+}
+
+.dash-task-stat strong {
+    font-size: 19px;
+    color: #26303d;
+    line-height: 1.1;
+}
+
+.dash-task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.dash-task-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border: 1px solid #eef1f5;
+    border-radius: 10px;
+    background: #fff;
+}
+
+.dash-task-item.is-deploying,
+.dash-task-item.is-running {
+    border-color: #cfe0f5;
+    background: #f8fbff;
+}
+
+.dash-task-item.is-queued {
+    border-color: #f0e2c4;
+    background: #fffdf7;
+}
+
+.dash-task-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4a6fa5;
+    flex: none;
+}
+
+.dash-task-item.is-deploying .dash-task-dot,
+.dash-task-item.is-running .dash-task-dot {
+    background: #2f6fb5;
+    box-shadow: 0 0 0 3px rgba(47, 111, 181, 0.12);
+}
+
+.dash-task-item.is-queued .dash-task-dot {
+    background: #d9a441;
+}
+
+.dash-task-item-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.dash-task-item-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #26303d;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dash-task-item-detail {
+    margin-top: 2px;
+    font-size: 11.5px;
+    color: #8a94a3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dash-task-item-state {
+    font-size: 11px;
+    color: #4a6fa5;
+    background: #eef3fa;
+    border-radius: 999px;
+    padding: 1px 8px;
+    white-space: nowrap;
+}
+
+.dash-task-item.is-failed .dash-task-item-state {
+    color: #b02a37;
+    background: #fdecec;
+}
+
+.dash-task-history {
+    margin-top: 10px;
+    border-top: 1px dashed #eef1f5;
+    padding-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.dash-task-history-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11.5px;
+    color: #8a94a3;
+}
+
+.dash-task-history-row strong {
+    color: #5b6675;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dash-task-empty {
+    padding: 16px;
+    text-align: center;
+    font-size: 12.5px;
+    color: #9aa3af;
+}
+
 </style>
 </head>
 <body class="admin-body" data-admin-module="dashboard">
@@ -530,6 +702,26 @@
                 <p class="dash-stat-meta" id="statSessionMeta">读取中…</p>
             </div>
         </article>
+    </section>
+
+
+    <!-- 任务中心概览 -->
+    <section class="dash-task-card">
+        <div class="dash-task-top">
+            <div>
+                <p class="dash-task-eyebrow">GitHub 控制台 · 实时</p>
+                <h2><i class="fas fa-tasks" aria-hidden="true"></i> 任务中心</h2>
+            </div>
+            <div class="dash-task-stats">
+                <span class="dash-task-stat"><strong id="dashTaskActive">0</strong>进行中 / 部署中</span>
+                <span class="dash-task-stat"><strong id="dashTaskQueue">0</strong>排队等待</span>
+                <span class="dash-task-stat"><strong id="dashTaskDeploy">0</strong>部署中</span>
+            </div>
+            <a class="dash-btn" href="tasks.html">打开任务中心 <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+        </div>
+        <div class="dash-task-list" id="dashTaskList">
+            <div class="dash-task-empty">正在读取任务状态…</div>
+        </div>
     </section>
 
     <!-- 最近更新 + 侧栏 -->
@@ -870,6 +1062,51 @@
         }
     }
 })();
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    function esc(v) { return window.AdminCore ? AdminCore.escapeHtml(v == null ? '' : v) : String(v == null ? '' : v); }
+
+    function renderTasks() {
+        var list = document.getElementById('dashTaskList');
+        if (!list || !window.AdminTasks || !AdminTasks.getSnapshot) return;
+        var snap = AdminTasks.getSnapshot();
+        var active = document.getElementById('dashTaskActive');
+        var queue = document.getElementById('dashTaskQueue');
+        var deploy = document.getElementById('dashTaskDeploy');
+        if (active) active.textContent = snap.activeCount;
+        if (queue) queue.textContent = snap.queueCount;
+        if (deploy) deploy.textContent = snap.deployingCount;
+
+        var html = '';
+        if (snap.tasks.length) {
+            html += snap.tasks.map(function (t) {
+                return '<div class="dash-task-item is-' + esc(t.status) + '">' +
+                    '<span class="dash-task-dot"></span>' +
+                    '<div class="dash-task-item-body">' +
+                        '<div class="dash-task-item-title">' + esc(t.title) + '</div>' +
+                        '<div class="dash-task-item-detail">' + esc(t.detail || '') + '</div>' +
+                    '</div>' +
+                    '<span class="dash-task-item-state">' + esc(t.statusText) + '</span>' +
+                '</div>';
+            }).join('');
+        } else {
+            html += '<div class="dash-task-empty">当前没有进行中的任务，保存/提交/上传会自动出现在这里。</div>';
+        }
+        if (snap.history.length) {
+            html += '<div class="dash-task-history">' + snap.history.slice(0, 2).map(function (h) {
+                var label = h.status === 'success' ? '已生效' : h.status === 'failed' ? '失败' : h.status === 'superseded' ? '已取代' : '未验证';
+                return '<div class="dash-task-history-row"><span>' + (h.status === 'success' ? '✓' : '•') + '</span>' +
+                    '<strong>' + esc(h.title) + '</strong><span>' + label + '</span></div>';
+            }).join('') + '</div>';
+        }
+        list.innerHTML = html;
+    }
+
+    renderTasks();
+    setInterval(renderTasks, 2500);
+});
 </script>
 </body>
 </html>

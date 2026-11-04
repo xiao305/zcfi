@@ -112,6 +112,7 @@
         }
     </style>
     <link rel="stylesheet" href="assets/css/features.css">
+<link rel="stylesheet" href="assets/css/page-state.css">
 </head>
 <body>
     <!-- 头部导航容器（与首页相同） -->
@@ -174,11 +175,7 @@
         // 加载使用条款内容
         async function loadTermsContent(configData) {
             try {
-                // 检查使用条款是否启用
-                if (!configData.terms || !configData.terms.enabled) {
-                    showDisabledMessage();
-                    return;
-                }
+                // 页面公开状态统一由 page-state.js / pages.json 控制
                 
                 // 更新页面标题
                 document.getElementById('pageTitle').textContent = configData.terms.title || '使用条款';
@@ -277,5 +274,6 @@
     <script src="assets/js/site-data.js"></script>
     <script src="assets/js/search.js"></script>
     <script src="assets/js/analytics.js"></script>
+<script src="assets/js/page-state.js" defer></script>
 </body>
 </html>

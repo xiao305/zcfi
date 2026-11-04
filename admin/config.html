@@ -773,6 +773,91 @@
         grid-template-columns: auto 1fr;
     }
 }
+
+/* ===== 配置页布局优化（批次18） ===== */
+.config-layout {
+    grid-template-columns: 250px minmax(0, 1fr);
+    align-items: start;
+}
+
+.config-sidebar {
+    position: sticky;
+    top: 88px;
+    max-height: calc(100vh - 110px);
+    overflow-y: auto;
+    border: 1px solid #e6ebf2;
+    box-shadow: 0 10px 24px rgba(28, 44, 72, 0.05);
+}
+
+.config-nav a {
+    padding: 10px 12px;
+}
+
+.config-content {
+    padding: 24px 26px;
+    min-width: 0;
+}
+
+.section-header {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    margin: -4px -4px 18px;
+    padding: 14px 4px 12px;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid #eef1f5;
+}
+
+.section-header h2 {
+    font-size: 18px;
+}
+
+.preview-area {
+    border: 1px solid #eef1f5;
+    border-radius: 12px;
+    background: #fafbfd;
+}
+
+/* 页脚预览只允许出现在页脚配置里 */
+.config-section:not(#footer-section) .preview-footer {
+    display: none !important;
+}
+
+/* 页脚配置：社交/法律链接双列，缩短纵向长度 */
+#socialLinksContainer {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+#legalLinksContainer {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+}
+
+.social-item-row {
+    padding: 10px;
+    border: 1px solid #eef1f5;
+    border-radius: 10px;
+    background: #fff;
+}
+
+.social-item-content {
+    gap: 8px;
+}
+
+.social-link-input {
+    min-width: 0;
+}
+
+@media (max-width: 900px) {
+    .config-layout { grid-template-columns: 1fr; }
+    .config-sidebar { position: static; max-height: none; }
+    #socialLinksContainer { grid-template-columns: 1fr; }
+    .section-header { position: static; }
+}
 </style>
 </head>
 <body class="admin-body" data-admin-module="config">
@@ -913,16 +998,6 @@
 支持 HTML 标签，如 &lt;h3&gt;, &lt;p&gt;, &lt;strong&gt;, &lt;em&gt;, &lt;a&gt;, &lt;ul&gt;, &lt;li&gt; 等
 </div>
 </div>
-<div class="form-group">
-<label>页面状态</label>
-<div class="toggle-switch">
-<label class="toggle-container">
-<input type="checkbox" id="privacyEnabled" class="toggle-checkbox" checked>
-<span class="toggle-slider"></span>
-</label>
-<span class="toggle-label" id="privacyStatusLabel">已启用 (公开访问)</span>
-</div>
-</div>
 </div>
 <div class="preview-area">
 <h4>预览效果：</h4>
@@ -967,16 +1042,6 @@
 <label for="termsContent"><i class="fas fa-file-alt"></i> 条款内容</label>
 <textarea id="termsContent" rows="10" placeholder="在此编辑使用条款内容..."></textarea>
 </div>
-<div class="form-group">
-<label>页面状态</label>
-<div class="toggle-switch">
-<label class="toggle-container">
-<input type="checkbox" id="termsEnabled" class="toggle-checkbox" checked>
-<span class="toggle-slider"></span>
-</label>
-<span class="toggle-label" id="termsStatusLabel">已启用 (公开访问)</span>
-</div>
-</div>
 </div>
 <div class="preview-area">
 <h4>预览效果：</h4>
@@ -1020,16 +1085,6 @@
 <div class="form-group">
 <label for="copyrightContent"><i class="fas fa-file-alt"></i> 声明内容</label>
 <textarea id="copyrightContent" rows="10" placeholder="在此编辑版权声明内容..."></textarea>
-</div>
-<div class="form-group">
-<label>页面状态</label>
-<div class="toggle-switch">
-<label class="toggle-container">
-<input type="checkbox" id="copyrightEnabled" class="toggle-checkbox" checked>
-<span class="toggle-slider"></span>
-</label>
-<span class="toggle-label" id="copyrightStatusLabel">已启用 (公开访问)</span>
-</div>
 </div>
 </div>
 <div class="preview-area">
@@ -1342,7 +1397,6 @@
 支持HTML格式，如：&lt;span&gt;© 2026 zcfi.cn &lt;/span&gt;&lt;strong&gt;版权所有&lt;/strong&gt;
 </div>
 </div>
-</div>
 <div class="preview-area">
 <h4>页脚预览 (真实效果)：
 <button class="fullscreen-btn" onclick="openFullscreenPreview('footer')">
@@ -1399,6 +1453,7 @@
 <button class="admin-btn btn-secondary" onclick="previewFooter()">
 <i class="fas fa-eye"></i> 更新预览
 </button>
+</div>
 </div>
 </div>
 </div>

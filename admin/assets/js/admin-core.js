@@ -37,6 +37,7 @@
   var MODULES = [
     { id: 'dashboard', name: '仪表盘', icon: 'fas fa-th-large',   url: 'dashboard.html' },
     { id: 'tasks',     name: '任务中心', icon: 'fas fa-tasks',    url: 'tasks.html' },
+    { id: 'pages',     name: '页面管理', icon: 'fas fa-file-alt', url: 'pages.html' },
     { id: 'blog',      name: '博客',   icon: 'fas fa-blog',       url: 'blog.html' },
     { id: 'portfolio', name: '作品集', icon: 'fas fa-briefcase',  url: 'portfolio.html' },
     { id: 'contact',   name: '留言',   icon: 'fas fa-comments',   url: 'contact.html' },

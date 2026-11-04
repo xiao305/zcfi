@@ -1,0 +1,115 @@
+/* 全站页面状态 / 布局模板（由 pages.json 控制） */
+.page-state-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background:
+        radial-gradient(circle at 20% 20%, rgba(74, 111, 165, 0.16), transparent 45%),
+        linear-gradient(135deg, #f6f9ff 0%, #eef6f2 100%);
+    backdrop-filter: blur(4px);
+}
+
+.page-state-card {
+    width: min(520px, 100%);
+    background: #fff;
+    border: 1px solid #e3ebf5;
+    border-radius: 20px;
+    padding: 34px 32px;
+    text-align: center;
+    box-shadow: 0 24px 70px rgba(28, 44, 72, 0.18);
+}
+
+.page-state-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #a06a12;
+    background: #fdf6e7;
+    border-radius: 999px;
+    padding: 4px 12px;
+    margin-bottom: 16px;
+}
+
+.page-state-card h1 {
+    margin: 0 0 10px;
+    font-size: 25px;
+    color: #26303d;
+}
+
+.page-state-card p {
+    margin: 0 auto 22px;
+    max-width: 380px;
+    font-size: 14px;
+    line-height: 1.75;
+    color: #7b8491;
+}
+
+.page-state-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.page-state-actions a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 108px;
+    padding: 9px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    text-decoration: none;
+    color: #4a6fa5;
+    border: 1px solid #d9e4f2;
+    background: #f7faff;
+    transition: all 0.2s ease;
+}
+
+.page-state-actions a:hover {
+    border-color: #b9cbe2;
+    background: #eef5ff;
+}
+
+.page-state-actions a.primary {
+    background: #4a6fa5;
+    border-color: #4a6fa5;
+    color: #fff;
+}
+
+.page-state-actions a.primary:hover {
+    background: #3d5d8a;
+}
+
+body.page-state-disabled {
+    overflow: hidden;
+}
+
+body.page-template-minimal .container {
+    max-width: 880px;
+}
+
+body.page-template-wide .container {
+    max-width: 1440px;
+}
+
+@media (max-width: 560px) {
+    .page-state-card {
+        padding: 26px 20px;
+    }
+
+    .page-state-card h1 {
+        font-size: 21px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .page-state-actions a {
+        transition: none;
+    }
+}

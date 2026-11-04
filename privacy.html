@@ -73,6 +73,7 @@
         }
     </style>
     <link rel="stylesheet" href="assets/css/features.css">
+<link rel="stylesheet" href="assets/css/page-state.css">
 </head>
 <body>
     <!-- 头部导航 -->
@@ -144,11 +145,7 @@
                 
                 const configData = await response.json();
                 
-                // 检查隐私政策是否启用
-                if (!configData[PAGE_TYPE] || !configData[PAGE_TYPE].enabled) {
-                    showDisabledMessage();
-                    return;
-                }
+                // 页面公开状态统一由 page-state.js / pages.json 控制
                 
                 // 更新页面标题
                 document.title = `${configData[PAGE_TYPE].title} | zcfi.cn`;
@@ -218,5 +215,6 @@
     <script src="assets/js/site-data.js"></script>
     <script src="assets/js/search.js"></script>
     <script src="assets/js/analytics.js"></script>
+<script src="assets/js/page-state.js" defer></script>
 </body>
 </html>
