@@ -113,3 +113,7 @@ body.page-template-wide .container {
         transition: none;
     }
 }
+/* 页面状态确认前先隐藏内容，避免维护页被看到/短暂可访问 */
+html.page-state-checking body {
+    visibility: hidden;
+}

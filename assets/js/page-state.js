@@ -3,6 +3,7 @@
    api.github.com，因此前台不依赖 Gist/API；同源文件随 Pages 部署一起更新。 */
 (function () {
     'use strict';
+    document.documentElement.classList.add('page-state-checking');
 
     var STATE_URL = '/data/pages.json';
     var CACHE_KEY = 'zcfi:pages-state:v2';
@@ -52,6 +53,11 @@
         } catch (e) {}
     }
 
+    function finishCheck() {
+        document.documentElement.classList.remove('page-state-checking');
+        window.__pageStateReady = true;
+    }
+
     function applyTemplate(template) {
         document.body.classList.remove('page-template-minimal', 'page-template-wide');
         if (template === 'minimal' || template === 'wide') {
@@ -88,17 +94,18 @@
     }
 
     function apply(raw) {
-        if (!raw || !raw.pages || typeof raw.pages !== 'object') return;
+        if (!raw || !raw.pages || typeof raw.pages !== 'object') { finishCheck(); return; }
         var key = pageKey();
-        if (!key) return;
+        if (!key) { finishCheck(); return; }
         var cfg = raw.pages[key];
-        if (!cfg || typeof cfg !== 'object') return;
+        if (!cfg || typeof cfg !== 'object') { finishCheck(); return; }
         applyTemplate(cfg.template);
         if (cfg.enabled === false) {
             showDisabled(key);
         } else {
             removeDisabled();
         }
+        finishCheck();
     }
 
     function load() {
@@ -123,20 +130,24 @@
             }).catch(function () {
                 // 同源文件异常时使用本会话最后一次成功结果；仍没有则保持原页面
                 var cached = readCache();
-                if (cached) apply(cached);
+                if (cached) apply(cached); else finishCheck();
             }).finally(function () {
                 if (timer) clearTimeout(timer);
             });
         } catch (e) {
             if (timer) clearTimeout(timer);
             var cached2 = readCache();
-            if (cached2) apply(cached2);
+            if (cached2) apply(cached2); else finishCheck();
         }
     }
 
     // 打开页面时应用；切回标签页时刷新一次
     document.addEventListener('visibilitychange', function () {
         if (!document.hidden) load();
+    });
+
+    window.addEventListener('pageshow', function (event) {
+        if (event.persisted) load();
     });
 
     if (document.readyState === 'loading') {
