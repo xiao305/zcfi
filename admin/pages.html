@@ -136,7 +136,7 @@
         页面状态与模板保存在 Config Gist 的 <code>pages.json</code>；前台页面加载时会读取并应用。
         维护中的页面会显示统一的维护提示，不再展示原内容。模板：
         <code>标准布局</code> 保持原样；<code>阅读版（窄）</code> 限制内容宽度；
-        <code>宽屏版</code> 放宽内容宽度。前台可能有最多约 5 分钟缓存，保存后请稍等再刷新。
+        <code>宽屏版</code> 放宽内容宽度。前台优先通过 GitHub API 读取最新配置，保存后刷新即可生效；API 异常时会使用会话内最后一次成功配置。
     </div>
 </div>
 <div class="pages-toast" id="pagesToast"></div>
@@ -291,7 +291,7 @@
                 data: data,
                 title: '保存页面状态与模板'
             });
-            toast('页面设置已保存；前台刷新后生效（最多约 5 分钟缓存）');
+            toast('页面设置已保存，前台刷新即可生效');
         } catch (e) {
             toast('保存失败：' + (e.message || e));
         } finally {

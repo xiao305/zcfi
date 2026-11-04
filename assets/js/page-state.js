@@ -1,10 +1,13 @@
 /* 全站页面状态：读取 Config Gist 的 pages.json，应用启用状态与布局模板。
-   失败时保持页面原样（fail-open），避免 Gist/网络问题导致站点不可用。 */
+   优先走 GitHub API（Gist raw 有 5 分钟 CDN 缓存，后台保存后不能及时生效）；
+   API 失败时使用本会话最后一次成功结果；仍失败则 fail-open，不改变页面。 */
 (function () {
     'use strict';
 
     var CONFIG_GIST_ID = '983bb7371ddb439a2fcbfb4885e34d14';
-    var RAW_URL = 'https://gist.githubusercontent.com/xiao305/' + CONFIG_GIST_ID + '/raw/pages.json';
+    var API_URL = 'https://api.github.com/gists/' + CONFIG_GIST_ID;
+    var CACHE_KEY = 'zcfi:pages-state:v1';
+    var CACHE_MAX_AGE = 10 * 60 * 1000;
     var PAGE_NAMES = {
         home: '首页',
         blog: '博客',
@@ -15,7 +18,6 @@
         copyright: '版权声明',
         notfound: '404 页面'
     };
-    var TEMPLATES = { default: 1, minimal: 1, wide: 1 };
 
     function pageKey() {
         if (document.body && document.body.getAttribute('data-page-key')) {
@@ -35,11 +37,33 @@
         return map[path] || '';
     }
 
+    function readCache() {
+        try {
+            var raw = JSON.parse(sessionStorage.getItem(CACHE_KEY) || 'null');
+            if (!raw || !raw.data || !raw.time || Date.now() - raw.time > CACHE_MAX_AGE) return null;
+            return raw.data;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function writeCache(raw) {
+        try {
+            sessionStorage.setItem(CACHE_KEY, JSON.stringify({ time: Date.now(), data: raw }));
+        } catch (e) {}
+    }
+
     function applyTemplate(template) {
         document.body.classList.remove('page-template-minimal', 'page-template-wide');
         if (template === 'minimal' || template === 'wide') {
             document.body.classList.add('page-template-' + template);
         }
+    }
+
+    function removeDisabled() {
+        var overlay = document.getElementById('pageStateOverlay');
+        if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+        document.body.classList.remove('page-state-disabled');
     }
 
     function showDisabled(key) {
@@ -71,35 +95,55 @@
         var cfg = raw.pages[key];
         if (!cfg || typeof cfg !== 'object') return;
         applyTemplate(cfg.template);
-        if (cfg.enabled === false) showDisabled(key);
+        if (cfg.enabled === false) {
+            showDisabled(key);
+        } else {
+            removeDisabled();
+        }
     }
 
     function load() {
         if (!pageKey()) return;
         if (location.protocol !== 'http:' && location.protocol !== 'https:') return;
+
         var controller = null;
         var timer = null;
         try {
             controller = window.AbortController ? new AbortController() : null;
-            if (controller) timer = setTimeout(function () { controller.abort(); }, 4500);
-            fetch(RAW_URL + '?t=' + Date.now(), {
+            if (controller) timer = setTimeout(function () { controller.abort(); }, 5000);
+            fetch(API_URL + '?t=' + Date.now(), {
                 method: 'GET',
                 cache: 'no-store',
+                headers: { 'Accept': 'application/vnd.github+json' },
                 signal: controller ? controller.signal : undefined
             }).then(function (res) {
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 return res.json();
-            }).then(function (raw) {
+            }).then(function (gist) {
+                if (!gist.files || !gist.files['pages.json'] || !gist.files['pages.json'].content) {
+                    throw new Error('pages.json missing');
+                }
+                var raw = JSON.parse(gist.files['pages.json'].content);
+                writeCache(raw);
                 apply(raw);
             }).catch(function () {
-                /* fail-open：读取失败不改变页面 */
+                // API 失败（限流/网络）时只用本会话最后一次成功结果；没有就保持原页面
+                var cached = readCache();
+                if (cached) apply(cached);
             }).finally(function () {
                 if (timer) clearTimeout(timer);
             });
         } catch (e) {
             if (timer) clearTimeout(timer);
+            var cached2 = readCache();
+            if (cached2) apply(cached2);
         }
     }
+
+    // 打开页面时应用；切回标签页时刷新一次，避免看到旧状态
+    document.addEventListener('visibilitychange', function () {
+        if (!document.hidden) load();
+    });
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', load);
