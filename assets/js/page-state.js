@@ -24,15 +24,18 @@
             return document.body.getAttribute('data-page-key');
         }
         var path = location.pathname.replace(/\/index\.html$/i, '/');
-        if (path === '/' || path === '/index.html') return 'home';
+        // GitHub Pages 同时支持 /copyright 和 /copyright.html；统一成无扩展名再匹配
+        path = path.replace(/\.html$/i, '');
+        if (path.length > 1 && path.charAt(path.length - 1) === '/') path = path.slice(0, -1);
+        if (path === '/' || path === '/index') return 'home';
         var map = {
-            '/blog.html': 'blog',
-            '/portfolio.html': 'portfolio',
-            '/contact.html': 'contact',
-            '/privacy.html': 'privacy',
-            '/terms.html': 'terms',
-            '/copyright.html': 'copyright',
-            '/404.html': 'notfound'
+            '/blog': 'blog',
+            '/portfolio': 'portfolio',
+            '/contact': 'contact',
+            '/privacy': 'privacy',
+            '/terms': 'terms',
+            '/copyright': 'copyright',
+            '/404': 'notfound'
         };
         return map[path] || '';
     }
