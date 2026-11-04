@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-04T13:29:55.292Z",
+  "updatedAt": "2026-11-04T13:34:58.824Z",
   "pages": {
     "home": {
       "enabled": true,
@@ -23,18 +23,18 @@
       "maintenanceTemplate": "minimal"
     },
     "privacy": {
-      "enabled": false,
+      "enabled": true,
       "template": "default",
       "maintenanceTemplate": "classic"
     },
     "terms": {
-      "enabled": false,
-      "template": "default",
+      "enabled": true,
+      "template": "compact",
       "maintenanceTemplate": "legal"
     },
     "copyright": {
-      "enabled": false,
-      "template": "default",
+      "enabled": true,
+      "template": "card",
       "maintenanceTemplate": "notice"
     },
     "notfound": {
