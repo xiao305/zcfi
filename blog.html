@@ -48,30 +48,12 @@
         }
     </style>
     <link rel="stylesheet" href="assets/css/features.css">
-<link rel="stylesheet" href="assets/css/page-state.css?v=20261104d"><script>document.documentElement.classList.add('page-state-checking');window.__pageStateReady=false;setTimeout(function(){if(!window.__pageStateReady)document.documentElement.classList.remove('page-state-checking');},6000);</script>
+<link rel="stylesheet" href="assets/css/page-state.css?v=20261104e"><script>document.documentElement.classList.add('page-state-checking');window.__pageStateReady=false;setTimeout(function(){if(!window.__pageStateReady)document.documentElement.classList.remove('page-state-checking');},6000);</script>
 
 </head>
 <body>
     <!-- 头部导航 -->
-    <header>
-        <div class="container">
-            <nav class="navbar">
-                <a href="../index.html" class="logo">zcfi<span>.</span>cn</a>
-                <ul class="nav-links" id="primary-nav">
-                    <li><a href="../index.html">首页</a></li>
-                    <li><a href="../portfolio.html">作品集</a></li>
-                    <li><a href="../blog.html" class="active">博客</a></li>
-                    <li><a href="../contact.html">联系我</a></li>
-                </ul>
-                <button type="button" class="nav-search-btn" data-site-search-open aria-label="站内搜索" title="站内搜索">
-                    <i class="fas fa-search" aria-hidden="true"></i>
-                </button>
-                <button type="button" class="mobile-menu-btn" aria-label="打开导航菜单" aria-expanded="false" aria-controls="primary-nav">
-                    <i class="fas fa-bars" aria-hidden="true"></i>
-                </button>
-            </nav>
-        </div>
-    </header>
+    <div id="navbar-container"></div>
 
     <main style="margin-top: 100px;">
     <h1 class="visually-hidden">博客 | zcfi.cn</h1>
@@ -110,28 +92,7 @@
     </main>
 
     <!-- 页脚 -->
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-about">
-                    <a href="../index.html" class="footer-logo">zcfi<span>.</span>cn</a>
-                </div>
-                <div class="footer-links">
-                    <h3 class="footer-heading">快速链接</h3>
-                    <ul>
-                        <li><a href="../index.html">首页</a></li>
-                        <li><a href="../portfolio.html">作品集</a></li>
-                        <li><a href="../blog.html">博客</a></li>
-                        <li><a href="../contact.html">联系我</a></li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="compliance">
-                <p>© 2026 zcfi.cn 版权所有</p>
-            </div>
-        </div>
-    </footer>
+    <div id="footer-container"></div>
 
     <script src="assets/js/site-data.js"></script>
     <script>
@@ -298,6 +259,19 @@
     <script src="assets/js/main.js"></script>
     <script src="assets/js/search.js"></script>
     <script src="assets/js/analytics.js"></script>
-<script src="assets/js/page-state.js?v=20261104d" defer></script>
+<script src="assets/js/page-state.js?v=20261104e" defer></script>
+
+<script src="assets/js/gist-renderer.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async function () {
+    if (!window.gistRenderer) return;
+    try {
+        await window.gistRenderer.loadConfig();
+        await window.gistRenderer.renderAll();
+    } catch (e) {
+        console.warn('动态页眉/页脚加载失败', e);
+    }
+});
+</script>
 </body>
 </html>

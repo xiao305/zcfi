@@ -311,20 +311,12 @@
             }
         }
     </style>
-<link rel="stylesheet" href="assets/css/page-state.css?v=20261104d"><script>document.documentElement.classList.add('page-state-checking');window.__pageStateReady=false;setTimeout(function(){if(!window.__pageStateReady)document.documentElement.classList.remove('page-state-checking');},6000);</script>
+<link rel="stylesheet" href="assets/css/page-state.css?v=20261104e"><script>document.documentElement.classList.add('page-state-checking');window.__pageStateReady=false;setTimeout(function(){if(!window.__pageStateReady)document.documentElement.classList.remove('page-state-checking');},6000);</script>
 
 </head>
 <body data-page-key="notfound">
     <!-- 头部导航 -->
-    <header>
-        <div class="container">
-            <nav class="navbar">
-                <!-- 修改：使用根路径，不包含.html扩展名 -->
-                <a href="/" class="logo">zcfi<span>.</span>cn</a>
-                <div></div> <!-- 占位符，保持布局 -->
-            </nav>
-        </div>
-    </header>
+    <div id="navbar-container"></div>
 
     <!-- 404 主内容 -->
     <div class="error-container">
@@ -366,15 +358,7 @@
     </div>
 
     <!-- 页脚 -->
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <!-- 修改：使用根路径 -->
-                <a href="/" class="footer-logo">zcfi<span>.</span>cn</a>
-                <p>© 2026 zcfi.cn 版权所有</p>
-            </div>
-        </div>
-    </footer>
+    <div id="footer-container"></div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -459,6 +443,19 @@
             }).catch(function () {});
         });
     </script>
-<script src="assets/js/page-state.js?v=20261104d" defer></script>
+<script src="assets/js/page-state.js?v=20261104e" defer></script>
+
+<script src="assets/js/gist-renderer.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async function () {
+    if (!window.gistRenderer) return;
+    try {
+        await window.gistRenderer.loadConfig();
+        await window.gistRenderer.renderAll();
+    } catch (e) {
+        console.warn('动态页眉/页脚加载失败', e);
+    }
+});
+</script>
 </body>
 </html>

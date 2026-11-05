@@ -147,10 +147,6 @@ body.page-template-compact .hero {
     background: #fff;
 }
 
-.page-state-overlay.ps-maint--gradient {
-    background: linear-gradient(135deg, #4a6fa5 0%, #6d9dc5 55%, #8fc9b4 100%);
-}
-
 .page-state-overlay.ps-maint--notice {
     align-items: flex-start;
     padding-top: 7vh;
@@ -158,11 +154,29 @@ body.page-template-compact .hero {
 }
 
 .ps-legal-card {
-    width: min(460px, 100%);
-    border-radius: 8px;
+    width: min(520px, 100%);
+    border-radius: 12px;
     border: 1px solid #e3e7ee;
-    padding: 32px 30px;
-    box-shadow: 0 10px 30px rgba(28, 44, 72, 0.08);
+    padding: 42px 38px;
+    box-shadow: 0 16px 44px rgba(28, 44, 72, 0.09);
+}
+
+.ps-legal-card h1 {
+    margin: 0 0 10px;
+    font-size: 25px;
+}
+
+.ps-legal-card p {
+    line-height: 1.85;
+}
+
+.ps-legal-card .ps-muted {
+    margin: 4px 0 28px;
+}
+
+.ps-legal-card .page-state-actions {
+    margin-top: 6px;
+    gap: 12px;
 }
 
 .ps-legal-icon {
@@ -213,18 +227,6 @@ body.page-template-compact .hero {
     font-size: 13px;
     color: #4a6fa5;
     text-decoration: none;
-}
-
-.ps-gradient-card {
-    background: rgba(255, 255, 255, 0.9) !important;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    box-shadow: 0 26px 70px rgba(20, 40, 70, 0.25);
-}
-
-.ps-gradient-card .page-state-badge {
-    background: #eef3fa;
-    color: #4a6fa5;
 }
 
 .ps-notice-wrap {

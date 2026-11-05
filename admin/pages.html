@@ -249,10 +249,10 @@ body.tp-modal-open { overflow: hidden; }
 .tp-btn.primary { background: #4a6fa5; border-color: #4a6fa5; color: #fff; }
 
 .tp-maint-legal { background: #f7f8fa; }
-.tp-legal-card { width: min(440px, 100%); background: #fff; border: 1px solid #e3e7ee; border-radius: 6px; padding: 30px; text-align: center; box-shadow: 0 8px 24px rgba(28,44,72,.07); }
+.tp-legal-card { width: min(500px, 100%); background: #fff; border: 1px solid #e3e7ee; border-radius: 10px; padding: 40px 38px; text-align: center; box-shadow: 0 14px 38px rgba(28,44,72,.08); }
 .tp-legal-icon { width: 34px; height: 34px; margin: 0 auto 12px; border-radius: 50%; background: #fdecec; color: #b02a37; display: flex; align-items: center; justify-content: center; font-weight: 700; }
-.tp-maint-legal h2 { font-size: 20px; margin-bottom: 6px; }
-.tp-maint-legal .tp-muted { margin-bottom: 18px; }
+.tp-maint-legal h2 { font-size: 21px; margin: 0 0 10px; }
+.tp-maint-legal .tp-muted { margin: 4px 0 26px; line-height: 1.9; }
 
 .tp-maint-minimal { background: #fff; justify-content: flex-start; padding-left: 48px; }
 .tp-minimal-card { max-width: 520px; }
@@ -261,9 +261,6 @@ body.tp-modal-open { overflow: hidden; }
 .tp-maint-minimal p { font-size: 13px; }
 .tp-text-link { font-size: 12px; color: #4a6fa5; text-decoration: none; }
 
-.tp-maint-gradient { background: linear-gradient(135deg, #4a6fa5, #6d9dc5 55%, #8fc9b4); }
-.tp-gradient-card { width: min(460px, 100%); padding: 30px; border-radius: 20px; background: rgba(255,255,255,.88); backdrop-filter: blur(8px); text-align: center; box-shadow: 0 22px 55px rgba(20,40,70,.22); }
-.tp-gradient-card .tp-badge { background: #eef3fa; color: #4a6fa5; }
 
 .tp-maint-notice { background: #f7f9fc; align-items: flex-start; padding-top: 32px; }
 .tp-notice-wrap { width: min(520px, 100%); }
@@ -353,12 +350,47 @@ body.tp-modal-open { overflow: hidden; }
         { id: 'classic', name: '经典维护卡', desc: '居中卡片 + 维护提示' },
         { id: 'legal',   name: '法律声明风', desc: '沿用原隐私/条款/版权维护样式' },
         { id: 'minimal', name: '极简留白',   desc: '大标题 + 简短说明' },
-        { id: 'gradient',name: '渐变欢迎页', desc: '渐变背景 + 玻璃卡片' },
         { id: 'notice',  name: '公告通知',   desc: '顶部状态徽标 + 公告卡' }
     ];
     var LEGAL_PAGES = { privacy: 1, terms: 1, copyright: 1 };
     function defaultMaintenance(key) { return LEGAL_PAGES[key] ? 'legal' : 'classic'; }
     var state = { pages: {} };
+    var originalPages = null;
+    var savedPages = null;
+    var applying = {};
+
+    function clonePages(pages) { return JSON.parse(JSON.stringify(pages || {})); }
+    function sameConfig(a, b) {
+        if (!a || !b) return false;
+        return a.enabled === b.enabled && a.template === b.template && a.maintenanceTemplate === b.maintenanceTemplate;
+    }
+    function isDirty(key) {
+        return !!originalPages && !sameConfig(state.pages[key], originalPages[key]);
+    }
+    function dirtyKeys() {
+        return PAGES.filter(function (p) { return isDirty(p.key); }).map(function (p) { return p.key; });
+    }
+    function updateBadges() {
+        PAGES.forEach(function (p) {
+            var card = document.querySelector('.page-card[data-page-key="' + p.key + '"]');
+            if (!card) return;
+            var badge = card.querySelector('[data-change-badge]');
+            if (!badge) return;
+            if (applying[p.key]) {
+                badge.hidden = false;
+                badge.className = 'page-change-badge is-applying';
+                badge.textContent = '正在应用中';
+            } else if (isDirty(p.key)) {
+                badge.hidden = false;
+                badge.className = 'page-change-badge is-dirty';
+                badge.textContent = '待保存';
+            } else {
+                badge.hidden = true;
+                badge.className = 'page-change-badge';
+                badge.textContent = '';
+            }
+        });
+    }
 
     function esc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
     function toast(msg) {
@@ -417,7 +449,8 @@ body.tp-modal-open { overflow: hidden; }
                     '<span class="page-card-icon"><i class="' + p.icon + '"></i></span>' +
                     '<div class="page-card-copy">' +
                         '<div class="page-card-title">' + esc(p.name) +
-                            '<span class="page-state-pill">' + (cfg.enabled ? '已启用' : '维护中') + '</span></div>' +
+                            '<span class="page-state-pill">' + (cfg.enabled ? '已启用' : '维护中') + '</span>' +
+                            '<span class="page-change-badge" data-change-badge hidden></span></div>' +
                         '<div class="page-card-path">' + esc(p.path) + '</div>' +
                     '</div>' +
                 '</div>' +
@@ -441,6 +474,7 @@ body.tp-modal-open { overflow: hidden; }
             '</article>';
         }).join('');
         updateSummary();
+        updateBadges();
     }
 
     function updateCardMode(card, key) {
@@ -463,12 +497,13 @@ body.tp-modal-open { overflow: hidden; }
                     state.pages[key].enabled = !!e.target.checked;
                     updateCardMode(e.target.closest('.page-card'), key);
                     updateSummary();
+                    updateBadges();
                     return;
                 }
                 key = e.target.getAttribute('data-page-template');
-                if (key) { state.pages[key].template = e.target.value; return; }
+                if (key) { state.pages[key].template = e.target.value; updateBadges(); return; }
                 key = e.target.getAttribute('data-page-maintenance');
-                if (key) { state.pages[key].maintenanceTemplate = e.target.value; }
+                if (key) { state.pages[key].maintenanceTemplate = e.target.value; updateBadges(); }
             });
             grid.addEventListener('click', function (e) {
                 var btn = e.target.closest('[data-page-preview]');
@@ -557,9 +592,6 @@ body.tp-modal-open { overflow: hidden; }
         } else if (id === 'minimal') {
             card = '<div class="tp-minimal-card"><span class="tp-minimal-dot"></span><h2>' + esc(name) + '暂时无法访问</h2>' +
                 '<p>这个页面正在调整或维护，请稍后再来。</p><a class="tp-text-link" href="#">返回首页 →</a></div>';
-        } else if (id === 'gradient') {
-            card = '<div class="tp-gradient-card"><span class="tp-badge">页面维护中</span><h2>' + esc(name) + '</h2>' +
-                '<p>我们正在为这个页面做一点更新，请稍后再来。</p><div class="tp-actions"><a class="tp-btn primary" href="#">返回首页</a><a class="tp-btn" href="#">联系我</a></div></div>';
         } else if (id === 'notice') {
             card = '<div class="tp-notice-wrap"><div class="tp-notice-bar"><span>维护通知</span><em>预计稍后恢复</em></div>' +
                 '<div class="tp-notice-card"><h2>' + esc(name) + '暂停访问</h2><p>该页面正在调整中，请稍后重试。</p>' +
@@ -598,6 +630,7 @@ body.tp-modal-open { overflow: hidden; }
                 if (sel2) sel2.value = previewState.template;
             }
         }
+        updateBadges();
         toast('已选择模板，保存页面设置后生效');
         closePreview();
     }
@@ -615,25 +648,64 @@ body.tp-modal-open { overflow: hidden; }
                 raw = JSON.parse(gist.files['pages.json'].content);
             }
             state = normalize(raw);
+            originalPages = clonePages(state.pages);
+            applying = {};
             render();
         } catch (e) {
             if (!Object.keys(state.pages).length) state = defaults();
+            originalPages = clonePages(state.pages);
+            applying = {};
             render();
             toast('读取 pages.json 失败，已显示默认设置：' + e.message);
         }
     }
 
+    function waitForApplied(saved) {
+        var deadline = Date.now() + 5 * 60 * 1000;
+        function check() {
+            if (Date.now() > deadline) {
+                applying = {};
+                updateBadges();
+                toast('部署等待超时，请稍后刷新确认（任务中心可查看状态）');
+                return;
+            }
+            fetch('/data/pages.json?t=' + Date.now(), { cache: 'no-store' })
+                .then(function (r) { return r.json(); })
+                .then(function (d) {
+                    if (d && d.pages && JSON.stringify(d.pages) === JSON.stringify(saved.pages)) {
+                        originalPages = clonePages(saved.pages);
+                        applying = {};
+                        updateBadges();
+                        toast('页面设置已应用');
+                    } else {
+                        setTimeout(check, 5000);
+                    }
+                })
+                .catch(function () { setTimeout(check, 5000); });
+        }
+        setTimeout(check, 5000);
+    }
+
     async function saveSettings() {
+        var changed = dirtyKeys();
+        if (!changed.length) {
+            toast('没有修改，未提交 GitHub');
+            return;
+        }
         var btn = document.getElementById('pagesSave');
         if (btn) btn.disabled = true;
         try {
+            var snapshot = clonePages(state.pages);
             var data = {
                 version: 1,
                 updatedAt: new Date().toISOString(),
-                pages: state.pages
+                pages: snapshot
             };
             var stateJson = JSON.stringify(data, null, 2);
             var contentBase64 = btoa(unescape(encodeURIComponent(stateJson)));
+            applying = {};
+            changed.forEach(function (k) { applying[k] = true; });
+            updateBadges();
             // 同源文件随 Pages 部署更新；Gist 继续作为后台读取/备份来源
             var repoTask = AdminTasks.saveFile({
                 path: 'data/pages.json',
@@ -651,14 +723,17 @@ body.tp-modal-open { overflow: hidden; }
             var results = await Promise.allSettled([repoTask, gistTask]);
             var failed = results.filter(function (r) { return r.status === 'rejected'; });
             if (failed.length) throw (failed[0].reason || new Error('保存失败'));
-            toast('页面设置已保存，Pages 部署完成后生效（约 1–2 分钟）');
+            savedPages = snapshot;
+            toast('页面设置已保存，正在等待 Pages 部署…');
+            waitForApplied(savedPages);
         } catch (e) {
+            applying = {};
+            updateBadges();
             toast('保存失败：' + (e.message || e));
         } finally {
             if (btn) btn.disabled = false;
         }
     }
-
     document.addEventListener('DOMContentLoaded', function () {
         bind();
         load();

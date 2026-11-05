@@ -74,7 +74,7 @@
         document.body.classList.remove('page-state-disabled');
     }
 
-    var MAINT_TEMPLATES = { classic: 1, legal: 1, minimal: 1, gradient: 1, notice: 1 };
+    var MAINT_TEMPLATES = { classic: 1, legal: 1, minimal: 1, notice: 1 };
     var LEGAL_PAGES = { privacy: 1, terms: 1, copyright: 1 };
 
     function maintenanceTemplate(cfg, key) {
@@ -104,13 +104,6 @@
                 '<h1>' + name + '暂时无法访问</h1>' +
                 '<p>这个页面正在调整或维护，请稍后再来。</p>' +
                 '<a class="ps-text-link" href="/">返回首页 →</a>' +
-            '</div>';
-        } else if (template === 'gradient') {
-            html = '<div class="page-state-card ps-gradient-card">' +
-                '<span class="page-state-badge">页面维护中</span>' +
-                '<h1>' + name + '</h1>' +
-                '<p>我们正在为这个页面做一点更新，请稍后再来。</p>' +
-                '<div class="page-state-actions"><a class="primary" href="/">返回首页</a><a href="/contact.html">联系我</a></div>' +
             '</div>';
         } else if (template === 'notice') {
             html = '<div class="ps-notice-wrap">' +
