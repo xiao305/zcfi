@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-05T10:18:31.327Z",
+  "updatedAt": "2026-11-05T10:37:21.709Z",
   "pages": {
     "home": {
       "enabled": true,
@@ -28,7 +28,7 @@
       "maintenanceTemplate": "classic"
     },
     "terms": {
-      "enabled": true,
+      "enabled": false,
       "template": "default",
       "maintenanceTemplate": "legal"
     },
