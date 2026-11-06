@@ -1,46 +1,54 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-06T15:39:22.294Z",
+  "updatedAt": "2026-11-06T16:01:35.623870+00:00",
   "pages": {
     "home": {
       "enabled": true,
       "template": "default",
-      "maintenanceTemplate": "classic"
+      "maintenanceTemplate": "classic",
+      "labelMode": "name"
     },
     "blog": {
       "enabled": true,
       "template": "default",
-      "maintenanceTemplate": "classic"
+      "maintenanceTemplate": "classic",
+      "labelMode": "name"
     },
     "portfolio": {
       "enabled": true,
       "template": "default",
-      "maintenanceTemplate": "classic"
+      "maintenanceTemplate": "classic",
+      "labelMode": "name"
     },
     "contact": {
       "enabled": false,
       "template": "default",
-      "maintenanceTemplate": "minimal"
+      "maintenanceTemplate": "minimal",
+      "labelMode": "name"
     },
     "privacy": {
       "enabled": true,
       "template": "default",
-      "maintenanceTemplate": "classic"
+      "maintenanceTemplate": "legal",
+      "labelMode": "name"
     },
     "terms": {
       "enabled": false,
       "template": "default",
-      "maintenanceTemplate": "legal"
+      "maintenanceTemplate": "legal",
+      "labelMode": "name"
     },
     "copyright": {
       "enabled": true,
       "template": "default",
-      "maintenanceTemplate": "notice"
+      "maintenanceTemplate": "legal",
+      "labelMode": "name"
     },
     "notfound": {
       "enabled": true,
       "template": "default",
-      "maintenanceTemplate": "classic"
+      "maintenanceTemplate": "classic",
+      "labelMode": "name"
     }
   },
   "articles": {

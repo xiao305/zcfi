@@ -479,6 +479,21 @@ body.tp-modal-open { overflow: hidden; }
     text-decoration: none;
     font-size: 12px;
 }
+
+/* 旧版禁用页预览（页面级，宽度按页面） */
+.tp-legacy-page { width: 100%; max-width: 100%; padding: 4px 0; }
+.tp-legacy-title { margin: 0 0 22px; font-size: 26px; color: #26303d; }
+.tp-legacy-message {
+    text-align: center; color: #e74c3c; padding: 42px 32px;
+    background: #fdf2f2; border-radius: 8px; margin: 20px 0;
+}
+.tp-legacy-message p { margin: 0; font-size: 15px; }
+.tp-legacy-detail { margin-top: 10px !important; color: #c0392b; }
+.tp-legacy-link {
+    display: inline-block; margin-top: 18px; padding: 10px 20px;
+    background: #4a6fa5; color: #fff; border-radius: 5px;
+    text-decoration: none; font-size: 14px;
+}
 </style>
 </head>
 <body class="admin-body" data-admin-module="pages">
@@ -612,9 +627,14 @@ body.tp-modal-open { overflow: hidden; }
     ];
     var MAINTENANCE_TEMPLATES = [
         { id: 'classic', name: '经典维护卡', desc: '居中卡片 + 维护提示' },
-        { id: 'legal',   name: '法律声明风', desc: '沿用原隐私/条款/版权维护样式' },
+        { id: 'legal',   name: '旧版禁用页', desc: '红色提示块，宽度按页面容器' },
         { id: 'minimal', name: '极简留白',   desc: '大标题 + 简短说明' },
         { id: 'notice',  name: '公告通知',   desc: '顶部状态徽标 + 公告卡' }
+    ];
+    var PAGE_LABEL_MODES = [
+        { id: 'name', name: '显示页面名称' },
+        { id: 'path', name: '显示页面路径' },
+        { id: 'none', name: '不显示名称' }
     ];
     var ARTICLE_TEMPLATES = [
         { id: 'article-legal', name: '旧版禁用页', desc: '页面标题“页面不可用”+ 红色提示块' }
@@ -639,7 +659,7 @@ body.tp-modal-open { overflow: hidden; }
     function clonePages(pages) { return JSON.parse(JSON.stringify(pages || {})); }
     function sameConfig(a, b) {
         if (!a || !b) return false;
-        return a.enabled === b.enabled && a.template === b.template && a.maintenanceTemplate === b.maintenanceTemplate;
+        return a.enabled === b.enabled && a.template === b.template && a.maintenanceTemplate === b.maintenanceTemplate && (a.labelMode || 'name') === (b.labelMode || 'name');
     }
     function isDirty(key) {
         return !!originalPages && !sameConfig(state.pages[key], originalPages[key]);
@@ -685,7 +705,8 @@ body.tp-modal-open { overflow: hidden; }
             pages[p.key] = {
                 enabled: true,
                 template: 'default',
-                maintenanceTemplate: defaultMaintenance(p.key)
+                maintenanceTemplate: defaultMaintenance(p.key),
+                labelMode: 'name'
             };
         });
         return { version: 1, pages: pages };
@@ -700,6 +721,7 @@ body.tp-modal-open { overflow: hidden; }
                 base.pages[p.key].enabled = v.enabled !== false;
                 base.pages[p.key].template = PUBLIC_TEMPLATES.some(function (t) { return t.id === v.template; }) ? v.template : 'default';
                 base.pages[p.key].maintenanceTemplate = MAINTENANCE_TEMPLATES.some(function (t) { return t.id === v.maintenanceTemplate; }) ? v.maintenanceTemplate : defaultMaintenance(p.key);
+                base.pages[p.key].labelMode = PAGE_LABEL_MODES.some(function (m) { return m.id === v.labelMode; }) ? v.labelMode : 'name';
             });
         }
         return base;
@@ -812,6 +834,11 @@ body.tp-modal-open { overflow: hidden; }
                             return '<option value="' + t.id + '"' + (cfg.maintenanceTemplate === t.id ? ' selected' : '') + '>' + esc(t.name) + '</option>';
                         }).join('') + '</select>' +
                     '</label>' +
+                    '<label class="page-template-field" data-field="maintenance-label"' + (cfg.enabled ? '' : ' hidden') + '>' +
+                        '<span>显示名称</span><select data-page-label="' + p.key + '">' + PAGE_LABEL_MODES.map(function (m) {
+                            return '<option value="' + m.id + '"' + ((cfg.labelMode || 'name') === m.id ? ' selected' : '') + '>' + esc(m.name) + '</option>';
+                        }).join('') + '</select>' +
+                    '</label>' +
                 '</div>' +
                 '<div class="page-card-actions">' +
                     '<button type="button" class="page-preview-btn" data-page-preview="' + p.key + '"><i class="fas fa-eye"></i> 预览模板</button>' +
@@ -901,8 +928,10 @@ body.tp-modal-open { overflow: hidden; }
         var cfg = state.pages[key];
         var pub = card.querySelector('[data-field="public"]');
         var maint = card.querySelector('[data-field="maintenance"]');
+        var maintLabel = card.querySelector('[data-field="maintenance-label"]');
         if (pub) pub.hidden = !cfg.enabled;
         if (maint) maint.hidden = cfg.enabled;
+        if (maintLabel) maintLabel.hidden = cfg.enabled;
         card.classList.toggle('is-disabled', !cfg.enabled);
         var pill = card.querySelector('.page-state-pill');
         if (pill) pill.textContent = cfg.enabled ? '已启用' : '维护中';
@@ -922,7 +951,9 @@ body.tp-modal-open { overflow: hidden; }
                 key = e.target.getAttribute('data-page-template');
                 if (key) { state.pages[key].template = e.target.value; updateBadges(); return; }
                 key = e.target.getAttribute('data-page-maintenance');
-                if (key) { state.pages[key].maintenanceTemplate = e.target.value; updateBadges(); }
+                if (key) { state.pages[key].maintenanceTemplate = e.target.value; updateBadges(); return; }
+                key = e.target.getAttribute('data-page-label');
+                if (key) { state.pages[key].labelMode = e.target.value; updateBadges(); }
             });
             grid.addEventListener('click', function (e) {
                 var btn = e.target.closest('[data-page-preview]');
@@ -985,7 +1016,7 @@ body.tp-modal-open { overflow: hidden; }
         if (labelSel) labelSel.addEventListener('change', renderPreview);
     }
 
-    var previewState = { key: '', kind: 'public', template: 'default', source: '', id: '', label: 'title' };
+    var previewState = { key: '', kind: 'public', template: 'default', source: '', id: '', label: 'title', pageLabel: 'name' };
 
     function templateMeta(kind, id) {
         var list = kind === 'maintenance' ? MAINTENANCE_TEMPLATES : PUBLIC_TEMPLATES;
@@ -999,6 +1030,7 @@ body.tp-modal-open { overflow: hidden; }
         previewState.key = key;
         previewState.kind = cfg.enabled ? 'public' : 'maintenance';
         previewState.template = cfg.enabled ? cfg.template : cfg.maintenanceTemplate;
+        previewState.pageLabel = cfg.labelMode || 'name';
         var page = PAGES.filter(function (p) { return p.key === key; })[0];
         var title = document.getElementById('tpTitle');
         var kind = document.getElementById('tpKind');
@@ -1068,7 +1100,7 @@ body.tp-modal-open { overflow: hidden; }
         document.body.classList.remove('tp-modal-open');
     }
 
-    function previewMarkup(kind, id, name) {
+    function previewMarkup(kind, id, name, labelMode) {
         if (kind === 'public') {
             return '<div class="tp-public tp-public-' + id + '">' +
                 '<div class="tp-browser">' +
@@ -1086,26 +1118,31 @@ body.tp-modal-open { overflow: hidden; }
                 '</div>' +
             '</div>';
         }
-        var card = '';
+        var shown = labelMode === 'none' ? '' : (labelMode === 'path' ? '/' + previewState.key : name);
+        var title = shown ? shown + '暂时无法访问' : '暂时无法访问';
         if (id === 'legal') {
-            card = '<div class="tp-legal-card"><div class="tp-legal-icon">!</div><h2>页面不可用</h2>' +
-                '<p>该页面暂时不可用</p><p class="tp-muted">' + esc(name) + '页面当前已被管理员禁用。</p>' +
-                '<a class="tp-btn primary" href="#">返回首页</a></div>';
-        } else if (id === 'minimal') {
-            card = '<div class="tp-minimal-card"><span class="tp-minimal-dot"></span><h2>' + esc(name) + '暂时无法访问</h2>' +
+            return '<div class="tp-legacy-page"><h1 class="tp-legacy-title">页面不可用</h1>' +
+                '<div class="tp-legacy-message">' +
+                    '<p><i class="fas fa-eye-slash"></i> 该页面暂时不可用</p>' +
+                    '<p class="tp-legacy-detail">' + (shown ? shown + '页面' : '该页面') + '当前已被管理员禁用。</p>' +
+                    '<a class="tp-legacy-link" href="#">返回首页</a>' +
+                '</div></div>';
+        }
+        var card = '';
+        if (id === 'minimal') {
+            card = '<div class="tp-minimal-card"><span class="tp-minimal-dot"></span><h2>' + esc(title) + '</h2>' +
                 '<p>这个页面正在调整或维护，请稍后再来。</p><a class="tp-text-link" href="#">返回首页 →</a></div>';
         } else if (id === 'notice') {
             card = '<div class="tp-notice-wrap"><div class="tp-notice-bar"><span>维护通知</span><em>预计稍后恢复</em></div>' +
-                '<div class="tp-notice-card"><h2>' + esc(name) + '暂停访问</h2><p>该页面正在调整中，请稍后重试。</p>' +
+                '<div class="tp-notice-card"><h2>' + (shown ? esc(shown) + '暂停访问' : '页面暂停访问') + '</h2><p>该页面正在调整中，请稍后重试。</p>' +
                 '<div class="tp-actions"><a class="tp-btn primary" href="#">返回首页</a><a class="tp-btn" href="#">联系我</a></div></div></div>';
         } else {
-            card = '<div class="tp-classic-card"><span class="tp-icon">!</span><span class="tp-badge">页面维护中</span><h2>' + esc(name) + '暂时无法访问</h2>' +
+            card = '<div class="tp-classic-card"><span class="tp-icon">!</span><span class="tp-badge">页面维护中</span><h2>' + esc(title) + '</h2>' +
                 '<p>这个页面正在调整或维护，请稍后再来。你也可以先返回首页，或通过联系页留言。</p>' +
                 '<div class="tp-actions"><a class="tp-btn primary" href="#">返回首页</a><a class="tp-btn" href="#">联系我</a></div></div>';
         }
         return '<div class="tp-maint tp-maint-' + id + '">' + card + '</div>';
     }
-
     function renderPreview() {
         var sel = document.getElementById('tpSelect');
         if (sel) previewState.template = sel.value;
@@ -1121,7 +1158,7 @@ body.tp-modal-open { overflow: hidden; }
             return;
         }
         var page = PAGES.filter(function (p) { return p.key === previewState.key; })[0];
-        stage.innerHTML = previewMarkup(previewState.kind, previewState.template, page ? page.name : '页面');
+        stage.innerHTML = previewMarkup(previewState.kind, previewState.template, page ? page.name : '页面', previewState.pageLabel);
         var kind = document.getElementById('tpKind');
         if (kind) kind.textContent = previewState.kind === 'maintenance' ? '维护模板' : '公开模板';
     }

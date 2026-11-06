@@ -82,40 +82,50 @@
         return LEGAL_PAGES[key] ? 'legal' : 'classic';
     }
 
-    function showDisabled(key, template) {
+    function displayName(key, labelMode) {
+        if (labelMode === 'none') return '';
+        if (labelMode === 'path') return '/' + key;
+        return PAGE_NAMES[key] || key;
+    }
+
+    function showDisabled(key, template, labelMode) {
         var existing = document.getElementById('pageStateOverlay');
         if (existing) {
-            if (existing.getAttribute('data-template') === template) return;
+            if (existing.getAttribute('data-template') === template && existing.getAttribute('data-label') === labelMode) return;
             existing.parentNode.removeChild(existing);
         }
         var name = PAGE_NAMES[key] || '页面';
+        var shown = displayName(key, labelMode);
+        var title = shown ? shown + '暂时无法访问' : '暂时无法访问';
         var html;
         if (template === 'legal') {
-            html = '<div class="page-state-card ps-legal-card">' +
-                '<span class="ps-legal-icon">!</span>' +
-                '<h1>页面不可用</h1>' +
-                '<p>该页面暂时不可用</p>' +
-                '<p class="ps-muted">' + name + '页面当前已被管理员禁用。</p>' +
-                '<div class="page-state-actions"><a class="primary" href="/">返回首页</a></div>' +
+            // 旧版禁用页样式：页面标题 + 红色 error-message；宽度按页面容器，不采用文章窄宽度
+            html = '<div class="ps-legacy-page">' +
+                '<h1 class="ps-legacy-title">页面不可用</h1>' +
+                '<div class="ps-legacy-message">' +
+                    '<p><i class="fas fa-eye-slash"></i> 该页面暂时不可用</p>' +
+                    '<p class="ps-legacy-detail">' + (shown ? shown + '页面' : '该页面') + '当前已被管理员禁用。</p>' +
+                    '<a class="ps-legacy-link" href="/">返回首页</a>' +
+                '</div>' +
             '</div>';
         } else if (template === 'minimal') {
             html = '<div class="ps-minimal-card">' +
                 '<span class="ps-minimal-dot"></span>' +
-                '<h1>' + name + '暂时无法访问</h1>' +
+                '<h1>' + title + '</h1>' +
                 '<p>这个页面正在调整或维护，请稍后再来。</p>' +
                 '<a class="ps-text-link" href="/">返回首页 →</a>' +
             '</div>';
         } else if (template === 'notice') {
             html = '<div class="ps-notice-wrap">' +
                 '<div class="ps-notice-bar"><span>维护通知</span><em>预计稍后恢复</em></div>' +
-                '<div class="ps-notice-card"><h2>' + name + '暂停访问</h2>' +
+                '<div class="ps-notice-card"><h2>' + (shown ? shown + '暂停访问' : '页面暂停访问') + '</h2>' +
                 '<p>该页面正在调整中，请稍后重试。</p>' +
                 '<div class="page-state-actions"><a class="primary" href="/">返回首页</a><a href="/contact.html">联系我</a></div></div>' +
             '</div>';
         } else {
             html = '<div class="page-state-card ps-classic-card">' +
                 '<span class="page-state-badge">页面维护中</span>' +
-                '<h1>' + name + '暂时无法访问</h1>' +
+                '<h1>' + title + '</h1>' +
                 '<p>这个页面正在调整或维护，请稍后再来。你也可以先返回首页，或通过联系页留言。</p>' +
                 '<div class="page-state-actions"><a class="primary" href="/">返回首页</a><a href="/contact.html">联系我</a></div>' +
             '</div>';
@@ -124,6 +134,7 @@
         overlay.id = 'pageStateOverlay';
         overlay.className = 'page-state-overlay ps-maint ps-maint--' + template;
         overlay.setAttribute('data-template', template);
+        overlay.setAttribute('data-label', labelMode);
         overlay.setAttribute('role', 'alertdialog');
         overlay.setAttribute('aria-label', name + '维护中');
         overlay.innerHTML = html;
@@ -139,7 +150,7 @@
         if (!cfg || typeof cfg !== 'object') { finishCheck(); return; }
         applyTemplate(cfg.template);
         if (cfg.enabled === false) {
-            showDisabled(key, maintenanceTemplate(cfg, key));
+            showDisabled(key, maintenanceTemplate(cfg, key), cfg.labelMode || 'name');
         } else {
             removeDisabled();
         }

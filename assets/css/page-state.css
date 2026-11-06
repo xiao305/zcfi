@@ -271,3 +271,60 @@ body.page-template-compact .hero {
     font-size: 13.5px;
     color: #7b8491;
 }
+/* 旧版禁用页：用于隐私政策/使用条款/版权声明，宽度按页面容器 */
+.page-state-overlay.ps-maint--legal {
+    align-items: flex-start;
+    padding: 8vh 24px 40px;
+    background: #fff;
+}
+
+.ps-legacy-page {
+    width: min(1120px, 100%);
+    margin: 0 auto;
+}
+
+.ps-legacy-title {
+    margin: 0 0 22px;
+    font-size: clamp(26px, 3vw, 34px);
+    color: #26303d;
+}
+
+.ps-legacy-message {
+    text-align: center;
+    color: #e74c3c;
+    padding: 42px 32px;
+    background: #fdf2f2;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.ps-legacy-message p {
+    margin: 0;
+    font-size: 15px;
+}
+
+.ps-legacy-detail {
+    margin-top: 10px !important;
+    color: #c0392b;
+}
+
+.ps-legacy-link {
+    display: inline-block;
+    margin-top: 18px;
+    padding: 10px 20px;
+    background: #4a6fa5;
+    color: #fff;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.ps-legacy-link:hover {
+    background: #3d5d8a;
+}
+
+@media (max-width: 600px) {
+    .ps-legacy-message {
+        padding: 28px 20px;
+    }
+}
