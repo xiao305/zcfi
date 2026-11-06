@@ -9,6 +9,7 @@ html.article-state-checking .article-content {
 
 .article-unavailable-title {
     margin-bottom: 22px;
+    text-align: center;
 }
 
 .error-message.article-unavailable {

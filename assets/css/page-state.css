@@ -287,6 +287,7 @@ body.page-template-compact .hero {
     margin: 0 0 22px;
     font-size: clamp(26px, 3vw, 34px);
     color: #26303d;
+    text-align: center;
 }
 
 .ps-legacy-message {
