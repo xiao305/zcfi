@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-05T10:37:21.709Z",
+  "updatedAt": "2026-11-06T14:04:30.609057+00:00",
   "pages": {
     "home": {
       "enabled": true,
@@ -41,6 +41,47 @@
       "enabled": true,
       "template": "default",
       "maintenanceTemplate": "classic"
+    }
+  },
+  "articles": {
+    "blog": {
+      "post3": {
+        "enabled": true,
+        "maintenanceTemplate": "article-legal",
+        "labelMode": "title"
+      },
+      "post2": {
+        "enabled": true,
+        "maintenanceTemplate": "article-legal",
+        "labelMode": "title"
+      },
+      "post1": {
+        "enabled": true,
+        "maintenanceTemplate": "article-legal",
+        "labelMode": "title"
+      }
+    },
+    "portfolio": {
+      "project4": {
+        "enabled": true,
+        "maintenanceTemplate": "article-legal",
+        "labelMode": "title"
+      },
+      "project3": {
+        "enabled": true,
+        "maintenanceTemplate": "article-legal",
+        "labelMode": "title"
+      },
+      "project2": {
+        "enabled": true,
+        "maintenanceTemplate": "article-legal",
+        "labelMode": "title"
+      },
+      "project1": {
+        "enabled": true,
+        "maintenanceTemplate": "article-legal",
+        "labelMode": "title"
+      }
     }
   }
 }

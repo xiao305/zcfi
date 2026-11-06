@@ -1,0 +1,98 @@
+/* 博客文章页维护状态：只替换 .article-content，不动页眉/页脚/文章标题 */
+.article-state-blocked {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    padding: 8px 0 28px;
+}
+
+.article-state-card {
+    width: min(520px, 100%);
+    background: #fff;
+    border: 1px solid #e3ebf5;
+    border-radius: 16px;
+    padding: 34px 30px;
+    text-align: center;
+    box-shadow: 0 16px 40px rgba(28, 44, 72, 0.09);
+}
+
+.article-state-icon {
+    width: 36px;
+    height: 36px;
+    margin: 0 auto 12px;
+    border-radius: 50%;
+    background: #fdecec;
+    color: #b02a37;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+.article-state-badge {
+    display: inline-block;
+    font-size: 10.5px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #fdf6e7;
+    color: #a06a12;
+    margin-bottom: 10px;
+}
+
+.article-state-card h2 {
+    margin: 0 0 8px;
+    font-size: 22px;
+    color: #26303d;
+}
+
+.article-state-card p {
+    margin: 0 0 10px;
+    font-size: 13px;
+    line-height: 1.8;
+    color: #7b8491;
+}
+
+.article-state-card p.article-state-muted {
+    margin: 0 0 22px;
+    color: #9aa3af;
+    font-size: 12px;
+}
+
+.article-state-actions a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 118px;
+    padding: 9px 16px;
+    border-radius: 9px;
+    background: #4a6fa5;
+    color: #fff;
+    text-decoration: none;
+    font-size: 12.5px;
+}
+
+.article-state-minimal {
+    width: min(560px, 100%);
+    padding: 10px 0;
+}
+
+.article-state-minimal h2 {
+    margin: 0 0 12px;
+    font-size: clamp(26px, 3vw, 34px);
+    color: #26303d;
+    letter-spacing: -0.02em;
+}
+
+.article-state-minimal p {
+    margin: 0 0 18px;
+    color: #7b8491;
+    font-size: 13px;
+    line-height: 1.9;
+}
+
+.article-state-minimal a {
+    color: #4a6fa5;
+    font-size: 12.5px;
+    text-decoration: none;
+}

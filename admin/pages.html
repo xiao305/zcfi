@@ -268,6 +268,179 @@ body.tp-modal-open { overflow: hidden; }
 .tp-notice-bar em { font-style: normal; opacity: .8; }
 .tp-notice-card { background: #fff; border: 1px solid #e3ebf5; border-top: none; border-radius: 0 0 12px 12px; padding: 24px; }
 .tp-notice-card h2 { font-size: 23px; }
+
+/* ===== 页面管理分支 tabs ===== */
+.pages-tabs {
+    display: inline-flex;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 12px;
+    background: #eef3f9;
+    border: 1px solid #e2e9f2;
+    margin-bottom: 14px;
+}
+.pages-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 13px;
+    border: none;
+    border-radius: 9px;
+    background: transparent;
+    color: #6c757d;
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .2s ease;
+}
+.pages-tab:hover { color: #4a6fa5; background: rgba(255,255,255,.7); }
+.pages-tab.active { background: #fff; color: #4a6fa5; box-shadow: 0 3px 10px rgba(28,44,72,.09); }
+.pages-tab-count {
+    font-size: 10.5px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: #e8eef7;
+    color: #7b8491;
+}
+.pages-tab.active .pages-tab-count { background: #e8f2fd; color: #2f6fb5; }
+.pages-panel[hidden] { display: none !important; }
+
+/* ===== 文章权限面板 ===== */
+.article-panel {
+    background: #fff;
+    border: 1px solid #e6ebf2;
+    border-radius: 18px;
+    padding: 20px 22px;
+    box-shadow: 0 12px 30px rgba(28,44,72,.06);
+}
+.article-panel-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+.article-panel-head h2 { font-size: 17px; color: #26303d; display: flex; align-items: center; gap: 8px; }
+.article-panel-head h2 i { color: #4a6fa5; }
+.article-panel-head p { margin-top: 4px; font-size: 12.5px; color: #8a94a3; line-height: 1.6; }
+.article-toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.article-toolbar input, .article-toolbar select {
+    padding: 7px 10px;
+    border: 1px solid #dde5ef;
+    border-radius: 8px;
+    background: #fff;
+    color: #495057;
+    font-size: 12.5px;
+    outline: none;
+}
+.article-toolbar input { width: 180px; }
+.article-list { display: flex; flex-direction: column; gap: 8px; }
+.article-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 11px 13px;
+    border: 1px solid #eef1f5;
+    border-radius: 12px;
+    background: #fff;
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+.article-row:hover { border-color: #dfe8f2; box-shadow: 0 5px 16px rgba(28,44,72,.05); }
+.article-row.is-locked { background: #fbfbfc; border-style: dashed; }
+.article-row-main { flex: 1; min-width: 220px; }
+.article-row-title { font-size: 13px; font-weight: 600; color: #26303d; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.article-row-meta { margin-top: 3px; font-size: 11.5px; color: #9aa3af; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.article-status-pill { font-size: 10.5px; padding: 1px 7px; border-radius: 999px; background: #e9f7ef; color: #1e7e34; }
+.article-status-pill.is-draft { background: #f3f4f6; color: #7b8491; }
+.article-status-pill.is-locked { background: #fdecec; color: #b02a37; }
+.article-row-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.article-row-controls select {
+    padding: 6px 8px;
+    border: 1px solid #dde5ef;
+    border-radius: 8px;
+    background: #fff;
+    color: #495057;
+    font-size: 12px;
+}
+.article-row.is-locked .article-row-controls { opacity: .55; }
+.article-row-lock { width: 100%; font-size: 11px; color: #b02a37; margin-top: -2px; }
+.article-preview-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 6px 10px; border: 1px solid #d9e4f2; border-radius: 8px;
+    background: #f7faff; color: #4a6fa5; font-size: 11.5px; cursor: pointer;
+}
+.article-empty { padding: 22px; text-align: center; color: #9aa3af; font-size: 12.5px; }
+.article-loading { padding: 22px; text-align: center; color: #9aa3af; font-size: 12.5px; }
+@media (max-width: 700px) {
+    .pages-tabs { display: flex; width: 100%; }
+    .pages-tab { flex: 1; justify-content: center; }
+    .article-row-controls { width: 100%; }
+    .article-toolbar input { width: 100%; }
+}
+
+/* 修改状态徽标 */
+.page-change-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10.5px;
+    line-height: 1.9;
+    padding: 0 9px;
+    border-radius: 999px;
+    font-weight: 600;
+    white-space: nowrap;
+    letter-spacing: .02em;
+}
+.page-change-badge::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    flex: none;
+}
+.page-change-badge.is-dirty {
+    color: #b45309;
+    background: #fff7ed;
+    border: 1px solid #f6d7ab;
+    box-shadow: 0 2px 8px rgba(180, 83, 9, .08);
+}
+.page-change-badge.is-applying {
+    color: #2f6fb5;
+    background: #eef6ff;
+    border: 1px solid #cfe0f5;
+    box-shadow: 0 2px 8px rgba(47, 111, 181, .09);
+}
+.page-change-badge.is-applying::before {
+    animation: badge-pulse 1.1s ease-in-out infinite;
+}
+@keyframes badge-pulse {
+    0%, 100% { opacity: .35; transform: scale(.8); }
+    50% { opacity: 1; transform: scale(1.15); }
+}
+
+/* ===== 文章模板预览 ===== */
+.tp-article-preview { min-height: 390px; display: flex; justify-content: center; }
+.tp-article-mock {
+    width: min(760px, 100%); background: #fff; border-radius: 14px;
+    box-shadow: 0 16px 40px rgba(28,44,72,.12); padding: 26px 30px;
+}
+.tp-article-head { border-bottom: 1px solid #eef1f5; padding-bottom: 14px; margin-bottom: 20px; }
+.tp-article-head .tp-kicker { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: #9aa3af; }
+.tp-article-head h1 { margin: 6px 0 8px; font-size: 23px; color: #26303d; }
+.tp-article-head .tp-article-meta { font-size: 11px; color: #9aa3af; }
+.tp-article-body { min-height: 210px; display: flex; align-items: center; justify-content: center; background: #fbfcfe; border-radius: 12px; padding: 22px; }
+.tp-article-body .tp-legal-card,
+.tp-article-body .tp-article-card { width: min(420px, 100%); }
+.tp-article-card { background: #fff; border: 1px solid #e3ebf5; border-radius: 14px; padding: 26px; text-align: center; box-shadow: 0 10px 26px rgba(28,44,72,.08); }
+.tp-article-card .tp-icon { margin-bottom: 10px; }
+.tp-article-card h2 { margin: 0 0 8px; font-size: 19px; color: #26303d; }
+.tp-article-card p { margin: 0 0 16px; font-size: 12px; color: #7b8491; line-height: 1.7; }
+.tp-article-minimal { max-width: 460px; }
+.tp-article-minimal h2 { margin: 0 0 10px; font-size: 28px; color: #26303d; letter-spacing: -.02em; }
+.tp-article-minimal p { margin: 0 0 16px; font-size: 12.5px; color: #7b8491; }
 </style>
 </head>
 <body class="admin-body" data-admin-module="pages">
@@ -291,15 +464,63 @@ body.tp-modal-open { overflow: hidden; }
         <div class="pages-stat"><i class="fas fa-eye-slash"></i><div><strong id="pagesDisabled">–</strong><span>维护中</span></div></div>
     </section>
 
-    <section class="pages-grid" id="pagesGrid">
-        <div class="pages-note" style="grid-column:1/-1;">正在读取 pages 配置…</div>
-    </section>
+    <nav class="pages-tabs" aria-label="页面管理分类">
+        <button type="button" class="pages-tab active" data-pages-tab="pages">页面状态</button>
+        <button type="button" class="pages-tab" data-pages-tab="blog">博客文章 <span class="pages-tab-count" id="blogArticleCount">–</span></button>
+        <button type="button" class="pages-tab" data-pages-tab="portfolio">作品集 <span class="pages-tab-count" id="portfolioArticleCount">–</span></button>
+    </nav>
+
+    <div class="pages-panel" data-pages-panel="pages">
+        <section class="pages-grid" id="pagesGrid">
+            <div class="pages-note" style="grid-column:1/-1;">正在读取 pages 配置…</div>
+        </section>
+    </div>
+
+    <div class="pages-panel" data-pages-panel="blog" hidden>
+        <section class="article-panel">
+            <div class="article-panel-head">
+                <div>
+                    <h2><i class="fas fa-blog"></i> 博客文章权限</h2>
+                    <p>只对已发布、已启用的独立文章页开放权限；草稿/未启用文章仍显示但不可修改。可设置文章页维护模板与标题显示方式。</p>
+                </div>
+                <div class="article-toolbar">
+                    <input type="search" id="blogArticleSearch" placeholder="搜索标题 / ID">
+                    <select id="blogArticleFilter">
+                        <option value="all">全部状态</option>
+                        <option value="published">已发布</option>
+                        <option value="draft">草稿 / 未启用</option>
+                    </select>
+                </div>
+            </div>
+            <div class="article-list" id="blogArticleList"><div class="article-loading">正在读取博客文章…</div></div>
+        </section>
+    </div>
+
+    <div class="pages-panel" data-pages-panel="portfolio" hidden>
+        <section class="article-panel">
+            <div class="article-panel-head">
+                <div>
+                    <h2><i class="fas fa-briefcase"></i> 作品集条目权限</h2>
+                    <p>作品集独立页面尚未接入，这里先保存每条作品的页面权限与维护模板，作为后续作品详情页的配置基础；草稿条目不可设置权限。</p>
+                </div>
+                <div class="article-toolbar">
+                    <input type="search" id="portfolioArticleSearch" placeholder="搜索标题 / ID">
+                    <select id="portfolioArticleFilter">
+                        <option value="all">全部状态</option>
+                        <option value="published">已发布</option>
+                        <option value="draft">草稿</option>
+                    </select>
+                </div>
+            </div>
+            <div class="article-list" id="portfolioArticleList"><div class="article-loading">正在读取作品集…</div></div>
+        </section>
+    </div>
 
     <div class="pages-note">
         <strong>说明：</strong>
         页面状态与模板保存在 Config Gist 的 <code>pages.json</code>，同时提交同源 <code>data/pages.json</code> 供前台读取；保存会触发 Pages 部署。
         每个页面有两套模板：<strong>公开访问</strong>时使用公开模板（标准/阅读/宽屏/紧凑/卡片），
-        <strong>维护中</strong>时使用维护模板（经典/法律声明风/极简/渐变/公告）。
+        <strong>维护中</strong>时使用维护模板（经典/法律声明风/极简/公告）。
         点击卡片上的“预览模板”可查看当前模板效果；保存后需等待 Pages 部署完成（约 1–2 分钟），任务中心会显示进度。
     </div>
 </div>
@@ -317,6 +538,11 @@ body.tp-modal-open { overflow: hidden; }
         <div class="template-preview-toolbar">
             <span class="tp-kind" id="tpKind">公开模板</span>
             <select id="tpSelect" aria-label="选择模板"></select>
+            <select id="tpLabel" aria-label="文章名称显示方式" hidden>
+                <option value="title">显示文章名</option>
+                <option value="id">显示文章编码</option>
+                <option value="none">不显示名称</option>
+            </select>
             <button type="button" class="tp-apply" id="tpApply">应用到该页面</button>
         </div>
         <div class="template-preview-stage" id="tpStage"></div>
@@ -352,12 +578,27 @@ body.tp-modal-open { overflow: hidden; }
         { id: 'minimal', name: '极简留白',   desc: '大标题 + 简短说明' },
         { id: 'notice',  name: '公告通知',   desc: '顶部状态徽标 + 公告卡' }
     ];
+    var ARTICLE_TEMPLATES = [
+        { id: 'article-legal',   name: '法律声明风', desc: '文章内容替换为“页面不可用”提示' },
+        { id: 'article-card',    name: '文章维护卡', desc: '带图标的维护提示卡' },
+        { id: 'article-minimal', name: '极简文字',   desc: '只保留标题和简短说明' }
+    ];
+    var ARTICLE_LABEL_MODES = [
+        { id: 'title', name: '显示文章名' },
+        { id: 'id', name: '显示文章编码' },
+        { id: 'none', name: '不显示名称' }
+    ];
+    var BLOG_GIST_ID = '73cc78400c25eb9effed665e2c89843d';
+    var PORTFOLIO_GIST_ID = '311b9a0a483aafc4314d17f577e859bb';
     var LEGAL_PAGES = { privacy: 1, terms: 1, copyright: 1 };
     function defaultMaintenance(key) { return LEGAL_PAGES[key] ? 'legal' : 'classic'; }
-    var state = { pages: {} };
+    var state = { pages: {}, articles: { blog: {}, portfolio: {} } };
     var originalPages = null;
+    var originalArticles = null;
     var savedPages = null;
     var applying = {};
+    var blogItems = [];
+    var portfolioItems = [];
 
     function clonePages(pages) { return JSON.parse(JSON.stringify(pages || {})); }
     function sameConfig(a, b) {
@@ -439,6 +680,75 @@ body.tp-modal-open { overflow: hidden; }
         if (dis) dis.textContent = disabled;
     }
 
+    function defaultArticleConfig() {
+        return { enabled: true, maintenanceTemplate: 'article-legal', labelMode: 'title' };
+    }
+
+    function normalizeArticles(raw, items, source) {
+        var out = {};
+        items.forEach(function (item) {
+            var v = raw && raw[source] && raw[source][item.id];
+            out[item.id] = {
+                enabled: !(v && v.enabled === false),
+                maintenanceTemplate: v && ARTICLE_TEMPLATES.some(function (t) { return t.id === v.maintenanceTemplate; }) ? v.maintenanceTemplate : 'article-legal',
+                labelMode: v && ARTICLE_LABEL_MODES.some(function (m) { return m.id === v.labelMode; }) ? v.labelMode : 'title'
+            };
+        });
+        return out;
+    }
+
+    function isArticleEditable(source, item) {
+        if (source === 'blog') return item.status === 'published' && item.enabled !== false && item.generatePage === true;
+        return item.status === 'published';
+    }
+
+    function articleState(source, id) {
+        return (state.articles[source] || {})[id] || defaultArticleConfig();
+    }
+
+    function articleBadgeEnabled(source, id) { return isArticleEditable(source, findArticle(source, id) || {}); }
+
+    function findArticle(source, id) {
+        var list = source === 'blog' ? blogItems : portfolioItems;
+        for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+        return null;
+    }
+
+    function articleDirtyKeys() {
+        var out = [];
+        ['blog', 'portfolio'].forEach(function (source) {
+            var items = source === 'blog' ? blogItems : portfolioItems;
+            var orig = (originalArticles && originalArticles[source]) || {};
+            items.forEach(function (item) {
+                var cur = articleState(source, item.id);
+                var old = orig[item.id] || defaultArticleConfig();
+                if (cur.enabled !== old.enabled || cur.maintenanceTemplate !== old.maintenanceTemplate || cur.labelMode !== old.labelMode) {
+                    out.push(source + ':' + item.id);
+                }
+            });
+        });
+        return out;
+    }
+
+    function updateArticleBadges() {
+        document.querySelectorAll('[data-article-badge]').forEach(function (badge) {
+            var key = badge.getAttribute('data-article-badge');
+            if (applying[key]) {
+                badge.hidden = false;
+                badge.className = 'page-change-badge is-applying';
+                badge.textContent = '正在应用中';
+            } else if (articleDirtyKeys().indexOf(key) !== -1) {
+                badge.hidden = false;
+                badge.className = 'page-change-badge is-dirty';
+                badge.textContent = '待保存';
+            } else {
+                badge.hidden = true;
+                badge.className = 'page-change-badge';
+                badge.textContent = '';
+            }
+        });
+    }
+
     function render() {
         var grid = document.getElementById('pagesGrid');
         if (!grid) return;
@@ -477,6 +787,81 @@ body.tp-modal-open { overflow: hidden; }
         updateBadges();
     }
 
+    function articleStatus(source, item) {
+        if (item.status !== 'published') return { text: '草稿', cls: 'is-draft' };
+        if (source === 'blog' && (item.enabled === false || item.generatePage !== true)) return { text: '未开放', cls: 'is-locked' };
+        return { text: '已发布', cls: '' };
+    }
+
+    function articleLockReason(source, item) {
+        if (item.status !== 'published') return '草稿文章暂不可设置页面权限';
+        if (source === 'blog' && item.enabled === false) return '文章当前未启用，暂不可设置页面权限';
+        if (source === 'blog' && item.generatePage !== true) return '未生成独立页面，暂不可设置页面权限';
+        return '';
+    }
+
+    function filteredArticles(source) {
+        var items = source === 'blog' ? blogItems : portfolioItems;
+        var search = (document.getElementById(source === 'blog' ? 'blogArticleSearch' : 'portfolioArticleSearch') || {}).value || '';
+        var filter = (document.getElementById(source === 'blog' ? 'blogArticleFilter' : 'portfolioArticleFilter') || {}).value || 'all';
+        search = search.trim().toLowerCase();
+        return items.filter(function (item) {
+            if (filter === 'published' && item.status !== 'published') return false;
+            if (filter === 'draft' && item.status === 'published') return false;
+            if (search && (String(item.title || '') + ' ' + String(item.id || '')).toLowerCase().indexOf(search) === -1) return false;
+            return true;
+        });
+    }
+
+    function renderArticleList(source) {
+        var listEl = document.getElementById(source === 'blog' ? 'blogArticleList' : 'portfolioArticleList');
+        if (!listEl) return;
+        var items = filteredArticles(source);
+        if (!items.length) {
+            listEl.innerHTML = '<div class="article-empty">没有符合条件的' + (source === 'blog' ? '文章' : '作品') + '。</div>';
+            return;
+        }
+        listEl.innerHTML = items.map(function (item) {
+            var cfg = articleState(source, item.id);
+            var editable = isArticleEditable(source, item);
+            var status = articleStatus(source, item);
+            var key = source + ':' + item.id;
+            var lock = editable ? '' : '<div class="article-row-lock"><i class="fas fa-lock"></i> ' + esc(articleLockReason(source, item)) + '</div>';
+            return '<article class="article-row ' + (editable ? '' : 'is-locked') + '" data-article-row="' + key + '">' +
+                '<div class="article-row-main">' +
+                    '<div class="article-row-title">' + esc(item.title || '(未命名)') +
+                        '<span class="article-status-pill ' + status.cls + '">' + status.text + '</span>' +
+                        '<span class="page-change-badge" data-article-badge="' + key + '" hidden></span>' +
+                    '</div>' +
+                    '<div class="article-row-meta"><span>' + esc(item.id) + '</span>' +
+                        (item.date ? '<span>' + esc(item.date) + '</span>' : '') +
+                        (source === 'portfolio' ? '<span>作品集单页待接入</span>' : '') +
+                    '</div>' +
+                '</div>' +
+                '<div class="article-row-controls">' +
+                    '<label class="page-toggle"><input type="checkbox" data-article-toggle="' + key + '"' + (cfg.enabled ? ' checked' : '') + (editable ? '' : ' disabled') + '> 页面可用</label>' +
+                    '<select data-article-template="' + key + '"' + (editable ? '' : ' disabled') + '>' + ARTICLE_TEMPLATES.map(function (t) {
+                        return '<option value="' + t.id + '"' + (cfg.maintenanceTemplate === t.id ? ' selected' : '') + '>' + esc(t.name) + '</option>';
+                    }).join('') + '</select>' +
+                    '<select data-article-label="' + key + '"' + (editable ? '' : ' disabled') + '>' + ARTICLE_LABEL_MODES.map(function (m) {
+                        return '<option value="' + m.id + '"' + (cfg.labelMode === m.id ? ' selected' : '') + '>' + esc(m.name) + '</option>';
+                    }).join('') + '</select>' +
+                    '<button type="button" class="article-preview-btn" data-article-preview="' + key + '"><i class="fas fa-eye"></i> 预览</button>' +
+                '</div>' + lock +
+            '</article>';
+        }).join('');
+        updateArticleBadges();
+    }
+
+    function renderArticles() {
+        renderArticleList('blog');
+        renderArticleList('portfolio');
+        var bc = document.getElementById('blogArticleCount');
+        var pc = document.getElementById('portfolioArticleCount');
+        if (bc) bc.textContent = blogItems.length;
+        if (pc) pc.textContent = portfolioItems.length;
+    }
+
     function updateCardMode(card, key) {
         if (!card) return;
         var cfg = state.pages[key];
@@ -510,6 +895,41 @@ body.tp-modal-open { overflow: hidden; }
                 if (btn) openPreview(btn.getAttribute('data-page-preview'));
             });
         }
+        document.querySelectorAll('.pages-tab').forEach(function (tab) {
+            tab.addEventListener('click', function () {
+                var name = tab.getAttribute('data-pages-tab');
+                document.querySelectorAll('.pages-tab').forEach(function (t) { t.classList.toggle('active', t === tab); });
+                document.querySelectorAll('.pages-panel').forEach(function (p) { p.hidden = p.getAttribute('data-pages-panel') !== name; });
+            });
+        });
+
+        document.addEventListener('change', function (e) {
+            var key = e.target.getAttribute('data-article-toggle');
+            if (!key) key = e.target.getAttribute('data-article-template');
+            if (!key) key = e.target.getAttribute('data-article-label');
+            if (!key) return;
+            var parts = key.split(':'); var source = parts[0], id = parts[1];
+            var cfg = articleState(source, id);
+            if (e.target.getAttribute('data-article-toggle')) cfg.enabled = !!e.target.checked;
+            else if (e.target.getAttribute('data-article-template')) cfg.maintenanceTemplate = e.target.value;
+            else cfg.labelMode = e.target.value;
+            updateArticleBadges();
+        });
+
+        document.addEventListener('click', function (e) {
+            var btn = e.target.closest('[data-article-preview]');
+            if (!btn) return;
+            var parts = btn.getAttribute('data-article-preview').split(':');
+            openArticlePreview(parts[0], parts[1]);
+        });
+
+        ['blog', 'portfolio'].forEach(function (source) {
+            var input = document.getElementById(source + 'ArticleSearch');
+            var filter = document.getElementById(source + 'ArticleFilter');
+            if (input) input.addEventListener('input', function () { renderArticleList(source); });
+            if (filter) filter.addEventListener('change', function () { renderArticleList(source); });
+        });
+
         var reload = document.getElementById('pagesReload');
         if (reload) reload.addEventListener('click', load);
         var save = document.getElementById('pagesSave');
@@ -525,9 +945,11 @@ body.tp-modal-open { overflow: hidden; }
         if (sel) sel.addEventListener('change', renderPreview);
         var apply = document.getElementById('tpApply');
         if (apply) apply.addEventListener('click', applyPreviewTemplate);
+        var labelSel = document.getElementById('tpLabel');
+        if (labelSel) labelSel.addEventListener('change', renderPreview);
     }
 
-    var previewState = { key: '', kind: 'public', template: 'default' };
+    var previewState = { key: '', kind: 'public', template: 'default', source: '', id: '', label: 'title' };
 
     function templateMeta(kind, id) {
         var list = kind === 'maintenance' ? MAINTENANCE_TEMPLATES : PUBLIC_TEMPLATES;
@@ -547,6 +969,8 @@ body.tp-modal-open { overflow: hidden; }
         var modal = document.getElementById('templatePreviewModal');
         if (title) title.textContent = '模板预览 · ' + (page ? page.name : key);
         if (kind) kind.textContent = cfg.enabled ? '公开模板' : '维护模板';
+        var labelSel = document.getElementById('tpLabel');
+        if (labelSel) labelSel.hidden = true;
         var sel = document.getElementById('tpSelect');
         if (sel) {
             var list = previewState.kind === 'maintenance' ? MAINTENANCE_TEMPLATES : PUBLIC_TEMPLATES;
@@ -558,6 +982,59 @@ body.tp-modal-open { overflow: hidden; }
         if (modal) modal.hidden = false;
         document.body.classList.add('tp-modal-open');
         renderPreview();
+    }
+
+    function openArticlePreview(source, id) {
+        var item = findArticle(source, id);
+        if (!item) return;
+        var cfg = articleState(source, id);
+        previewState.kind = 'article';
+        previewState.source = source;
+        previewState.id = id;
+        previewState.template = cfg.maintenanceTemplate;
+        previewState.label = cfg.labelMode;
+        var title = document.getElementById('tpTitle');
+        var kind = document.getElementById('tpKind');
+        var modal = document.getElementById('templatePreviewModal');
+        if (title) title.textContent = '文章模板预览 · ' + (item.title || id);
+        if (kind) kind.textContent = '文章维护模板';
+        var sel = document.getElementById('tpSelect');
+        if (sel) {
+            sel.innerHTML = ARTICLE_TEMPLATES.map(function (t) {
+                return '<option value="' + t.id + '">' + esc(t.name) + ' · ' + esc(t.desc) + '</option>';
+            }).join('');
+            sel.value = cfg.maintenanceTemplate;
+        }
+        var labelSel = document.getElementById('tpLabel');
+        if (labelSel) {
+            labelSel.hidden = false;
+            labelSel.value = cfg.labelMode;
+        }
+        if (modal) modal.hidden = false;
+        document.body.classList.add('tp-modal-open');
+        renderPreview();
+    }
+
+    function articlePreviewMarkup(template, label, title, id) {
+        var name = label === 'title' ? title : (label === 'id' ? id : '');
+        var message = name ? name + '暂时无法访问' : '暂时无法访问';
+        var body;
+        if (template === 'article-card') {
+            body = '<div class="tp-article-card"><span class="tp-icon">!</span><span class="tp-badge">文章维护中</span>' +
+                '<h2>' + esc(message) + '</h2><p>这篇文章正在调整或维护，请稍后再来。</p>' +
+                '<a class="tp-btn primary" href="#">返回博客列表</a></div>';
+        } else if (template === 'article-minimal') {
+            body = '<div class="tp-article-minimal"><h2>' + esc(message) + '</h2><p>内容暂时不可用，请稍后重试。</p>' +
+                '<a class="tp-text-link" href="#">返回博客列表 →</a></div>';
+        } else {
+            body = '<div class="tp-legal-card"><div class="tp-legal-icon">!</div><h2>页面不可用</h2>' +
+                '<p>该文章暂时不可用</p><p class="tp-muted">' + esc(message) + '。</p>' +
+                '<a class="tp-btn primary" href="#">返回博客列表</a></div>';
+        }
+        return '<div class="tp-article-preview"><div class="tp-article-mock">' +
+            '<div class="tp-article-head"><div class="tp-kicker">博客文章</div><h1>' + esc(title) + '</h1>' +
+            '<div class="tp-article-meta">文章模板预览 · 只替换正文内容</div></div>' +
+            '<div class="tp-article-body">' + body + '</div></div></div>';
     }
 
     function closePreview() {
@@ -609,6 +1086,15 @@ body.tp-modal-open { overflow: hidden; }
         if (sel) previewState.template = sel.value;
         var stage = document.getElementById('tpStage');
         if (!stage) return;
+        if (previewState.kind === 'article') {
+            var labelSel = document.getElementById('tpLabel');
+            if (labelSel) previewState.label = labelSel.value;
+            var item = findArticle(previewState.source, previewState.id) || {};
+            stage.innerHTML = articlePreviewMarkup(previewState.template, previewState.label, item.title || previewState.id, previewState.id);
+            var kindA = document.getElementById('tpKind');
+            if (kindA) kindA.textContent = '文章维护模板';
+            return;
+        }
         var page = PAGES.filter(function (p) { return p.key === previewState.key; })[0];
         stage.innerHTML = previewMarkup(previewState.kind, previewState.template, page ? page.name : '页面');
         var kind = document.getElementById('tpKind');
@@ -616,6 +1102,24 @@ body.tp-modal-open { overflow: hidden; }
     }
 
     function applyPreviewTemplate() {
+        if (previewState.kind === 'article') {
+            var acfg = articleState(previewState.source, previewState.id);
+            var labelSel = document.getElementById('tpLabel');
+            if (labelSel) previewState.label = labelSel.value;
+            acfg.maintenanceTemplate = previewState.template;
+            acfg.labelMode = previewState.label;
+            var row = document.querySelector('[data-article-row="' + previewState.source + ':' + previewState.id + '"]');
+            if (row) {
+                var tsel = row.querySelector('[data-article-template]');
+                var lsel = row.querySelector('[data-article-label]');
+                if (tsel) tsel.value = previewState.template;
+                if (lsel) lsel.value = previewState.label;
+            }
+            updateArticleBadges();
+            toast('已选择文章模板，保存页面设置后生效');
+            closePreview();
+            return;
+        }
         var cfg = state.pages[previewState.key];
         if (!cfg) return;
         if (previewState.kind === 'maintenance') cfg.maintenanceTemplate = previewState.template;
@@ -634,32 +1138,51 @@ body.tp-modal-open { overflow: hidden; }
         toast('已选择模板，保存页面设置后生效');
         closePreview();
     }
+    async function fetchGistJson(gistId, filename) {
+        var res = await AdminCore.apiFetch('https://api.github.com/gists/' + gistId);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        var gist = await res.json();
+        if (!gist.files || !gist.files[filename] || !gist.files[filename].content) throw new Error(filename + ' 不存在');
+        return JSON.parse(gist.files[filename].content);
+    }
+
     async function load() {
         var grid = document.getElementById('pagesGrid');
         if (grid && !grid.querySelector('.page-card')) {
             grid.innerHTML = '<div class="pages-note" style="grid-column:1/-1;">正在读取 pages 配置…</div>';
         }
+        var raw = null, blog = [], portfolio = [];
         try {
-            var res = await AdminCore.apiFetch('https://api.github.com/gists/' + CONFIG_GIST_ID);
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            var gist = await res.json();
-            var raw = null;
-            if (gist.files && gist.files['pages.json'] && gist.files['pages.json'].content) {
-                raw = JSON.parse(gist.files['pages.json'].content);
-            }
-            state = normalize(raw);
-            originalPages = clonePages(state.pages);
-            applying = {};
-            render();
+            raw = await fetchGistJson(CONFIG_GIST_ID, 'pages.json');
         } catch (e) {
-            if (!Object.keys(state.pages).length) state = defaults();
-            originalPages = clonePages(state.pages);
-            applying = {};
-            render();
             toast('读取 pages.json 失败，已显示默认设置：' + e.message);
         }
+        try {
+            var blogData = await fetchGistJson(BLOG_GIST_ID, 'blog.json');
+            if (Array.isArray(blogData)) blog = blogData;
+        } catch (e2) {
+            toast('读取博客文章失败：' + e2.message);
+        }
+        try {
+            var portData = await fetchGistJson(PORTFOLIO_GIST_ID, 'portfolio.json');
+            if (Array.isArray(portData)) portfolio = portData;
+        } catch (e3) {
+            toast('读取作品集失败：' + e3.message);
+        }
+        blogItems = blog;
+        portfolioItems = portfolio;
+        var pageState = normalize(raw);
+        state.pages = pageState.pages;
+        state.articles = {
+            blog: normalizeArticles(raw && raw.articles, blogItems, 'blog'),
+            portfolio: normalizeArticles(raw && raw.articles, portfolioItems, 'portfolio')
+        };
+        originalPages = clonePages(state.pages);
+        originalArticles = clonePages(state.articles);
+        applying = {};
+        render();
+        renderArticles();
     }
-
     function waitForApplied(saved) {
         var deadline = Date.now() + 5 * 60 * 1000;
         function check() {
@@ -672,10 +1195,12 @@ body.tp-modal-open { overflow: hidden; }
             fetch('/data/pages.json?t=' + Date.now(), { cache: 'no-store' })
                 .then(function (r) { return r.json(); })
                 .then(function (d) {
-                    if (d && d.pages && JSON.stringify(d.pages) === JSON.stringify(saved.pages)) {
+                    if (d && d.pages && JSON.stringify(d.pages) === JSON.stringify(saved.pages) && JSON.stringify(d.articles || {}) === JSON.stringify(saved.articles || {})) {
                         originalPages = clonePages(saved.pages);
+                        originalArticles = clonePages(saved.articles || {});
                         applying = {};
                         updateBadges();
+                        updateArticleBadges();
                         toast('页面设置已应用');
                     } else {
                         setTimeout(check, 5000);
@@ -688,7 +1213,8 @@ body.tp-modal-open { overflow: hidden; }
 
     async function saveSettings() {
         var changed = dirtyKeys();
-        if (!changed.length) {
+        var changedArticles = articleDirtyKeys();
+        if (!changed.length && !changedArticles.length) {
             toast('没有修改，未提交 GitHub');
             return;
         }
@@ -696,16 +1222,20 @@ body.tp-modal-open { overflow: hidden; }
         if (btn) btn.disabled = true;
         try {
             var snapshot = clonePages(state.pages);
+            var articleSnapshot = clonePages(state.articles);
             var data = {
                 version: 1,
                 updatedAt: new Date().toISOString(),
-                pages: snapshot
+                pages: snapshot,
+                articles: articleSnapshot
             };
             var stateJson = JSON.stringify(data, null, 2);
             var contentBase64 = btoa(unescape(encodeURIComponent(stateJson)));
             applying = {};
             changed.forEach(function (k) { applying[k] = true; });
+            changedArticles.forEach(function (k) { applying[k] = true; });
             updateBadges();
+            updateArticleBadges();
             // 同源文件随 Pages 部署更新；Gist 继续作为后台读取/备份来源
             var repoTask = AdminTasks.saveFile({
                 path: 'data/pages.json',
@@ -723,12 +1253,13 @@ body.tp-modal-open { overflow: hidden; }
             var results = await Promise.allSettled([repoTask, gistTask]);
             var failed = results.filter(function (r) { return r.status === 'rejected'; });
             if (failed.length) throw (failed[0].reason || new Error('保存失败'));
-            savedPages = snapshot;
+            savedPages = { pages: snapshot, articles: articleSnapshot };
             toast('页面设置已保存，正在等待 Pages 部署…');
             waitForApplied(savedPages);
         } catch (e) {
             applying = {};
             updateBadges();
+            updateArticleBadges();
             toast('保存失败：' + (e.message || e));
         } finally {
             if (btn) btn.disabled = false;
