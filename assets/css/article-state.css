@@ -1,3 +1,9 @@
+/* 检查配置期间隐藏文章内容，避免先闪现原文章 */
+html.article-state-checking .article-container,
+html.article-state-checking .article-content {
+    visibility: hidden;
+}
+
 /* 博客文章页禁用状态：严格沿用合并前版权/隐私禁用页的 error-message 风格。
    禁用时整个 .article-container 被替换，文章标题/正文/操作区不再显示。 */
 

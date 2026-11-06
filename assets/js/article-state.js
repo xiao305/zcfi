@@ -3,6 +3,7 @@
    只保留页眉和页脚，行为与合并前版权/隐私页的 showDisabledMessage 一致。 */
 (function () {
     'use strict';
+    document.documentElement.classList.add('article-state-checking');
 
     var CONFIG_GIST_ID = '983bb7371ddb439a2fcbfb4885e34d14';
     var GIST_API = 'https://api.github.com/gists/' + CONFIG_GIST_ID;
@@ -13,6 +14,11 @@
     if (!m) return;
     var articleId = decodeURIComponent(m[1]);
     if (!articleId || articleId === 'template') return;
+
+    function finishCheck() {
+        document.documentElement.classList.remove('article-state-checking');
+        window.__articleStateReady = true;
+    }
 
     function escapeHtml(v) {
         return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
@@ -61,6 +67,7 @@
         var labelMode = cfg.labelMode || 'title';
         container.innerHTML = unavailableMarkup(labelMode, title);
         document.title = '页面不可用 | zcfi.cn';
+        finishCheck();
     }
 
     function showConfigError() {
@@ -70,6 +77,7 @@
             '<div class="error-message article-unavailable article-unavailable-legal">' +
             '<p><i class="fas fa-exclamation-triangle"></i> 无法加载文章配置</p>' +
             '<p class="article-unavailable-detail">请检查网络后刷新页面。</p></div>';
+        finishCheck();
     }
 
     function apply(raw) {
@@ -78,6 +86,7 @@
         var enabled = !cfg || cfg.enabled !== false;
         addAccessBadge(enabled);
         if (!enabled) showUnavailable(cfg || {});
+        finishCheck();
     }
 
     function parseGist(gist) {
