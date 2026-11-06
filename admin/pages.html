@@ -441,6 +441,44 @@ body.tp-modal-open { overflow: hidden; }
 .tp-article-minimal { max-width: 460px; }
 .tp-article-minimal h2 { margin: 0 0 10px; font-size: 28px; color: #26303d; letter-spacing: -.02em; }
 .tp-article-minimal p { margin: 0 0 16px; font-size: 12.5px; color: #7b8491; }
+
+/* 文章访问状态 */
+.article-access-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-size: 10.5px;
+    line-height: 1.9;
+    font-weight: 500;
+    white-space: nowrap;
+}
+.article-access-pill.is-on { color: #1e7e34; background: #e9f7ef; }
+.article-access-pill.is-off { color: #b02a37; background: #fdecec; }
+
+/* 文章旧版禁用页预览 */
+.tp-article-mock.tp-article-old { padding: 26px 30px; }
+.tp-article-page-title { margin: 0 0 20px; font-size: 25px; color: #26303d; }
+.tp-old-error {
+    text-align: center;
+    color: #e74c3c;
+    padding: 40px;
+    background: #fdf2f2;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+.tp-old-detail { margin-top: 10px; color: #c0392b; }
+.tp-old-status { margin-top: 18px; font-size: 12px; color: #b06a5e; }
+.tp-old-link {
+    display: inline-block;
+    margin-top: 18px;
+    padding: 10px 20px;
+    background: #4a6fa5;
+    color: #fff;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 12px;
+}
 </style>
 </head>
 <body class="admin-body" data-admin-module="pages">
@@ -579,9 +617,7 @@ body.tp-modal-open { overflow: hidden; }
         { id: 'notice',  name: '公告通知',   desc: '顶部状态徽标 + 公告卡' }
     ];
     var ARTICLE_TEMPLATES = [
-        { id: 'article-legal',   name: '法律声明风', desc: '文章内容替换为“页面不可用”提示' },
-        { id: 'article-card',    name: '文章维护卡', desc: '带图标的维护提示卡' },
-        { id: 'article-minimal', name: '极简文字',   desc: '只保留标题和简短说明' }
+        { id: 'article-legal', name: '旧版禁用页', desc: '页面标题“页面不可用”+ 红色提示块' }
     ];
     var ARTICLE_LABEL_MODES = [
         { id: 'title', name: '显示文章名' },
@@ -690,7 +726,7 @@ body.tp-modal-open { overflow: hidden; }
             var v = raw && raw[source] && raw[source][item.id];
             out[item.id] = {
                 enabled: !(v && v.enabled === false),
-                maintenanceTemplate: v && ARTICLE_TEMPLATES.some(function (t) { return t.id === v.maintenanceTemplate; }) ? v.maintenanceTemplate : 'article-legal',
+                maintenanceTemplate: 'article-legal',
                 labelMode: v && ARTICLE_LABEL_MODES.some(function (m) { return m.id === v.labelMode; }) ? v.labelMode : 'title'
             };
         });
@@ -831,6 +867,7 @@ body.tp-modal-open { overflow: hidden; }
                 '<div class="article-row-main">' +
                     '<div class="article-row-title">' + esc(item.title || '(未命名)') +
                         '<span class="article-status-pill ' + status.cls + '">' + status.text + '</span>' +
+                        (editable ? '<span class="article-access-pill ' + (cfg.enabled ? 'is-on' : 'is-off') + '">' + (cfg.enabled ? '展示中' : '维护中') + '</span>' : '') +
                         '<span class="page-change-badge" data-article-badge="' + key + '" hidden></span>' +
                     '</div>' +
                     '<div class="article-row-meta"><span>' + esc(item.id) + '</span>' +
@@ -840,9 +877,6 @@ body.tp-modal-open { overflow: hidden; }
                 '</div>' +
                 '<div class="article-row-controls">' +
                     '<label class="page-toggle"><input type="checkbox" data-article-toggle="' + key + '"' + (cfg.enabled ? ' checked' : '') + (editable ? '' : ' disabled') + '> 页面可用</label>' +
-                    '<select data-article-template="' + key + '"' + (editable ? '' : ' disabled') + '>' + ARTICLE_TEMPLATES.map(function (t) {
-                        return '<option value="' + t.id + '"' + (cfg.maintenanceTemplate === t.id ? ' selected' : '') + '>' + esc(t.name) + '</option>';
-                    }).join('') + '</select>' +
                     '<select data-article-label="' + key + '"' + (editable ? '' : ' disabled') + '>' + ARTICLE_LABEL_MODES.map(function (m) {
                         return '<option value="' + m.id + '"' + (cfg.labelMode === m.id ? ' selected' : '') + '>' + esc(m.name) + '</option>';
                     }).join('') + '</select>' +
@@ -905,14 +939,16 @@ body.tp-modal-open { overflow: hidden; }
 
         document.addEventListener('change', function (e) {
             var key = e.target.getAttribute('data-article-toggle');
-            if (!key) key = e.target.getAttribute('data-article-template');
             if (!key) key = e.target.getAttribute('data-article-label');
             if (!key) return;
             var parts = key.split(':'); var source = parts[0], id = parts[1];
             var cfg = articleState(source, id);
-            if (e.target.getAttribute('data-article-toggle')) cfg.enabled = !!e.target.checked;
-            else if (e.target.getAttribute('data-article-template')) cfg.maintenanceTemplate = e.target.value;
-            else cfg.labelMode = e.target.value;
+            if (e.target.getAttribute('data-article-toggle')) {
+                cfg.enabled = !!e.target.checked;
+                renderArticleList(source);
+                return;
+            }
+            cfg.labelMode = e.target.value;
             updateArticleBadges();
         });
 
@@ -973,6 +1009,7 @@ body.tp-modal-open { overflow: hidden; }
         if (labelSel) labelSel.hidden = true;
         var sel = document.getElementById('tpSelect');
         if (sel) {
+            sel.hidden = false;
             var list = previewState.kind === 'maintenance' ? MAINTENANCE_TEMPLATES : PUBLIC_TEMPLATES;
             sel.innerHTML = list.map(function (t) {
                 return '<option value="' + t.id + '">' + esc(t.name) + ' · ' + esc(t.desc) + '</option>';
@@ -999,12 +1036,7 @@ body.tp-modal-open { overflow: hidden; }
         if (title) title.textContent = '文章模板预览 · ' + (item.title || id);
         if (kind) kind.textContent = '文章维护模板';
         var sel = document.getElementById('tpSelect');
-        if (sel) {
-            sel.innerHTML = ARTICLE_TEMPLATES.map(function (t) {
-                return '<option value="' + t.id + '">' + esc(t.name) + ' · ' + esc(t.desc) + '</option>';
-            }).join('');
-            sel.value = cfg.maintenanceTemplate;
-        }
+        if (sel) sel.hidden = true;
         var labelSel = document.getElementById('tpLabel');
         if (labelSel) {
             labelSel.hidden = false;
@@ -1015,28 +1047,21 @@ body.tp-modal-open { overflow: hidden; }
         renderPreview();
     }
 
-    function articlePreviewMarkup(template, label, title, id) {
+    function articlePreviewMarkup(label, title, id) {
         var name = label === 'title' ? title : (label === 'id' ? id : '');
-        var message = name ? name + '暂时无法访问' : '暂时无法访问';
-        var body;
-        if (template === 'article-card') {
-            body = '<div class="tp-article-card"><span class="tp-icon">!</span><span class="tp-badge">文章维护中</span>' +
-                '<h2>' + esc(message) + '</h2><p>这篇文章正在调整或维护，请稍后再来。</p>' +
-                '<a class="tp-btn primary" href="#">返回博客列表</a></div>';
-        } else if (template === 'article-minimal') {
-            body = '<div class="tp-article-minimal"><h2>' + esc(message) + '</h2><p>内容暂时不可用，请稍后重试。</p>' +
-                '<a class="tp-text-link" href="#">返回博客列表 →</a></div>';
-        } else {
-            body = '<div class="tp-legal-card"><div class="tp-legal-icon">!</div><h2>页面不可用</h2>' +
-                '<p>该文章暂时不可用</p><p class="tp-muted">' + esc(message) + '。</p>' +
-                '<a class="tp-btn primary" href="#">返回博客列表</a></div>';
-        }
-        return '<div class="tp-article-preview"><div class="tp-article-mock">' +
-            '<div class="tp-article-head"><div class="tp-kicker">博客文章</div><h1>' + esc(title) + '</h1>' +
-            '<div class="tp-article-meta">文章模板预览 · 只替换正文内容</div></div>' +
-            '<div class="tp-article-body">' + body + '</div></div></div>';
+        var detail = name ? name + '页面当前已被管理员禁用。' : '该文章页面当前已被管理员禁用。';
+        return '<div class="tp-article-preview">' +
+            '<div class="tp-article-mock tp-article-old">' +
+                '<h1 class="tp-article-page-title">页面不可用</h1>' +
+                '<div class="tp-old-error">' +
+                    '<p><i class="fas fa-eye-slash"></i> 该文章暂时不可用</p>' +
+                    '<p class="tp-old-detail">' + esc(detail) + '</p>' +
+                    '<p class="tp-old-status">状态：已发布 <span class="article-access-pill is-off">维护中</span></p>' +
+                    '<a class="tp-old-link" href="#">返回博客列表</a>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
     }
-
     function closePreview() {
         var modal = document.getElementById('templatePreviewModal');
         if (modal) modal.hidden = true;
@@ -1090,7 +1115,7 @@ body.tp-modal-open { overflow: hidden; }
             var labelSel = document.getElementById('tpLabel');
             if (labelSel) previewState.label = labelSel.value;
             var item = findArticle(previewState.source, previewState.id) || {};
-            stage.innerHTML = articlePreviewMarkup(previewState.template, previewState.label, item.title || previewState.id, previewState.id);
+            stage.innerHTML = articlePreviewMarkup(previewState.label, item.title || previewState.id, previewState.id);
             var kindA = document.getElementById('tpKind');
             if (kindA) kindA.textContent = '文章维护模板';
             return;
@@ -1106,13 +1131,11 @@ body.tp-modal-open { overflow: hidden; }
             var acfg = articleState(previewState.source, previewState.id);
             var labelSel = document.getElementById('tpLabel');
             if (labelSel) previewState.label = labelSel.value;
-            acfg.maintenanceTemplate = previewState.template;
+            acfg.maintenanceTemplate = 'article-legal';
             acfg.labelMode = previewState.label;
             var row = document.querySelector('[data-article-row="' + previewState.source + ':' + previewState.id + '"]');
             if (row) {
-                var tsel = row.querySelector('[data-article-template]');
                 var lsel = row.querySelector('[data-article-label]');
-                if (tsel) tsel.value = previewState.template;
                 if (lsel) lsel.value = previewState.label;
             }
             updateArticleBadges();
