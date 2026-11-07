@@ -72,9 +72,10 @@
         var overlay = document.getElementById('pageStateOverlay');
         if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
         var main = document.querySelector('main');
-        if (main && legalOriginalMain !== null) {
-            main.innerHTML = legalOriginalMain;
-            legalOriginalMain = null;
+        if (main) {
+            var block = main.querySelector(':scope > .ps-legacy-page');
+            if (block) block.parentNode.removeChild(block);
+            main.classList.remove('page-state-main-replaced');
             main.removeAttribute('data-page-state-key');
             main.removeAttribute('data-page-state-label');
         }
@@ -83,7 +84,6 @@
 
     var MAINT_TEMPLATES = { classic: 1, legal: 1, minimal: 1, notice: 1 };
     var LEGAL_PAGES = { privacy: 1, terms: 1, copyright: 1 };
-    var legalOriginalMain = null;
 
     function maintenanceTemplate(cfg, key) {
         if (cfg && MAINT_TEMPLATES[cfg.maintenanceTemplate]) return cfg.maintenanceTemplate;
@@ -99,19 +99,22 @@
     function showLegalInMain(key, labelMode) {
         var main = document.querySelector('main');
         if (!main) return false;
-        if (main.getAttribute('data-page-state-key') === key && main.getAttribute('data-page-state-label') === labelMode) return true;
-        if (legalOriginalMain === null) legalOriginalMain = main.innerHTML;
+        var existing = main.querySelector(':scope > .ps-legacy-page');
+        if (existing && main.getAttribute('data-page-state-key') === key && main.getAttribute('data-page-state-label') === labelMode) return true;
+        if (existing) existing.parentNode.removeChild(existing);
         var shown = displayName(key, labelMode);
         main.setAttribute('data-page-state-key', key);
         main.setAttribute('data-page-state-label', labelMode);
-        main.innerHTML = '<div class="ps-legacy-page">' +
-            '<h1 class="ps-legacy-title">页面不可用</h1>' +
+        main.classList.add('page-state-main-replaced');
+        var block = document.createElement('div');
+        block.className = 'ps-legacy-page';
+        block.innerHTML = '<h1 class="ps-legacy-title">页面不可用</h1>' +
             '<div class="ps-legacy-message">' +
                 '<p><i class="fas fa-eye-slash"></i> 该页面暂时不可用</p>' +
                 '<p class="ps-legacy-detail">' + (shown ? shown + '页面' : '该页面') + '当前已被管理员禁用。</p>' +
                 '<a class="ps-legacy-link" href="/">返回首页</a>' +
-            '</div>' +
-        '</div>';
+            '</div>';
+        main.appendChild(block);
         var overlay = document.getElementById('pageStateOverlay');
         if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
         document.body.classList.remove('page-state-disabled');

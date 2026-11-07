@@ -329,3 +329,7 @@ body.page-template-compact .hero {
         padding: 28px 20px;
     }
 }
+/* 法务页维护：隐藏原 main 子节点，保留节点供页面脚本使用 */
+main.page-state-main-replaced > :not(.ps-legacy-page) {
+    display: none !important;
+}
