@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-07T06:17:23.946Z",
+  "updatedAt": "2026-11-07T06:22:45.247413+00:00",
   "pages": {
     "home": {
       "enabled": true,
@@ -11,7 +11,7 @@
     "blog": {
       "enabled": true,
       "template": "default",
-      "maintenanceTemplate": "legal",
+      "maintenanceTemplate": "classic",
       "labelMode": "name"
     },
     "portfolio": {
