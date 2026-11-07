@@ -89,11 +89,11 @@ window.SiteData = (function () {
     }
 
     function postHref(post) {
-        if (!post) return '/blog.html';
+        if (!post) return '/blog';
         var custom = post.customUrl;
         if (custom && /^https?:\/\//i.test(custom)) return custom;
         if (custom && /^[a-z0-9._-]+\.html$/i.test(custom)) return '/blogs/' + custom;
-        return '/blogs/' + encodeURIComponent(post.id || '') + '.html';
+        return '/blogs/' + encodeURIComponent(post.id || '');
     }
 
     function postTimestamp(post) {

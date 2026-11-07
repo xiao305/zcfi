@@ -138,7 +138,7 @@
             function postHref(post) {
                 if (post.customUrl && /^https?:\/\//i.test(post.customUrl)) return post.customUrl;
                 if (post.customUrl && /^[a-z0-9._-]+\.html$/i.test(post.customUrl)) return 'blogs/' + post.customUrl;
-                return 'blogs/' + encodeURIComponent(post.id || '') + '.html';
+                return 'blogs/' + encodeURIComponent(post.id || '');
             }
 
             function filtered() {

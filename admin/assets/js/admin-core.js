@@ -35,13 +35,13 @@
   var SESSION_MAX_AGE = 2 * 60 * 60 * 1000;
 
   var MODULES = [
-    { id: 'dashboard', name: '仪表盘', icon: 'fas fa-th-large',   url: 'dashboard.html' },
-    { id: 'tasks',     name: '任务中心', icon: 'fas fa-tasks',    url: 'tasks.html' },
-    { id: 'pages',     name: '页面管理', icon: 'fas fa-file-alt', url: 'pages.html' },
-    { id: 'blog',      name: '博客',   icon: 'fas fa-blog',       url: 'blog.html' },
-    { id: 'portfolio', name: '作品集', icon: 'fas fa-briefcase',  url: 'portfolio.html' },
-    { id: 'contact',   name: '留言',   icon: 'fas fa-comments',   url: 'contact.html' },
-    { id: 'config',    name: '配置',   icon: 'fas fa-cog',        url: 'config.html' }
+    { id: 'dashboard', name: '仪表盘', icon: 'fas fa-th-large',   url: 'dashboard' },
+    { id: 'tasks',     name: '任务中心', icon: 'fas fa-tasks',    url: 'tasks' },
+    { id: 'pages',     name: '页面管理', icon: 'fas fa-file-alt', url: 'pages' },
+    { id: 'blog',      name: '博客',   icon: 'fas fa-blog',       url: 'blog' },
+    { id: 'portfolio', name: '作品集', icon: 'fas fa-briefcase',  url: 'portfolio' },
+    { id: 'contact',   name: '留言',   icon: 'fas fa-comments',   url: 'contact' },
+    { id: 'config',    name: '配置',   icon: 'fas fa-cog',        url: 'config' }
   ];
 
   function storage() {
@@ -126,7 +126,7 @@
     var params = new URLSearchParams();
     params.set('returnTo', currentPage());
     if (reason === 'expired') params.set('expired', '1');
-    global.location.replace('index.html?' + params.toString());
+    global.location.replace('index?' + params.toString());
   }
 
   function requireAuth() {
@@ -152,15 +152,15 @@
   }
 
   function logout(options) {
-    var target = 'index.html?logout=1';
-    if (options && options.expired) target = 'index.html?expired=1';
+    var target = 'index?logout=1';
+    if (options && options.expired) target = 'index?expired=1';
     clearSession();
     global.location.replace(target);
   }
 
   function changeToken() {
     clearSession();
-    global.location.replace('index.html?relogin=1');
+    global.location.replace('index?relogin=1');
   }
 
   function maskToken(token) {
@@ -196,7 +196,7 @@
     shell.className = 'admin-shell';
     shell.innerHTML =
       '<div class="admin-shell-inner">' +
-        '<a class="admin-shell-brand" href="dashboard.html">zcfi<span class="brand-dot">.</span>cn <em>后台</em></a>' +
+        '<a class="admin-shell-brand" href="dashboard">zcfi<span class="brand-dot">.</span>cn <em>后台</em></a>' +
         '<nav class="admin-shell-nav" aria-label="后台板块导航">' + links + '</nav>' +
         '<div class="admin-shell-user">' +
           '<span class="admin-task-state" id="adminTaskState" hidden></span>' +

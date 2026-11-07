@@ -495,22 +495,43 @@ body.tp-modal-open { overflow: hidden; }
     text-decoration: none; font-size: 14px;
 }
 
-/* 状态两段式选择 */
+/* 状态两段式选择（滑动指示器） */
 .status-field { display: inline-flex; align-items: center; gap: 7px; }
 .status-field-label { font-size: 12px; color: #8a94a3; }
 .status-switch {
-    display: inline-flex; align-items: center; gap: 2px; padding: 3px;
+    position: relative; display: inline-flex; align-items: center; gap: 2px; padding: 3px;
     background: #eef3f9; border: 1px solid #e2e9f2; border-radius: 999px;
+    overflow: hidden;
 }
-.status-option { cursor: pointer; }
+.status-switch::before {
+    content: ''; position: absolute; top: 3px; bottom: 3px; left: 3px;
+    width: calc(50% - 3px); border-radius: 999px; background: #fff;
+    box-shadow: 0 2px 7px rgba(28, 44, 72, .13);
+    transition: transform .26s cubic-bezier(.4, 0, .2, 1);
+    will-change: transform;
+}
+.status-switch.is-off::before { transform: translateX(100%); }
+.status-option { position: relative; z-index: 1; cursor: pointer; }
 .status-option input { position: absolute; opacity: 0; pointer-events: none; }
 .status-option span {
     display: inline-block; padding: 4px 10px; border-radius: 999px;
-    font-size: 11.5px; color: #7b8491; transition: all .18s ease;
+    font-size: 11.5px; color: #7b8491; background: transparent;
+    transition: color .2s ease, opacity .2s ease;
 }
-.status-option input:checked + span { background: #fff; color: #2f6fb5; box-shadow: 0 2px 6px rgba(28,44,72,.1); }
+.status-option input:checked + span { color: #2f6fb5; }
 .status-option input[value="off"]:checked + span { color: #b45309; }
 .status-option input:disabled + span { opacity: .45; cursor: not-allowed; }
+.page-template-field:not([hidden]) { animation: field-in .2s ease; }
+@keyframes field-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .status-switch::before, .status-option span, .page-template-field {
+        transition: none !important;
+        animation: none !important;
+    }
+}
 </style>
 </head>
 <body class="admin-body" data-admin-module="pages">
@@ -627,13 +648,13 @@ body.tp-modal-open { overflow: hidden; }
     var CONFIG_GIST_ID = '983bb7371ddb439a2fcbfb4885e34d14';
     var PAGES = [
         { key: 'home',      name: '首页',       path: '/',                 icon: 'fas fa-home' },
-        { key: 'blog',      name: '博客列表',   path: '/blog.html',        icon: 'fas fa-blog' },
-        { key: 'portfolio', name: '作品集',     path: '/portfolio.html',   icon: 'fas fa-briefcase' },
-        { key: 'contact',   name: '联系我',     path: '/contact.html',     icon: 'fas fa-comments' },
-        { key: 'privacy',   name: '隐私政策',   path: '/privacy.html',     icon: 'fas fa-shield-alt' },
-        { key: 'terms',     name: '使用条款',   path: '/terms.html',       icon: 'fas fa-file-contract' },
-        { key: 'copyright', name: '版权声明',   path: '/copyright.html',   icon: 'fas fa-copyright' },
-        { key: 'notfound',  name: '404 页面',   path: '/404.html',         icon: 'fas fa-exclamation-triangle' }
+        { key: 'blog',      name: '博客列表',   path: '/blog',        icon: 'fas fa-blog' },
+        { key: 'portfolio', name: '作品集',     path: '/portfolio',   icon: 'fas fa-briefcase' },
+        { key: 'contact',   name: '联系我',     path: '/contact',     icon: 'fas fa-comments' },
+        { key: 'privacy',   name: '隐私政策',   path: '/privacy',     icon: 'fas fa-shield-alt' },
+        { key: 'terms',     name: '使用条款',   path: '/terms',       icon: 'fas fa-file-contract' },
+        { key: 'copyright', name: '版权声明',   path: '/copyright',   icon: 'fas fa-copyright' },
+        { key: 'notfound',  name: '404 页面',   path: '/404',         icon: 'fas fa-exclamation-triangle' }
     ];
     var PUBLIC_TEMPLATES = [
         { id: 'default', name: '标准布局',  desc: '保持站点原有布局' },
@@ -835,7 +856,7 @@ body.tp-modal-open { overflow: hidden; }
         var dis = editable === false ? ' disabled' : '';
         return '<div class="status-field">' +
             '<span class="status-field-label">' + (kind === 'page' ? '页面状态' : '文章状态') + '</span>' +
-            '<div class="status-switch" role="radiogroup">' +
+            '<div class="status-switch ' + (enabled ? 'is-on' : 'is-off') + '" role="radiogroup">' +
                 '<label class="status-option"><input type="radio" name="' + name + '" value="on" data-' + kind + '-status="' + key + '"' + (enabled ? ' checked' : '') + dis + '><span>展示中</span></label>' +
                 '<label class="status-option"><input type="radio" name="' + name + '" value="off" data-' + kind + '-status="' + key + '"' + (!enabled ? ' checked' : '') + dis + '><span>维护中</span></label>' +
             '</div>' +
@@ -969,7 +990,7 @@ body.tp-modal-open { overflow: hidden; }
         if (maintLabel) maintLabel.hidden = cfg.enabled;
         card.classList.toggle('is-disabled', !cfg.enabled);
         var pill = card.querySelector('.page-state-pill');
-        if (pill) pill.textContent = cfg.enabled ? '已启用' : '维护中';
+        if (pill) pill.textContent = cfg.enabled ? '展示中' : '维护中';
     }
     function bind() {
         var grid = document.getElementById('pagesGrid');
@@ -978,6 +999,8 @@ body.tp-modal-open { overflow: hidden; }
                 var pageStatusKey = e.target.getAttribute('data-page-status');
                 if (pageStatusKey) {
                     state.pages[pageStatusKey].enabled = e.target.value === 'on';
+                    var sw = e.target.closest('.status-switch');
+                    if (sw) { sw.classList.toggle('is-on', state.pages[pageStatusKey].enabled); sw.classList.toggle('is-off', !state.pages[pageStatusKey].enabled); }
                     updateCardMode(e.target.closest('.page-card'), pageStatusKey);
                     updateSummary();
                     updateBadges();

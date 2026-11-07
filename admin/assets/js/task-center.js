@@ -625,7 +625,7 @@ window.AdminTasks = (function () {
             '<div class="admin-task-list"></div>' +
             '<div class="admin-task-history"><div class="admin-task-history-head"><span>最近记录</span>' +
                 '<button type="button" class="admin-task-clear">清除</button></div><ul></ul></div>' +
-            '<div class="admin-task-panel-foot"><a href="tasks.html">打开完整任务中心 <span aria-hidden="true">→</span></a></div>';
+            '<div class="admin-task-panel-foot"><a href="tasks">打开完整任务中心 <span aria-hidden="true">→</span></a></div>';
         document.body.appendChild(ui.panel);
 
         ui.list = ui.panel.querySelector('.admin-task-list');

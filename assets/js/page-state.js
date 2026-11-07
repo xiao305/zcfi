@@ -152,14 +152,14 @@
                 '<div class="ps-notice-bar"><span>维护通知</span><em>预计稍后恢复</em></div>' +
                 '<div class="ps-notice-card"><h2>' + (shown ? shown + '暂停访问' : '页面暂停访问') + '</h2>' +
                 '<p>该页面正在调整中，请稍后重试。</p>' +
-                '<div class="page-state-actions"><a class="primary" href="/">返回首页</a><a href="/contact.html">联系我</a></div></div>' +
+                '<div class="page-state-actions"><a class="primary" href="/">返回首页</a><a href="/contact">联系我</a></div></div>' +
             '</div>';
         } else {
             html = '<div class="page-state-card ps-classic-card">' +
                 '<span class="page-state-badge">页面维护中</span>' +
                 '<h1>' + title + '</h1>' +
                 '<p>这个页面正在调整或维护，请稍后再来。你也可以先返回首页，或通过联系页留言。</p>' +
-                '<div class="page-state-actions"><a class="primary" href="/">返回首页</a><a href="/contact.html">联系我</a></div>' +
+                '<div class="page-state-actions"><a class="primary" href="/">返回首页</a><a href="/contact">联系我</a></div>' +
             '</div>';
         }
         var overlay = document.createElement('div');

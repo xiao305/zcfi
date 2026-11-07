@@ -10,7 +10,7 @@
     var GIST_RAW = 'https://gist.githubusercontent.com/xiao305/' + CONFIG_GIST_ID + '/raw/pages.json';
     var STATE_URL = '/data/pages.json';
 
-    var m = location.pathname.match(/\/blogs\/([^/]+)\.html$/i);
+    var m = location.pathname.match(/\/blogs\/([^/]+?)(?:\.html)?$/i);
     if (!m) return;
     var articleId = decodeURIComponent(m[1]);
     if (!articleId || articleId === 'template') return;
@@ -39,7 +39,7 @@
                 '<p><i class="fas fa-eye-slash"></i> 该文章暂时不可用</p>' +
                 '<p class="article-unavailable-detail">' + escapeHtml(detail) + '</p>' +
                 '<p class="article-unavailable-status">状态：已发布 ' + accessBadge(false) + '</p>' +
-                '<a class="article-unavailable-link" href="../blog.html"><i class="fas fa-arrow-left"></i> 返回博客列表</a>' +
+                '<a class="article-unavailable-link" href="../blog"><i class="fas fa-arrow-left"></i> 返回博客列表</a>' +
             '</div>';
     }
 

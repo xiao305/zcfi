@@ -86,7 +86,7 @@
     }
 
     function currentPostId() {
-        var m = window.location.pathname.match(/\/blogs\/([^\/.]+)\.html$/);
+        var m = window.location.pathname.match(/\/blogs\/([^\/.]+?)(?:\.html)?$/);
         if (!m) return '';
         var id = decodeURIComponent(m[1]);
         if (id === 'template' || id === 'post') return '';

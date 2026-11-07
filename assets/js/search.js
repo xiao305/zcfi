@@ -8,12 +8,12 @@ window.SiteSearch = (function () {
 
     var PAGES = [
         { title: '首页', desc: '个人主页与最新内容', url: '/' },
-        { title: '作品集', desc: '网页设计、开发项目与作品', url: '/portfolio.html' },
-        { title: '博客', desc: '技术文章与学习记录', url: '/blog.html' },
-        { title: '联系我', desc: '通过邮件或留言联系站主', url: '/contact.html' },
-        { title: '隐私政策', desc: '站点隐私说明', url: '/privacy.html' },
-        { title: '使用条款', desc: '站点使用条款', url: '/terms.html' },
-        { title: '版权声明', desc: '内容版权说明', url: '/copyright.html' }
+        { title: '作品集', desc: '网页设计、开发项目与作品', url: '/portfolio' },
+        { title: '博客', desc: '技术文章与学习记录', url: '/blog' },
+        { title: '联系我', desc: '通过邮件或留言联系站主', url: '/contact' },
+        { title: '隐私政策', desc: '站点隐私说明', url: '/privacy' },
+        { title: '使用条款', desc: '站点使用条款', url: '/terms' },
+        { title: '版权声明', desc: '内容版权说明', url: '/copyright' }
     ];
     var MAX_GROUP = 6;
     var overlay, input, body, lastFocus, dataPromise = null, searchData = null;
@@ -178,7 +178,7 @@ window.SiteSearch = (function () {
             }).slice(0, MAX_GROUP);
             if (projects.length) {
                 sections.push(section('作品集', projects.map(function (p) {
-                    return item(p.title || '未命名项目', p.description || '', '/portfolio.html', 'project', (p.tech || []).join(' · '));
+                    return item(p.title || '未命名项目', p.description || '', '/portfolio', 'project', (p.tech || []).join(' · '));
                 })));
             }
         }

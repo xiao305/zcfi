@@ -651,7 +651,7 @@
             <p class="dash-sub">站点内容、数据与账户状态，一屏总览</p>
         </div>
         <div class="dash-hero-actions">
-            <a class="dash-btn dash-btn-primary" href="blog.html"><i class="fas fa-pen-nib" aria-hidden="true"></i> 写新文章</a>
+            <a class="dash-btn dash-btn-primary" href="blog"><i class="fas fa-pen-nib" aria-hidden="true"></i> 写新文章</a>
             <a class="dash-btn" href="https://zcfi.cn" target="_blank" rel="noopener"><i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i> 打开前台</a>
             <button type="button" class="dash-btn" id="dashRefresh"><i class="fas fa-rotate" aria-hidden="true"></i> 刷新数据</button>
         </div>
@@ -671,7 +671,7 @@
                 <p class="dash-stat-value" id="statBlogValue">—</p>
                 <p class="dash-stat-meta" id="statBlogMeta">读取中…</p>
             </div>
-            <a class="dash-stat-link" href="blog.html" aria-label="进入博客管理"><i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+            <a class="dash-stat-link" href="blog" aria-label="进入博客管理"><i class="fas fa-arrow-right" aria-hidden="true"></i></a>
         </article>
 
         <article class="dash-stat">
@@ -681,7 +681,7 @@
                 <p class="dash-stat-value" id="statPortfolioValue">—</p>
                 <p class="dash-stat-meta" id="statPortfolioMeta">读取中…</p>
             </div>
-            <a class="dash-stat-link" href="portfolio.html" aria-label="进入作品集管理"><i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+            <a class="dash-stat-link" href="portfolio" aria-label="进入作品集管理"><i class="fas fa-arrow-right" aria-hidden="true"></i></a>
         </article>
 
         <article class="dash-stat">
@@ -691,7 +691,7 @@
                 <p class="dash-stat-value" id="statContactValue">—</p>
                 <p class="dash-stat-meta" id="statContactMeta">读取中…</p>
             </div>
-            <a class="dash-stat-link" href="contact.html" aria-label="进入留言管理"><i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+            <a class="dash-stat-link" href="contact" aria-label="进入留言管理"><i class="fas fa-arrow-right" aria-hidden="true"></i></a>
         </article>
 
         <article class="dash-stat">
@@ -717,7 +717,7 @@
                 <span class="dash-task-stat"><strong id="dashTaskQueue">0</strong>排队等待</span>
                 <span class="dash-task-stat"><strong id="dashTaskDeploy">0</strong>部署中</span>
             </div>
-            <a class="dash-btn" href="tasks.html">打开任务中心 <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+            <a class="dash-btn" href="tasks">打开任务中心 <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
         </div>
         <div class="dash-task-list" id="dashTaskList">
             <div class="dash-task-empty">正在读取任务状态…</div>
@@ -729,7 +729,7 @@
         <article class="dash-card">
             <div class="dash-card-head">
                 <h2><i class="fas fa-clock-rotate-left" aria-hidden="true"></i> 最近更新</h2>
-                <a href="blog.html">全部文章</a>
+                <a href="blog">全部文章</a>
             </div>
             <div id="recentList">
                 <div class="dash-empty"><span class="dash-skeleton"></span></div>
@@ -740,10 +740,10 @@
             <article class="dash-card" style="margin-bottom: 14px;">
                 <h2><i class="fas fa-bolt" aria-hidden="true"></i> 快捷操作</h2>
                 <div class="dash-actions" style="margin-top: 14px;">
-                    <a class="dash-action" href="blog.html"><i class="fas fa-plus" aria-hidden="true"></i> 添加文章</a>
-                    <a class="dash-action" href="portfolio.html"><i class="fas fa-images" aria-hidden="true"></i> 管理作品</a>
-                    <a class="dash-action" href="contact.html"><i class="fas fa-inbox" aria-hidden="true"></i> 查看留言</a>
-                    <a class="dash-action" href="config.html"><i class="fas fa-sliders" aria-hidden="true"></i> 网站配置</a>
+                    <a class="dash-action" href="blog"><i class="fas fa-plus" aria-hidden="true"></i> 添加文章</a>
+                    <a class="dash-action" href="portfolio"><i class="fas fa-images" aria-hidden="true"></i> 管理作品</a>
+                    <a class="dash-action" href="contact"><i class="fas fa-inbox" aria-hidden="true"></i> 查看留言</a>
+                    <a class="dash-action" href="config"><i class="fas fa-sliders" aria-hidden="true"></i> 网站配置</a>
                     <a class="dash-action" href="https://zcfi.cn" target="_blank" rel="noopener"><i class="fas fa-globe" aria-hidden="true"></i> 前台首页</a>
                     <a class="dash-action" href="https://github.com/xiao305/zcfi" target="_blank" rel="noopener"><i class="fab fa-github" aria-hidden="true"></i> GitHub 仓库</a>
                 </div>
@@ -1017,7 +1017,7 @@
                     title: p.title || p.id || '未命名项目',
                     meta: p.status === 'published' ? '已发布' : '草稿',
                     ts: parseTs(p.updatedAt || p.createdAt),
-                    href: 'portfolio.html'
+                    href: 'portfolio'
                 });
             });
         }
@@ -1048,7 +1048,7 @@
         if (custom && /^https?:\/\//i.test(custom)) return custom;
         if (custom && /^[a-z0-9._-]+\.html$/i.test(custom)) return '../blogs/' + custom;
         var id = post.id || '';
-        return id ? '../blogs/' + id + '.html' : '../blog.html';
+        return id ? '../blogs/' + id : '../blog';
     }
 
     function renderErrorBanner() {

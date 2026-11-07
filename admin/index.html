@@ -253,7 +253,7 @@
     var REPO_OWNER = 'xiao305';
     var REPO_NAME = 'zcfi';
     var TOKEN_RE = /^(ghp_|github_pat_|gho_|ghu_|ghs_|ghr_)/;
-    var ALLOWED_RETURN = ['dashboard.html', 'blog.html', 'portfolio.html', 'contact.html', 'config.html'];
+    var ALLOWED_RETURN = ['dashboard', 'blog', 'portfolio', 'contact', 'config', 'tasks', 'pages'];
 
     var form, input, btn, errBox, eye;
 
@@ -270,7 +270,7 @@
 
         // 会话仍有效：直接进入仪表盘（更换 Token 时会带 relogin=1，强制显示登录页）
         if (AdminCore.hasSession() && !params.get('relogin')) {
-            window.location.replace(getSafeReturnTo() || 'dashboard.html');
+            window.location.replace(getSafeReturnTo() || 'dashboard');
             return;
         }
 
@@ -402,7 +402,7 @@
             // 4) 建立统一会话并进入仪表盘
             AdminCore.login(token, permissions, 'dashboard');
             try { sessionStorage.setItem('admin_user', user.login || ''); } catch (e) {}
-            window.location.replace(getSafeReturnTo() || 'dashboard.html');
+            window.location.replace(getSafeReturnTo() || 'dashboard');
         } catch (e) {
             showError(e && e.message ? e.message : '登录失败，请检查网络后重试');
             setLoading(false);
