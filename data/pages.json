@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-07T06:14:50.826Z",
+  "updatedAt": "2026-11-07T06:17:23.946Z",
   "pages": {
     "home": {
       "enabled": true,
@@ -9,7 +9,7 @@
       "labelMode": "name"
     },
     "blog": {
-      "enabled": false,
+      "enabled": true,
       "template": "default",
       "maintenanceTemplate": "legal",
       "labelMode": "name"
