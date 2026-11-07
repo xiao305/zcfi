@@ -494,6 +494,23 @@ body.tp-modal-open { overflow: hidden; }
     background: #4a6fa5; color: #fff; border-radius: 5px;
     text-decoration: none; font-size: 14px;
 }
+
+/* 状态两段式选择 */
+.status-field { display: inline-flex; align-items: center; gap: 7px; }
+.status-field-label { font-size: 12px; color: #8a94a3; }
+.status-switch {
+    display: inline-flex; align-items: center; gap: 2px; padding: 3px;
+    background: #eef3f9; border: 1px solid #e2e9f2; border-radius: 999px;
+}
+.status-option { cursor: pointer; }
+.status-option input { position: absolute; opacity: 0; pointer-events: none; }
+.status-option span {
+    display: inline-block; padding: 4px 10px; border-radius: 999px;
+    font-size: 11.5px; color: #7b8491; transition: all .18s ease;
+}
+.status-option input:checked + span { background: #fff; color: #2f6fb5; box-shadow: 0 2px 6px rgba(28,44,72,.1); }
+.status-option input[value="off"]:checked + span { color: #b45309; }
+.status-option input:disabled + span { opacity: .45; cursor: not-allowed; }
 </style>
 </head>
 <body class="admin-body" data-admin-module="pages">
@@ -812,6 +829,19 @@ body.tp-modal-open { overflow: hidden; }
         });
     }
 
+    function statusSwitch(kind, key, enabled, editable) {
+        var safe = String(key).replace(/[^a-z0-9_-]/gi, '-');
+        var name = kind + '-status-' + safe;
+        var dis = editable === false ? ' disabled' : '';
+        return '<div class="status-field">' +
+            '<span class="status-field-label">' + (kind === 'page' ? '页面状态' : '文章状态') + '</span>' +
+            '<div class="status-switch" role="radiogroup">' +
+                '<label class="status-option"><input type="radio" name="' + name + '" value="on" data-' + kind + '-status="' + key + '"' + (enabled ? ' checked' : '') + dis + '><span>展示中</span></label>' +
+                '<label class="status-option"><input type="radio" name="' + name + '" value="off" data-' + kind + '-status="' + key + '"' + (!enabled ? ' checked' : '') + dis + '><span>维护中</span></label>' +
+            '</div>' +
+        '</div>';
+    }
+
     function render() {
         var grid = document.getElementById('pagesGrid');
         if (!grid) return;
@@ -822,13 +852,13 @@ body.tp-modal-open { overflow: hidden; }
                     '<span class="page-card-icon"><i class="' + p.icon + '"></i></span>' +
                     '<div class="page-card-copy">' +
                         '<div class="page-card-title">' + esc(p.name) +
-                            '<span class="page-state-pill">' + (cfg.enabled ? '已启用' : '维护中') + '</span>' +
+                            '<span class="page-state-pill">' + (cfg.enabled ? '展示中' : '维护中') + '</span>' +
                             '<span class="page-change-badge" data-change-badge hidden></span></div>' +
                         '<div class="page-card-path">' + esc(p.path) + '</div>' +
                     '</div>' +
                 '</div>' +
                 '<div class="page-card-controls">' +
-                    '<label class="page-toggle"><input type="checkbox" data-page-toggle="' + p.key + '"' + (cfg.enabled ? ' checked' : '') + '> 公开访问</label>' +
+                    statusSwitch('page', p.key, cfg.enabled, true) +
                     '<label class="page-template-field" data-field="public"' + (cfg.enabled ? '' : ' hidden') + '>' +
                         '<span>公开模板</span><select data-page-template="' + p.key + '">' + PUBLIC_TEMPLATES.map(function (t) {
                             return '<option value="' + t.id + '"' + (cfg.template === t.id ? ' selected' : '') + '>' + esc(t.name) + '</option>';
@@ -839,7 +869,7 @@ body.tp-modal-open { overflow: hidden; }
                             return '<option value="' + t.id + '"' + (cfg.maintenanceTemplate === t.id ? ' selected' : '') + '>' + esc(t.name) + '</option>';
                         }).join('') + '</select>' +
                     '</label>' +
-                    '<label class="page-template-field" data-field="label">' +
+                    '<label class="page-template-field" data-field="maintenance-label"' + (cfg.enabled ? ' hidden' : '') + '>' +
                         '<span>显示名称</span><select data-page-label="' + p.key + '">' + PAGE_LABEL_MODES.map(function (m) {
                             return '<option value="' + m.id + '"' + ((cfg.labelMode || 'name') === m.id ? ' selected' : '') + '>' + esc(m.name) + '</option>';
                         }).join('') + '</select>' +
@@ -908,10 +938,10 @@ body.tp-modal-open { overflow: hidden; }
                     '</div>' +
                 '</div>' +
                 '<div class="article-row-controls">' +
-                    '<label class="page-toggle"><input type="checkbox" data-article-toggle="' + key + '"' + (cfg.enabled ? ' checked' : '') + (editable ? '' : ' disabled') + '> 页面可用</label>' +
-                    '<select data-article-label="' + key + '"' + (editable ? '' : ' disabled') + '>' + ARTICLE_LABEL_MODES.map(function (m) {
+                    statusSwitch('article', key, cfg.enabled, editable) +
+                    (editable && !cfg.enabled ? '<select data-article-label="' + key + '">' + ARTICLE_LABEL_MODES.map(function (m) {
                         return '<option value="' + m.id + '"' + (cfg.labelMode === m.id ? ' selected' : '') + '>' + esc(m.name) + '</option>';
-                    }).join('') + '</select>' +
+                    }).join('') + '</select>' : '') +
                     '<button type="button" class="article-preview-btn" data-article-preview="' + key + '"><i class="fas fa-eye"></i> 预览</button>' +
                 '</div>' + lock +
             '</article>';
@@ -933,8 +963,10 @@ body.tp-modal-open { overflow: hidden; }
         var cfg = state.pages[key];
         var pub = card.querySelector('[data-field="public"]');
         var maint = card.querySelector('[data-field="maintenance"]');
+        var maintLabel = card.querySelector('[data-field="maintenance-label"]');
         if (pub) pub.hidden = !cfg.enabled;
         if (maint) maint.hidden = cfg.enabled;
+        if (maintLabel) maintLabel.hidden = cfg.enabled;
         card.classList.toggle('is-disabled', !cfg.enabled);
         var pill = card.querySelector('.page-state-pill');
         if (pill) pill.textContent = cfg.enabled ? '已启用' : '维护中';
@@ -943,10 +975,10 @@ body.tp-modal-open { overflow: hidden; }
         var grid = document.getElementById('pagesGrid');
         if (grid) {
             grid.addEventListener('change', function (e) {
-                var key = e.target.getAttribute('data-page-toggle');
-                if (key) {
-                    state.pages[key].enabled = !!e.target.checked;
-                    updateCardMode(e.target.closest('.page-card'), key);
+                var pageStatusKey = e.target.getAttribute('data-page-status');
+                if (pageStatusKey) {
+                    state.pages[pageStatusKey].enabled = e.target.value === 'on';
+                    updateCardMode(e.target.closest('.page-card'), pageStatusKey);
                     updateSummary();
                     updateBadges();
                     return;
@@ -972,13 +1004,13 @@ body.tp-modal-open { overflow: hidden; }
         });
 
         document.addEventListener('change', function (e) {
-            var key = e.target.getAttribute('data-article-toggle');
+            var key = e.target.getAttribute('data-article-status');
             if (!key) key = e.target.getAttribute('data-article-label');
             if (!key) return;
             var parts = key.split(':'); var source = parts[0], id = parts[1];
             var cfg = articleState(source, id);
-            if (e.target.getAttribute('data-article-toggle')) {
-                cfg.enabled = !!e.target.checked;
+            if (e.target.getAttribute('data-article-status')) {
+                cfg.enabled = e.target.value === 'on';
                 renderArticleList(source);
                 return;
             }
