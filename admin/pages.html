@@ -625,12 +625,17 @@ body.tp-modal-open { overflow: hidden; }
         { id: 'compact', name: '紧凑版',      desc: '缩小区块间距，信息更密集' },
         { id: 'card',    name: '卡片版',      desc: '内容容器加白色卡片背景' }
     ];
-    var MAINTENANCE_TEMPLATES = [
+    var BASE_MAINTENANCE_TEMPLATES = [
         { id: 'classic', name: '经典维护卡', desc: '居中卡片 + 维护提示' },
-        { id: 'legal',   name: '旧版禁用页', desc: '红色提示块，宽度按页面容器' },
         { id: 'minimal', name: '极简留白',   desc: '大标题 + 简短说明' },
         { id: 'notice',  name: '公告通知',   desc: '顶部状态徽标 + 公告卡' }
     ];
+    var LEGAL_MAINTENANCE_TEMPLATE = { id: 'legal', name: '旧版禁用页', desc: '仅用于隐私政策/使用条款/版权声明' };
+    function maintenanceTemplatesFor(key) {
+        var list = BASE_MAINTENANCE_TEMPLATES.slice();
+        if (LEGAL_PAGES[key]) list.splice(1, 0, LEGAL_MAINTENANCE_TEMPLATE);
+        return list;
+    }
     var PAGE_LABEL_MODES = [
         { id: 'name', name: '显示页面名称' },
         { id: 'path', name: '显示页面路径' },
@@ -720,7 +725,7 @@ body.tp-modal-open { overflow: hidden; }
                 if (!v || typeof v !== 'object') return;
                 base.pages[p.key].enabled = v.enabled !== false;
                 base.pages[p.key].template = PUBLIC_TEMPLATES.some(function (t) { return t.id === v.template; }) ? v.template : 'default';
-                base.pages[p.key].maintenanceTemplate = MAINTENANCE_TEMPLATES.some(function (t) { return t.id === v.maintenanceTemplate; }) ? v.maintenanceTemplate : defaultMaintenance(p.key);
+                base.pages[p.key].maintenanceTemplate = maintenanceTemplatesFor(p.key).some(function (t) { return t.id === v.maintenanceTemplate; }) ? v.maintenanceTemplate : defaultMaintenance(p.key);
                 base.pages[p.key].labelMode = PAGE_LABEL_MODES.some(function (m) { return m.id === v.labelMode; }) ? v.labelMode : 'name';
             });
         }
@@ -830,11 +835,11 @@ body.tp-modal-open { overflow: hidden; }
                         }).join('') + '</select>' +
                     '</label>' +
                     '<label class="page-template-field" data-field="maintenance"' + (cfg.enabled ? ' hidden' : '') + '>' +
-                        '<span>维护模板</span><select data-page-maintenance="' + p.key + '">' + MAINTENANCE_TEMPLATES.map(function (t) {
+                        '<span>维护模板</span><select data-page-maintenance="' + p.key + '">' + maintenanceTemplatesFor(p.key).map(function (t) {
                             return '<option value="' + t.id + '"' + (cfg.maintenanceTemplate === t.id ? ' selected' : '') + '>' + esc(t.name) + '</option>';
                         }).join('') + '</select>' +
                     '</label>' +
-                    '<label class="page-template-field" data-field="maintenance-label"' + (cfg.enabled ? '' : ' hidden') + '>' +
+                    '<label class="page-template-field" data-field="label">' +
                         '<span>显示名称</span><select data-page-label="' + p.key + '">' + PAGE_LABEL_MODES.map(function (m) {
                             return '<option value="' + m.id + '"' + ((cfg.labelMode || 'name') === m.id ? ' selected' : '') + '>' + esc(m.name) + '</option>';
                         }).join('') + '</select>' +
@@ -928,10 +933,8 @@ body.tp-modal-open { overflow: hidden; }
         var cfg = state.pages[key];
         var pub = card.querySelector('[data-field="public"]');
         var maint = card.querySelector('[data-field="maintenance"]');
-        var maintLabel = card.querySelector('[data-field="maintenance-label"]');
         if (pub) pub.hidden = !cfg.enabled;
         if (maint) maint.hidden = cfg.enabled;
-        if (maintLabel) maintLabel.hidden = cfg.enabled;
         card.classList.toggle('is-disabled', !cfg.enabled);
         var pill = card.querySelector('.page-state-pill');
         if (pill) pill.textContent = cfg.enabled ? '已启用' : '维护中';
@@ -1019,7 +1022,7 @@ body.tp-modal-open { overflow: hidden; }
     var previewState = { key: '', kind: 'public', template: 'default', source: '', id: '', label: 'title', pageLabel: 'name' };
 
     function templateMeta(kind, id) {
-        var list = kind === 'maintenance' ? MAINTENANCE_TEMPLATES : PUBLIC_TEMPLATES;
+        var list = kind === 'maintenance' ? BASE_MAINTENANCE_TEMPLATES : PUBLIC_TEMPLATES;
         for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
         return list[0];
     }
@@ -1042,7 +1045,7 @@ body.tp-modal-open { overflow: hidden; }
         var sel = document.getElementById('tpSelect');
         if (sel) {
             sel.hidden = false;
-            var list = previewState.kind === 'maintenance' ? MAINTENANCE_TEMPLATES : PUBLIC_TEMPLATES;
+            var list = previewState.kind === 'maintenance' ? maintenanceTemplatesFor(previewState.key) : PUBLIC_TEMPLATES;
             sel.innerHTML = list.map(function (t) {
                 return '<option value="' + t.id + '">' + esc(t.name) + ' · ' + esc(t.desc) + '</option>';
             }).join('');
