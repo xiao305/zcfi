@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-07T06:22:45.247413+00:00",
+  "updatedAt": "2026-11-08T11:27:34.500Z",
   "pages": {
     "home": {
       "enabled": true,
@@ -53,6 +53,11 @@
   },
   "articles": {
     "blog": {
+      "post4": {
+        "enabled": false,
+        "maintenanceTemplate": "article-legal",
+        "labelMode": "id"
+      },
       "post3": {
         "enabled": true,
         "maintenanceTemplate": "article-legal",
