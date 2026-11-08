@@ -271,6 +271,7 @@ body.tp-modal-open { overflow: hidden; }
 
 /* ===== 页面管理分支 tabs ===== */
 .pages-tabs {
+    position: relative;
     display: inline-flex;
     gap: 4px;
     padding: 4px;
@@ -279,7 +280,22 @@ body.tp-modal-open { overflow: hidden; }
     border: 1px solid #e2e9f2;
     margin-bottom: 14px;
 }
+.pages-tab-indicator {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    height: calc(100% - 8px);
+    width: 0;
+    border-radius: 9px;
+    background: #fff;
+    box-shadow: 0 3px 10px rgba(28,44,72,.09);
+    transition: left .28s cubic-bezier(.4,0,.2,1), width .28s cubic-bezier(.4,0,.2,1);
+    pointer-events: none;
+    z-index: 0;
+}
 .pages-tab {
+    position: relative;
+    z-index: 1;
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -291,10 +307,10 @@ body.tp-modal-open { overflow: hidden; }
     font-size: 12.5px;
     font-weight: 500;
     cursor: pointer;
-    transition: all .2s ease;
+    transition: color .2s ease, background-color .2s ease;
 }
-.pages-tab:hover { color: #4a6fa5; background: rgba(255,255,255,.7); }
-.pages-tab.active { background: #fff; color: #4a6fa5; box-shadow: 0 3px 10px rgba(28,44,72,.09); }
+.pages-tab:hover { color: #4a6fa5; }
+.pages-tab.active { background: transparent; color: #4a6fa5; box-shadow: none; }
 .pages-tab-count {
     font-size: 10.5px;
     padding: 0 5px;
@@ -304,6 +320,11 @@ body.tp-modal-open { overflow: hidden; }
 }
 .pages-tab.active .pages-tab-count { background: #e8f2fd; color: #2f6fb5; }
 .pages-panel[hidden] { display: none !important; }
+.pages-panel:not([hidden]) { animation: pages-panel-in .24s ease; }
+@keyframes pages-panel-in {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 
 /* ===== 文章权限面板 ===== */
 .article-panel {
@@ -365,6 +386,7 @@ body.tp-modal-open { overflow: hidden; }
     font-size: 12px;
 }
 .article-row.is-locked .article-row-controls { opacity: .55; }
+.article-access-pill { transition: background-color .2s ease, color .2s ease, border-color .2s ease; }
 .article-row-lock { width: 100%; font-size: 11px; color: #b02a37; margin-top: -2px; }
 .article-preview-btn {
     display: inline-flex; align-items: center; gap: 5px;
@@ -527,10 +549,12 @@ body.tp-modal-open { overflow: hidden; }
     to { opacity: 1; transform: translateY(0); }
 }
 @media (prefers-reduced-motion: reduce) {
-    .status-switch::before, .status-option span, .page-template-field {
+    .status-switch::before, .status-option span, .page-template-field,
+    .pages-tab-indicator, .pages-tab, .article-access-pill {
         transition: none !important;
         animation: none !important;
     }
+    .pages-panel:not([hidden]) { animation: none !important; }
 }
 </style>
 </head>
@@ -556,6 +580,7 @@ body.tp-modal-open { overflow: hidden; }
     </section>
 
     <nav class="pages-tabs" aria-label="页面管理分类">
+        <span class="pages-tab-indicator" aria-hidden="true"></span>
         <button type="button" class="pages-tab active" data-pages-tab="pages">页面状态</button>
         <button type="button" class="pages-tab" data-pages-tab="blog">博客文章 <span class="pages-tab-count" id="blogArticleCount">–</span></button>
         <button type="button" class="pages-tab" data-pages-tab="portfolio">作品集 <span class="pages-tab-count" id="portfolioArticleCount">–</span></button>
@@ -992,6 +1017,13 @@ body.tp-modal-open { overflow: hidden; }
         var pill = card.querySelector('.page-state-pill');
         if (pill) pill.textContent = cfg.enabled ? '展示中' : '维护中';
     }
+    function syncTabIndicator(tab) {
+        if (!tab || !tab.parentNode) return;
+        var ind = tab.parentNode.querySelector('.pages-tab-indicator');
+        if (!ind) return;
+        ind.style.left = tab.offsetLeft + 'px';
+        ind.style.width = tab.offsetWidth + 'px';
+    }
     function bind() {
         var grid = document.getElementById('pagesGrid');
         if (grid) {
@@ -1023,7 +1055,14 @@ body.tp-modal-open { overflow: hidden; }
                 var name = tab.getAttribute('data-pages-tab');
                 document.querySelectorAll('.pages-tab').forEach(function (t) { t.classList.toggle('active', t === tab); });
                 document.querySelectorAll('.pages-panel').forEach(function (p) { p.hidden = p.getAttribute('data-pages-panel') !== name; });
+                requestAnimationFrame(function () { syncTabIndicator(tab); });
             });
+        });
+
+        var activeTab = document.querySelector('.pages-tab.active');
+        if (activeTab) requestAnimationFrame(function () { syncTabIndicator(activeTab); });
+        window.addEventListener('resize', function () {
+            syncTabIndicator(document.querySelector('.pages-tab.active'));
         });
 
         document.addEventListener('change', function (e) {
@@ -1034,7 +1073,36 @@ body.tp-modal-open { overflow: hidden; }
             var cfg = articleState(source, id);
             if (e.target.getAttribute('data-article-status')) {
                 cfg.enabled = e.target.value === 'on';
-                renderArticleList(source);
+                var row = e.target.closest('.article-row');
+                if (row) {
+                    var sw = row.querySelector('.status-switch');
+                    if (sw) {
+                        sw.classList.toggle('is-on', cfg.enabled);
+                        sw.classList.toggle('is-off', !cfg.enabled);
+                    }
+                    var access = row.querySelector('.article-access-pill');
+                    if (access) {
+                        access.classList.toggle('is-on', cfg.enabled);
+                        access.classList.toggle('is-off', !cfg.enabled);
+                        access.textContent = cfg.enabled ? '展示中' : '维护中';
+                    }
+                    var controls = row.querySelector('.article-row-controls');
+                    var labelSel = controls ? controls.querySelector('[data-article-label]') : null;
+                    if (cfg.enabled && labelSel) labelSel.parentNode.removeChild(labelSel);
+                    if (!cfg.enabled && !labelSel && controls) {
+                        var sel = document.createElement('select');
+                        sel.setAttribute('data-article-label', key);
+                        ARTICLE_LABEL_MODES.forEach(function (m) {
+                            var opt = document.createElement('option');
+                            opt.value = m.id;
+                            opt.textContent = m.name;
+                            if (cfg.labelMode === m.id) opt.selected = true;
+                            sel.appendChild(opt);
+                        });
+                        controls.insertBefore(sel, controls.querySelector('[data-article-preview]'));
+                    }
+                }
+                updateArticleBadges();
                 return;
             }
             cfg.labelMode = e.target.value;
