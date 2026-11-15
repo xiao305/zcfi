@@ -83,6 +83,29 @@
             display: flex;
             flex-direction: column;
         }
+
+        /* 首页卡片摘要限行：标题最多 2 行，摘要最多 3 行 */
+        .blog-content h3,
+        .portfolio-content h3 {
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .blog-content p,
+        .portfolio-content p {
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 3;
+            line-clamp: 3;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.7;
+            max-height: 5.1em;
+        }
         
         /* 加载状态样式 */
         .loading-message {
