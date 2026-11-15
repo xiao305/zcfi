@@ -158,7 +158,8 @@ window.SiteData = (function () {
         }
         try {
             var doc = new DOMParser().parseFromString('<div>' + input + '</div>', 'text/html');
-            return walk(doc.body.firstChild);
+            var out = walk(doc.body.firstChild);
+            return out.replace(/^(?:\s|<br\s*\/?>)+/i, '').replace(/(?:\s|<br\s*\/?>)+$/i, '');
         } catch (e) {
             return escapeHtml(input);
         }
