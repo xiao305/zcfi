@@ -9,6 +9,7 @@
     var container, techSelect, sortSelect, countEl, overlay, lastFocus;
 
     function esc(s) { return window.SiteData.escapeHtml(s); }
+    function rich(s) { return window.SiteData.richText ? window.SiteData.richText(s) : esc(s); }
 
     function safeUrl(url) {
         var u = String(url == null ? '' : url).trim();
@@ -87,7 +88,7 @@
                 '<div class="portfolio-img">' + media + '</div>' +
                 '<div class="portfolio-content">' +
                     '<h3>' + esc(project.title || '未命名项目') + '</h3>' +
-                    '<p>' + esc((project.description || '项目描述').slice(0, 120)) + '</p>' +
+                    '<div class="portfolio-desc">' + rich(project.description || '项目描述') + '</div>' +
                     (tech ? '<div class="tech-stack">' + tech + '</div>' : '') +
                     (demo || repo ? '<div class="project-links">' +
                         (demo ? '<a href="' + esc(demo) + '" target="_blank" rel="noopener noreferrer" class="project-link"><i class="fas fa-external-link-alt"></i> 演示</a>' : '') +
@@ -139,7 +140,7 @@
                 '<div class="pf-content">' +
                     '<h2 class="pf-title">' + esc(project.title || '未命名项目') + '</h2>' +
                     (tech ? '<div class="pf-tech">' + tech + '</div>' : '') +
-                    '<p class="pf-desc">' + esc(project.description || '暂无项目描述') + '</p>' +
+                    '<div class="pf-desc">' + rich(project.description || '暂无项目描述') + '</div>' +
                     '<div class="pf-links">' +
                         (demo ? '<a href="' + esc(demo) + '" target="_blank" rel="noopener noreferrer"><i class="fas fa-external-link-alt"></i> 查看演示</a>' : '') +
                         (repo ? '<a class="secondary" href="' + esc(repo) + '" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i> 查看代码</a>' : '') +

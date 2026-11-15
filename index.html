@@ -96,7 +96,8 @@
         }
 
         .blog-content p,
-        .portfolio-content p {
+        .portfolio-content p,
+        .portfolio-content .portfolio-desc {
             display: -webkit-box;
             -webkit-box-orient: vertical;
             -webkit-line-clamp: 3;
@@ -105,6 +106,12 @@
             text-overflow: ellipsis;
             line-height: 1.7;
             max-height: 5.1em;
+        }
+
+        .portfolio-content .portfolio-desc {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            margin: 0 0 15px;
         }
         
         /* 加载状态样式 */
@@ -429,7 +436,7 @@
                         </div>
                         <div class="portfolio-content">
                             <h3>${escapeHtml(item.title || '未命名项目')}</h3>
-                            <p>${escapeHtml(item.description || '项目描述')}</p>
+                            <div class="portfolio-desc">${richText(item.description || '项目描述')}</div>
                             ${getPortfolioTechTags(item.tech)}
                         </div>
                     </div>
@@ -515,6 +522,10 @@
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+
+        function richText(text) {
+            return window.SiteData && window.SiteData.richText ? window.SiteData.richText(text) : escapeHtml(text);
         }
     </script>
     

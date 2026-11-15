@@ -110,12 +110,67 @@ window.SiteData = (function () {
             .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
+    function richText(html) {
+        var input = String(html == null ? '' : html);
+        if (!input) return '';
+        if (typeof DOMParser === 'undefined') return escapeHtml(input);
+        var allowed = {
+            A: 1, STRONG: 1, B: 1, EM: 1, I: 1, U: 1, S: 1, STRIKE: 1, DEL: 1,
+            INS: 1, CODE: 1, KBD: 1, SAMP: 1, VAR: 1, MARK: 1, SMALL: 1,
+            SUP: 1, SUB: 1, SPAN: 1, BR: 1
+        };
+        var block = {
+            P: 1, DIV: 1, LI: 1, UL: 1, OL: 1, BLOCKQUOTE: 1,
+            H1: 1, H2: 1, H3: 1, H4: 1, H5: 1, H6: 1,
+            SECTION: 1, ARTICLE: 1, FIGCAPTION: 1, TABLE: 1, THEAD: 1,
+            TBODY: 1, TR: 1, TD: 1, TH: 1
+        };
+        var drop = {
+            SCRIPT: 1, STYLE: 1, IFRAME: 1, OBJECT: 1, EMBED: 1, LINK: 1,
+            META: 1, FORM: 1, INPUT: 1, BUTTON: 1, TEXTAREA: 1, SELECT: 1,
+            OPTION: 1, IMG: 1, VIDEO: 1, AUDIO: 1, SVG: 1, MATH: 1,
+            TEMPLATE: 1, NOSCRIPT: 1
+        };
+        function safeHref(raw) {
+            var u = String(raw == null ? '' : raw).trim();
+            if (!u) return '';
+            if (/^https?:\/\//i.test(u) || /^mailto:/i.test(u) || /^tel:/i.test(u) || u.charAt(0) === '/' || u.charAt(0) === '#') return u;
+            return '';
+        }
+        function walk(node) {
+            if (!node) return '';
+            if (node.nodeType === 3) {
+                return escapeHtml(node.nodeValue).replace(/\r?\n/g, '<br>');
+            }
+            if (node.nodeType !== 1) return '';
+            var tag = node.tagName.toUpperCase();
+            if (drop[tag]) return '';
+            var children = '';
+            for (var i = 0; i < node.childNodes.length; i++) children += walk(node.childNodes[i]);
+            if (tag === 'BR') return '<br>';
+            if (tag === 'A') {
+                var href = safeHref(node.getAttribute('href'));
+                return href ? '<a href="' + escapeHtml(href) + '" target="_blank" rel="noopener noreferrer">' + children + '</a>' : children;
+            }
+            if (allowed[tag]) return '<' + tag.toLowerCase() + '>' + children + '</' + tag.toLowerCase() + '>';
+            if (block[tag]) return children + (children && !/<br>$/i.test(children) ? '<br>' : '');
+            return children;
+        }
+        try {
+            var doc = new DOMParser().parseFromString('<div>' + input + '</div>', 'text/html');
+            return walk(doc.body.firstChild);
+        } catch (e) {
+            return escapeHtml(input);
+        }
+    }
+
     return {
         load: load,
         publishedPosts: publishedPosts,
         publishedProjects: publishedProjects,
         postHref: postHref,
         postTimestamp: postTimestamp,
-        escapeHtml: escapeHtml
+        escapeHtml: escapeHtml,
+        richText: richText
     };
 })();
