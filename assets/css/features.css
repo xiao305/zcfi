@@ -454,9 +454,18 @@
     color: #5b6675;
     font-size: 14px;
     line-height: 1.9;
-    white-space: pre-wrap;
+    white-space: normal;
     margin: 12px 0 16px;
 }
+
+.pf-desc img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+}
+
+.pf-desc > :first-child { margin-top: 0; }
+.pf-desc > :last-child { margin-bottom: 0; }
 
 .pf-tech {
     display: flex;

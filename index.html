@@ -436,7 +436,7 @@
                         </div>
                         <div class="portfolio-content">
                             <h3>${escapeHtml(item.title || '未命名项目')}</h3>
-                            <div class="portfolio-desc">${richText(item.description || '项目描述')}</div>
+                            <div class="portfolio-desc">${richText(item.description || '项目描述', 'inline')}</div>
                             ${getPortfolioTechTags(item.tech)}
                         </div>
                     </div>
