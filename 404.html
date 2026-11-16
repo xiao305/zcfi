@@ -19,7 +19,10 @@
 
     <!-- 功能组件样式 -->
     <link rel="stylesheet" href="/assets/css/features.css">
-    
+
+    <!-- 全局布局与动态页眉/页脚样式 -->
+    <link rel="stylesheet" href="/assets/css/style.css">
+
     <style>
         :root {
             --primary-color: #4a6fa5;
@@ -310,13 +313,41 @@
                 font-size: 1rem;
             }
         }
+    
+        /* 动态页眉/页脚加载失败时的兜底 */
+        .nf-fallback-header,
+        .nf-fallback-footer { animation: none; }
+        .nf-fallback-footer { margin-top: 40px; }
+        .nf-fallback-footer .footer-content {
+            display: flex; justify-content: center; align-items: center;
+            gap: 16px; flex-wrap: wrap; font-size: 13px;
+        }
+        .nf-fallback-footer .footer-logo { font-size: 20px; }
+        .nf-fallback-footer .footer-logo span { color: var(--accent-color); }
+        @media (max-width: 768px) {
+            .nf-fallback-header .nav-links { display: none; }
+        }
     </style>
-<link rel="stylesheet" href="assets/css/page-state.css?v=20261107c"><script>document.documentElement.classList.add('page-state-checking');window.__pageStateReady=false;setTimeout(function(){if(!window.__pageStateReady)document.documentElement.classList.remove('page-state-checking');},6000);</script>
+<link rel="stylesheet" href="/assets/css/page-state.css?v=20261107c"><script>document.documentElement.classList.add('page-state-checking');window.__pageStateReady=false;setTimeout(function(){if(!window.__pageStateReady)document.documentElement.classList.remove('page-state-checking');},6000);</script>
 
 </head>
 <body data-page-key="notfound">
     <!-- 头部导航 -->
-    <div id="navbar-container"></div>
+    <div id="navbar-container">
+        <header class="nf-fallback-header">
+            <div class="container">
+                <nav class="navbar">
+                    <a href="/" class="logo">zcfi<span>.</span>cn</a>
+                    <ul class="nav-links">
+                        <li><a href="/" class="nav-link">首页</a></li>
+                        <li><a href="/portfolio" class="nav-link">作品集</a></li>
+                        <li><a href="/blog" class="nav-link">博客</a></li>
+                        <li><a href="/contact" class="nav-link">联系我</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+    </div>
 
     <!-- 404 主内容 -->
     <div class="error-container">
@@ -358,7 +389,16 @@
     </div>
 
     <!-- 页脚 -->
-    <div id="footer-container"></div>
+    <div id="footer-container">
+        <footer class="nf-fallback-footer">
+            <div class="container">
+                <div class="footer-content">
+                    <a href="/" class="footer-logo">zcfi<span>.</span>cn</a>
+                    <p>© 2026 zcfi.cn · 页面未找到</p>
+                </div>
+            </div>
+        </footer>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -443,9 +483,9 @@
             }).catch(function () {});
         });
     </script>
-<script src="assets/js/page-state.js?v=20261107b" defer></script>
+<script src="/assets/js/page-state.js?v=20261107b" defer></script>
 
-<script src="assets/js/gist-renderer.js"></script>
+<script src="/assets/js/gist-renderer.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', async function () {
     if (!window.gistRenderer) return;
