@@ -245,32 +245,6 @@
         }
 
         /* 页脚 */
-        footer {
-            background-color: var(--dark-color);
-            color: white;
-            padding: 30px 0;
-            text-align: center;
-        }
-
-        .footer-content {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .footer-logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: white;
-            text-decoration: none;
-        }
-
-        .footer-logo span {
-            color: var(--accent-color);
-        }
-
-        /* 响应式设计 */
         @media (max-width: 768px) {
             .error-code {
                 font-size: 6rem;
@@ -282,11 +256,6 @@
             
             .error-content {
                 padding: 40px 20px;
-            }
-            
-            .footer-content {
-                flex-direction: column;
-                gap: 10px;
             }
             
             .button-group {
@@ -315,18 +284,6 @@
         }
     
         /* 动态页眉/页脚加载失败时的兜底 */
-        .nf-fallback-header,
-        .nf-fallback-footer { animation: none; }
-        .nf-fallback-footer { margin-top: 40px; }
-        .nf-fallback-footer .footer-content {
-            display: flex; justify-content: center; align-items: center;
-            gap: 16px; flex-wrap: wrap; font-size: 13px;
-        }
-        .nf-fallback-footer .footer-logo { font-size: 20px; }
-        .nf-fallback-footer .footer-logo span { color: var(--accent-color); }
-        @media (max-width: 768px) {
-            .nf-fallback-header .nav-links { display: none; }
-        }
     </style>
 <link rel="stylesheet" href="/assets/css/page-state.css?v=20261107c"><script>document.documentElement.classList.add('page-state-checking');window.__pageStateReady=false;setTimeout(function(){if(!window.__pageStateReady)document.documentElement.classList.remove('page-state-checking');},6000);</script>
 
@@ -392,9 +349,13 @@
     <div id="footer-container">
         <footer class="nf-fallback-footer">
             <div class="container">
-                <div class="footer-content">
-                    <a href="/" class="footer-logo">zcfi<span>.</span>cn</a>
-                    <p>© 2026 zcfi.cn · 页面未找到</p>
+                <div class="compliance">
+                    <p>© 2026 zcfi.cn 版权所有</p>
+                    <div class="compliance-links">
+                        <a href="/privacy">隐私政策</a>
+                        <a href="/terms">使用条款</a>
+                        <a href="/copyright">版权声明</a>
+                    </div>
                 </div>
             </div>
         </footer>
